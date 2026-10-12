@@ -4,6 +4,10 @@
 #include <stdbool.h>
 #include <tty.h>
 
+#ifndef tty_input_queue
+#define tty_input_queue(m) (&ttyinq[(uint8_t)(m)])
+#endif
+
 /*
  *	Minimal Terminal Interface
  *
@@ -259,6 +263,38 @@ void tty_exit(void)
                 *pgrp = 0;
 }
 
+#ifdef CONFIG_LEVEL_2
+static uint8_t tty_input_ready(struct tty *t, struct s_queue *q)
+{
+	queueptr_t p;
+	int count;
+	irqflags_t irq = di();
+	uint8_t ready = 0;
+
+	if (!(t->termios.c_lflag & ICANON)) {
+		uint8_t minimum = t->termios.c_cc[VMIN];
+		if (minimum == 0)
+			minimum = t->termios.c_cc[VTIME] ? 1 : 0;
+		ready = q->q_count >= minimum;
+	} else {
+		p = q->q_head;
+		count = q->q_count;
+		while (count--) {
+			uint_fast8_t c = GETQ(p);
+			if (c == '\n' || c == t->termios.c_cc[VEOL] ||
+			    c == t->termios.c_cc[VEOF]) {
+				ready = 1;
+				break;
+			}
+			if (++p == q->q_base + q->q_size)
+				p = q->q_base;
+		}
+	}
+	irqrestore(irq);
+	return ready;
+}
+#endif
+
 int tty_ioctl(uint_fast8_t minor, uarg_t request, char *data)
 {				/* Data in User Space */
         register struct tty *t;
@@ -352,10 +388,8 @@ int tty_ioctl(uint_fast8_t minor, uarg_t request, char *data)
 			}
 		}
 		/* FIXME: IRQ race */
-		if (n & SELECT_IN) {
-			/* TODO - this one is hard, we need to peek down the queue to see if
-			   a canonical input would succeed */
-		}
+		if ((n & SELECT_IN) && tty_input_ready(t, tty_input_queue(minor)))
+			*data |= SELECT_IN;
 		if (n & SELECT_OUT) {
 			if ((!(t->flag & TTYF_STOP)) &&
 				tty_writeready(minor) != TTY_READY_LATER)
