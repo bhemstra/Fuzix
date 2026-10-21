@@ -19,9 +19,12 @@ d 0755 /usr/include/ns32k
 d 0755 /usr/include/pdp11
 d 0755 /usr/include/readline
 d 0755 /usr/include/riscv32
+d 0755 /usr/include/super8
 d 0755 /usr/include/sys
 d 0755 /usr/include/tms9995
 d 0755 /usr/include/wrx6
+d 0755 /usr/include/z8
+d 0755 /usr/include/z80
 
 f 0644 /usr/include/libgen.h libgen.h
 f 0644 /usr/include/readline/readline.h readline/readline.h
@@ -179,3 +182,21 @@ f 0644 /usr/include/mbr.h mbr.h
 f 0644 /usr/include/types.h types.h
 f 0644 /usr/include/poll.h poll.h
 f 0644 /usr/include/regexp.h regexp.h
+f 0644 /usr/include/6502/stdarg.h 6502/stdarg.h
+f 0644 /usr/include/6502/stdbool.h 6502/stdbool.h
+f 0644 /usr/include/6502/stddef.h 6502/stddef.h
+f 0644 /usr/include/6809/stdarg.h 6809/stdarg.h
+f 0644 /usr/include/6809/stdbool.h 6809/stdbool.h
+f 0644 /usr/include/6809/stddef.h 6809/stddef.h
+f 0644 /usr/include/super8/stdarg.h super8/stdarg.h
+f 0644 /usr/include/super8/stdbool.h super8/stdbool.h
+f 0644 /usr/include/super8/stddef.h super8/stddef.h
+f 0644 /usr/include/super8/stdint.h super8/stdint.h
+f 0644 /usr/include/z80/stdarg.h z80/stdarg.h
+f 0644 /usr/include/z80/stdbool.h z80/stdbool.h
+f 0644 /usr/include/z80/stddef.h z80/stddef.h
+f 0644 /usr/include/z80/stdint.h z80/stdint.h
+f 0644 /usr/include/z8/stdarg.h z8/stdarg.h
+f 0644 /usr/include/z8/stdbool.h z8/stdbool.h
+f 0644 /usr/include/z8/stddef.h z8/stddef.h
+f 0644 /usr/include/z8/stdint.h z8/stdint.h
