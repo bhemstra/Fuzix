@@ -48,7 +48,7 @@
 /* Support a 40 column console for now */
 #define CONFIG_VT
 #define VT_RIGHT 39
-#define VT_BOTTOM 24
+#define VT_BOTTOM 23
 
 #define BOOT_TTY 513        /* Set this to default device for stdio, stderr */
 
