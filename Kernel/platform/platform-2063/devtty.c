@@ -23,7 +23,7 @@ static uint8_t vswitch;
 int8_t vt_tright = 39;
 int8_t vt_twidth = 40;
 uint16_t vdpport = 0x2881;	/* 40 chars wide port 0x81 */
-uint16_t inputtty;		/* Only one tty setup but need this */
+uint16_t inputtty = 1;		/* Only one tty setup but need this */
 
 static uint8_t sleeping;
 
