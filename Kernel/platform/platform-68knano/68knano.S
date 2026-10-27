@@ -110,32 +110,34 @@ map_save:
 
 ;	IDE:
 ;
+;	The CF adapter is 16bit wide but wired with the byte lanes swapped,
+;	so the word from the card is rotated. The target buffer can be a user
+;	address with no alignment, and a word access to an odd address traps
+;	on a 68000, so store the result a byte at a time.
+;
 devide_read_data:
-	move.l	d2,-(sp)
 	move.l	blk_op,a0
 	move.l	#$900000,a1
 	move.w	#255,d0
-	moveq	#8,d2
 devide_read_l:
 	move.w	(a1),d1
-	rol.w	d2,d1
-	move.w	d1,(a0)+
+	move.b	d1,(a0)+
+	lsr.w	#8,d1
+	move.b	d1,(a0)+
 	dbra	d0,devide_read_l
-	move.l	(sp)+,d2
 	rts
 
 devide_write_data:
-	move.l	d2,-(sp)
 	move.l	blk_op,a0
 	move.l	#$900000,a1
 	move.w	#255,d0
-	moveq	#8,d2
 devide_write_l:
-	move.w	(a0)+,d1
-	rol.w	d2,d1
+	move.b	(a0)+,d1
+	lsl.w	#8,d1
+	move.b	(a0)+,d1
+	rol.w	#8,d1
 	move.w	d1,(a1)
 	dbra	d0,devide_write_l
-	move.l	(sp)+,d2
 	rts
 
 ;
