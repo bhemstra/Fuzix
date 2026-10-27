@@ -83,6 +83,7 @@ no_preempt:
 	    move.w #0,-(sp)
 	    movem.l a0-a6/d0-d7,-(sp)
 	    move.l (sp),-(sp)
+	    move.l udata_shadow,a5	; set up the register global
 	    bsr exception
 	    addq #4,sp
 	    movem.l (sp)+,a0-a6/d0-d7
