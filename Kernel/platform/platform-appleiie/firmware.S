@@ -12,7 +12,11 @@
 ;	firmware here. That was done earlier. If it's not valid we jump to
 ;	fishkill.
 ;
+;	On entry the C argument (opcode << 8 | slot) is on the C stack, as
+;	for every other 6502 asm function called from C.
+;
 _pascal_op:
+	jsr __pop		; C argument into XA
 	stx cmdbyte		; patch the operation data following the jsr
 	clc
 	adc #$C0		; Turn slot into slot address high
@@ -33,9 +37,13 @@ cmdbyte:
 gotmp:	jmp (tmp)
 
 ;
-;	Issue a generic ProDOS command block
+;	Issue a generic ProDOS command block. Again the C argument (the slot)
+;	is on the C stack; it is a char so it occupies one byte and has to be
+;	dropped before the tail call into the firmware.
 ;
 _dos_op:
+	ldy #0
+	lda (@sp),y		; slot argument
 	clc
 	adc #$C0
 	sta @tmp+1
@@ -44,7 +52,10 @@ _dos_op:
 	ldy #0
 	lda (@tmp),y
 	sta @tmp
-	jmp (@tmp)
+	inc @sp			; drop the argument
+	bne dosop
+	inc @sp+1
+dosop:	jmp (@tmp)
 
 ;
 ;	The caller loads up to 9 bytes of data into this buffer
