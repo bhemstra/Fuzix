@@ -1,6 +1,6 @@
 extern uint8_t ncr5380_command(void);
-extern void ncr5380_reset_on(void);
-extern void ncr5380_reset_off(void);
+extern void ncr5380_reset(void);
+extern void ncr5380_endreset(void);
 extern void scsi_init(void);
 
 extern uint8_t *scsi_dbuf;
