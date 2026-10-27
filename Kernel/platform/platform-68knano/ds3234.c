@@ -19,6 +19,7 @@ uint_fast8_t ds3234_reg_read(uint_fast8_t r)
     ds3234_write(r);
     r = ds3234_read();
     ds3234_select(0);
+    return r;
 }
 
 /*
@@ -84,6 +85,8 @@ int plt_rtc_read(void)
 	/* Shift the month by one BCD to be zero based. The returned
 	   value from the RTC is always 1 or higher so no wrap */
 	rtc_buf[5]--;
+	if ((rtc_buf[5] & 0x0F) > 9)	/* October borrows */
+		rtc_buf[5] -= 0x06;
 	*p++ = rtc_buf[5] & 0x1F;	/* Month */
 	*p++ = rtc_buf[4];		/* Day of month */
 	if ((rtc_buf[2] & 0x90) == 0x90) {	/* 12hr mode, PM */
@@ -122,10 +125,14 @@ int plt_rtc_write(void)
 	/* Date */
 	rtc_buf[3] = cmos.data.bytes[7] + 1;	/* 1 based */
 	rtc_buf[4] = cmos.data.bytes[3];
-	rtc_buf[5] = cmos.data.bytes[2];
+	/* Month is stored zero based, the RTC wants 1 based BCD */
+	rtc_buf[5] = cmos.data.bytes[2] + 1;
+	if ((rtc_buf[5] & 0x0F) > 9)		/* October borrows */
+		rtc_buf[5] += 0x06;
 	rtc_buf[6] = cmos.data.bytes[1];
 	/* No upper century byte so we just assume 70+ is 19XX */
 	ds3234_write_clock(rtc_buf);
+	return sizeof(struct cmos_rtc);
 }
 
 #ifdef CONFIG_RTC_EXTENDED
