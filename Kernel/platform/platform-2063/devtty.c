@@ -35,8 +35,8 @@ struct s_queue ttyinq[NUM_DEV_TTY + 1] = {	/* ttyinq[0] is never used */
 
 tcflag_t termios_mask[NUM_DEV_TTY + 1] = {
 	0,
-	CSIZE|CSTOPB|PARENB|PARODD|_CSYS,
-	CSIZE|CSTOPB|PARENB|PARODD|_CSYS
+	CSIZE|CBAUD|CSTOPB|PARENB|PARODD|_CSYS,
+	CSIZE|CBAUD|CSTOPB|PARENB|PARODD|_CSYS
 };
 
 uint8_t sio_r[] = {
