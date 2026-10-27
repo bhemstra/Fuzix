@@ -142,8 +142,9 @@ void plot_char(int8_t y, int8_t x, uint16_t c)
 	*(vtmap[y] + x) = ((uint8_t)c) | 128;
 }
 
-/* Point at ourselves so the first dummy cursor_off is harmless */
-static uint8_t *cursorptr = (uint8_t *)&cursorptr;
+/* Point at a spare byte so the first dummy cursor_off is harmless */
+static uint8_t cursor_spare;
+static uint8_t *cursorptr = &cursor_spare;
 
 void cursor_off(void)
 {
@@ -193,7 +194,7 @@ void scroll_up(void)
 void scroll_down(void)
 {
 	uint8_t y;
-	for (y = 23; y > 1; y--) {
+	for (y = 23; y > 0; y--) {
 		uint8_t *src = vtmap[y-1];
 		uint8_t *dst = vtmap[y];
 		memcpy(dst, src, 40);
