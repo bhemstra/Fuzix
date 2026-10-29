@@ -1,0 +1,19 @@
+SDCC run time helpers for the Fuzix Z80 kernel
+
+The kernel assembly code uses the classic SDCC calling convention where all
+arguments are passed on the stack and results come back in L/HL/DEHL.
+SDCC 4.2 changed the default to a register based convention (__sdcccall(1))
+and the z80.lib it ships is only built for that convention. Linking the
+kernel against it, or compiling the kernel with the new default, silently
+produces a kernel that crashes.
+
+The kernel is therefore compiled with --sdcccall 0 where the compiler
+supports it, and linked against this small library which is compiled with
+exactly the same compiler and options as the kernel. The C files are the
+generic implementations from the SDCC library sources (GPL with the
+linking exception, see the headers). The .s files are small hand written
+helpers for the old calling convention.
+
+No routine is pulled from the SDCC z80.lib any more, so any helper missing
+here shows up as an undefined symbol at link time rather than as a silent
+ABI mismatch.

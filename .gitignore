@@ -1,0 +1,26 @@
+# SDCC stuff
+*.lnk
+!Kernel/platform/*/fuzix.lnk
+*.lst
+*.map
+*.mem
+*.rel
+*.rst
+*.sym
+*.o
+*.o.d
+cscope.*
+/GPATH
+/GRTAGS
+/GTAGS
+# Library archives
+*.a
+# Emacs backup
+*~
+# Statistics from builds
+size.report
+# Build system output
+.obj
+*.elf
+bin
+*.debug

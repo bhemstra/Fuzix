@@ -1,0 +1,16 @@
+#!/bin/sh
+#
+#	Check the Z80 tool chain needed for the TRS-80 Model 4 and Model II
+#	builds. The kernel is built with SDCC, user space with the Fuzix
+#	Compiler Kit (fcc).
+#
+X=`which fcc`
+if [ "$X" = "" ]; then
+	echo "fcc is required: see https://github.com/EtchedPixels/Fuzix-Compiler-Kit/"
+	exit 1
+fi
+X=`which sdcc`
+if [ "$X" = "" ]; then
+	echo "sdcc is required to build the kernel"
+	exit 1
+fi
