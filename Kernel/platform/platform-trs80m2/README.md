@@ -68,9 +68,17 @@ make TARGET=trs80m2 kernel
 make TARGET=trs80m2 diskimage
 ```
 
-`Images/trs80m2/boot.imd` is an ImageDisk file (for MAME, trs80gp or for
-writing a real disk), `boot.raw` the same data as a plain sector dump.
-`hard2-0` is a hard disk image with a Fuzix file system.
+`make diskimage` (which needs the Fuzix C compiler for the user space)
+puts these in `Images/trs80m2`:
+
+- `boot.imd`: single sided boot floppy (ImageDisk, for MAME, trs80gp or
+  writing a real disk). Use with the root file system on the hard disk.
+  `boot.raw` is the same data as a plain sector dump.
+- `bootds.imd`: double sided boot floppy that also holds a minimal root
+  file system on cylinders 1-66 (both sides, 1716 blocks), for machines
+  without a hard disk. Answer `fd0` at the boot prompt.
+- `hard2-0`: hard disk image with the full Fuzix file system on `hda1`
+  and swap at the end. Answer `hda1` at the boot prompt.
 
 ## Things To Check During Bring-Up
 

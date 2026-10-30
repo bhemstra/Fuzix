@@ -23,4 +23,17 @@ size.report
 .obj
 *.elf
 bin
-*.debug
+*.debug# Build output of the TRS-80 kernels and their tools
+*.ihx
+*.bin
+*.jv3
+*.imd
+*.raw
+Kernel/modlib.s
+Kernel/hogs.txt*
+Kernel/tools/makeimd
+Kernel/tools/makejv3
+Kernel/tools/modlib-z80
+Kernel/tools/trslabel
+Kernel/tools/visualize
+Library/tools/syscall_z80

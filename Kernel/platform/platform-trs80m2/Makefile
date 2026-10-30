@@ -23,7 +23,7 @@ $(DISCARD_COBJS): %.rel: %.c
 
 clean:
 	rm -f $(OBJS) *.lst *.asm *.sym *.rst *.lk *.ihx *.map *.noi core *~
-	rm -f boot.bin loader.bin boot.raw boot.imd
+	rm -f boot.bin loader.bin boot.raw boot.imd bootds.raw
 	rm -f ../../tools/makeimd
 
 #
@@ -71,6 +71,18 @@ image: boot.bin loader.bin ../../tools/makeimd
 	dd if=../../fuzix.bin of=boot.raw bs=1 seek=$(KERNEL_OFFSET) count=61184 conv=notrunc
 	../../tools/makeimd boot.raw boot.imd
 
+#
+#	Double sided boot disk with a small root file system. The raw layout
+#	(as makeimd -d expects) is cylinder 0 side 0 FM, cylinder 0 side 1,
+#	then cylinders 1-76 with side 0 followed by side 1. /dev/fd0 starts
+#	at cylinder 1 side 0 so the file system is cylinders 1-66, both
+#	sides (1716 blocks), and the kernel sits on side 0 of cylinders
+#	67-76 where the loader expects it.
+#
+DS_FS_OFFSET = 9984
+DS_KERNEL_OFFSET = 888576
+DS_RAW_SIZE = 1021696
+
 IMAGES = $(FUZIX_ROOT)/Images/$(TARGET)
 
 diskimage: image
@@ -80,3 +92,20 @@ diskimage: image
 	(cd $(FUZIX_ROOT)/Standalone/filesystem-src; ./build-filesystem $(ENDIANFLAGH) $(IMAGES)/filesys.img 256 21760)
 	cat xtrsheader $(IMAGES)/filesys.img >$(IMAGES)/hard2-0
 	../../tools/trslabel $(IMAGES)/hard2-0
+	# Double sided boot floppy with a minimal root file system
+	(cd $(FUZIX_ROOT)/Standalone/filesystem-src; ./build-mini-filesystem $(ENDIANFLAGH) $(IMAGES)/fsmini.img 64 1716)
+	rm -f bootds.raw
+	dd if=/dev/zero of=bootds.raw bs=1 count=0 seek=$(DS_RAW_SIZE)
+	dd if=boot.bin of=bootds.raw conv=notrunc
+	dd if=loader.bin of=bootds.raw bs=1 seek=1552 count=2032 conv=notrunc
+	dd if=$(IMAGES)/fsmini.img of=bootds.raw bs=1 seek=$(DS_FS_OFFSET) conv=notrunc
+	# The loader reads side 0 only, so the kernel goes one track at a
+	# time onto side 0 of cylinders 67-76 (26 sectors each, the side 1
+	# track in between belongs to nothing)
+	for t in 0 1 2 3 4 5 6 7 8 9; do \
+		dd if=../../fuzix.bin of=bootds.raw bs=256 skip=$$((t * 26)) \
+		   seek=$$(($(DS_KERNEL_OFFSET) / 256 + t * 52)) count=26 \
+		   conv=notrunc 2>/dev/null; \
+	done
+	../../tools/makeimd -d bootds.raw $(IMAGES)/bootds.imd
+	rm -f bootds.raw $(IMAGES)/fsmini.img
