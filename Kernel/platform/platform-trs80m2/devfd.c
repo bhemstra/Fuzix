@@ -208,6 +208,33 @@ bad:
 	return -1;
 }
 
+/*
+ *	PIO bit 1 is meant to report two sided media, but the documentation
+ *	and emulators disagree on its polarity. Instead see if sector 1 on
+ *	side 1 of the first data cylinder can be read.
+ */
+static uint8_t fd_probe_sides(uint8_t drive)
+{
+	uint8_t *buf;
+	uint8_t st;
+	irqflags_t irq;
+
+	if (fd_seek(drive, FD_FIRSTCYL))
+		return 1;
+	fd_selectdrive(drive, 1);
+	fd_sector = 1;
+	buf = tmpbuf();
+	fd_page = 0;
+	fd_addr = buf;
+	fd_len = 256;
+	fd_wr = 0;
+	irq = di();
+	st = fd_dma(CMD_READ | CMD_SETTLE);
+	irqrestore(irq);
+	tmpfree(buf);
+	return (st & 0x9D) ? 1 : 2;
+}
+
 int fd_open(uint8_t minor, uint16_t flag)
 {
 	uint8_t drive = minor & 3;
@@ -221,8 +248,7 @@ int fd_open(uint8_t minor, uint16_t flag)
 		udata.u_error = ENXIO;
 		return -1;
 	}
-	/* PIO bit 1 reports two sided media in the selected drive */
-	sides[drive] = (fd_pio & 0x02) ? 2 : 1;
+	sides[drive] = fd_probe_sides(drive);
 	return 0;
 }
 

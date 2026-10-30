@@ -9,8 +9,6 @@ uint16_t ramtop = PROGTOP;
 
 struct blkbuf *bufpool_end = bufpool + NBUFS;
 
-/* Pages 2-15 that answered the memory probe */
-static uint16_t pagemask;
 /* RTC ticks seen by the NMI handler and ticks we have processed */
 static uint8_t nmi_seen;
 
@@ -73,28 +71,31 @@ void plt_discard(void)
 
 /*
  *	Work out how much memory we have. Page 0 (low 32K) and page 1 (the
- *	upper kernel) must be present or we would never have booted. This
- *	has to be done before the core code sizes the process table.
+ *	upper kernel) must be present or we would never have booted.
+ *
+ *	The core code calls pagemap_init() before map_init(), and the first
+ *	process is allocated straight after, so the probe has to be done
+ *	here. Without pages the first process gets no memory and the kernel
+ *	ends up writing through a NULL pointer over the vectors in page 0.
  */
-void map_init(void)
+void pagemap_init(void)
 {
 	uint8_t i;
 	uint8_t n = 0;
+	uint16_t pagemask = m2_pages();
 
-	pagemask = m2_pages();
-	for (i = 2; i < 16; i++)
-		if (pagemask & (1 << i))
+	for (i = 2; i < 16; i++) {
+		if (pagemask & (1 << i)) {
+			pagemap_add(i);
 			n++;
+		}
+	}
 	procmem = 32 * n;
 	ramsize = 64 + procmem;
 	if (n == 0)
 		panic("need 96K or more");
 }
 
-void pagemap_init(void)
+void map_init(void)
 {
-	uint8_t i;
-	for (i = 2; i < 16; i++)
-		if (pagemask & (1 << i))
-			pagemap_add(i);
 }

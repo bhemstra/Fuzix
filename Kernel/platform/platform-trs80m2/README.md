@@ -76,7 +76,8 @@ puts these in `Images/trs80m2`:
   `boot.raw` is the same data as a plain sector dump.
 - `bootds.imd`: double sided boot floppy that also holds a minimal root
   file system on cylinders 1-66 (both sides, 1716 blocks), for machines
-  without a hard disk. Answer `fd0` at the boot prompt.
+  without a hard disk. Answer `fda` at the boot prompt (the root
+  device prompt takes a drive letter: `fda`, `hda1`).
 - `hard2-0`: hard disk image with the full Fuzix file system on `hda1`
   and swap at the end. Answer `hda1` at the boot prompt.
 
