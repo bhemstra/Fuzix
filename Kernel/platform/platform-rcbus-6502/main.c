@@ -6,7 +6,6 @@
 #include <tinyide.h>
 #include <devtty.h>
 
-uint8_t kernel_flag = 1;
 uint16_t swap_dev = 0xFFFF;
 
 void plt_idle(void)

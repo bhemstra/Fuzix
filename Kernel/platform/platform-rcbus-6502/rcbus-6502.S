@@ -87,13 +87,8 @@ ___hard_ei:
 ___hard_irqrestore:
 	ldy	#0
 	lda	(@sp),y
-	and	#4		; IRQ flag
-	bne	irq_off
-	cli
-	jmp	__add1sp
-
-irq_off:
-	sei
+	pha
+	plp
 	jmp	__add1sp
 
 ; -----------------------------------------------------------------------------
@@ -322,6 +317,8 @@ vector:
 	pha
 	cld
 
+	jsr	map_save_kernel
+
 ;	Save our zero page bits (and thus the C stack etc). The save
 ;	area is task specific so if we task switch all is good
 ;
@@ -329,32 +326,18 @@ vector:
 ;
 ;	Q: do we want to spot BRK instructions and signal them ?
 ;
-;
-;	Save the old stack ptr (do we need this - can it even get
-;	unbalanced ? Note that istack_switched_sp like the istack is
-;	in the commondata so per context not in fact as it looks global.
-;	Pre-emption relies on this.
-;
-	tsx				; and save the 6502 stack ptr
-	stx	istack_switched_sp	; in uarea/stacks
-
-;
 ;	Configure the C stack to the i stack
 ;
 	lda	#<istack_top
 	sta	@sp
 	lda	#>istack_top
 	sta	@sp+1
-;
-;	This will map in the upper kernel pages via map_save_kernel, invoke
-;	the handler and then return restoring the mapped pages of either
-;	the kernel or calling user process to the high space.
-;
-	jsr	interrupt_handler
+
+	jsr	_plt_interrupt_i	; call via C int wrapper
 
 ;	Check for kernel return path
 
-	lda	_kernel_flag
+	lda	_udata + U_DATA__U_INSYS
 	bne	kirqout
 ;
 ;	Pre-emption ?
@@ -372,9 +355,15 @@ vector:
 	sta	_need_resched
 
 	;
-	; We need to keep on the kernel istack at this point because the
-	; user C stack may not be self-consistent.
+	; Switch to the kernel stack (which is currently free as we are
+	; in user space. This stack unlike the istack is per process and
+	; will be saved to swap
 	;
+	lda	#<kstack_top
+	sta	@sp
+	lda	#>kstack_top
+	sta	@sp+1
+
 	lda	#1
 	sta	_udata+U_DATA__U_INSYS
 	jsr	_chksigs
@@ -383,8 +372,6 @@ vector:
 	lda	#P_READY
 	sta	P_TAB__P_STATUS_OFFSET,x
 	; Switch out .. we will re-appear at some point
-	lda	_udata+U_DATA__U_PTAB
-	ldx	_udata+U_DATA__U_PTAB+1
 	; When we enter this code we will switch the low 16K underneath
 	; us. Other stuff will run on a different low bank, and at some
 	; point we will return with S correct and on our 6502 and C
@@ -408,12 +395,13 @@ no_preempt:
 ;	app is expected to switch to a signal stack or similar, pop the
 ;	values, invoke the signal handler and then return.
 ;
+;	stash zp will restore our C stack not that it matters
 ;
-;	Get back on the user stack, but do not use the user C stack
-;	between here and returning to user space
-;
-	ldx	istack_switched_sp
-	txs					; recover 6502 stack
+	jsr	stash_zp
+
+	;	Put the user process back into visible memory
+	jsr	map_proc_always
+
 	jsr	stash_zp			; recover 6502 zp bits
 	lda	_udata+U_DATA__U_CURSIG
 	beq	irqout
@@ -454,12 +442,8 @@ kirqout:
 ;	Get back on the user stack, but do not use the user C stack
 ;	until we leave
 ;
-	ldx	istack_switched_sp
-	txs					; recover 6502 stack
-; FIXME: check stashing is ok with user v kernel v irq and nothing is ever
-; lost  TODO
-	jsr	stash_zp			; recover 6502 zp bits
-
+	jsr	stash_zp	; recover 6502 zp bits
+	jsr	map_restore
 irqout:
 	pla
 	tay
