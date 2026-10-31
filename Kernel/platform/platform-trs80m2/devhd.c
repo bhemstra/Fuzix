@@ -56,6 +56,15 @@ uint8_t hd_xfer(bool is_read, uint8_t *dptr)
 	return hd_status;
 }
 
+/*
+ *	The Model II drives use 512 byte sectors, 16 to a track (the same 8K
+ *	per track as the 256 byte, 32 sector Model 4 layout, so images keep
+ *	the same byte layout). Depending on how the drive was formatted the
+ *	sectors are numbered from 0 or from 1; hd_probe() finds out.
+ */
+#define HD_SPT		16
+uint8_t hd_secbase;
+
 int hd_transfer(uint8_t minor, bool is_read, uint8_t rawflag)
 {
 	uint16_t ct = 0;
@@ -73,7 +82,6 @@ int hd_transfer(uint8_t minor, bool is_read, uint8_t rawflag)
 
 	p = &parts[dev];
 
-	/* FIXME: We only support 512 byte access chunks even for raw I/O */
 	hd_page = 0;
 	if (rawflag == 1) {
 		if (d_blkoff(BLKSHIFT))
@@ -82,39 +90,32 @@ int hd_transfer(uint8_t minor, bool is_read, uint8_t rawflag)
 	} else if (rawflag == 2)
 		hd_page = swappage;
 
-	udata.u_nblock *= 2;
-
 	if (!is_read)
 		cmd = HDCMD_WRITE;
-
-	/* TRS80 hard disk are 32 sectors/track, 256 byte sectors */
 
 	hd_precomp = p->g.precomp;
 	hd_seccnt = 1;
 
-	sector = udata.u_block;
-	sector = (sector << 1) & 0x1E;
-
-	cyl = udata.u_block >> 4;
+	/* One 512 byte Fuzix block is one sector */
+	sector = udata.u_block & (HD_SPT - 1);
+	cyl = udata.u_block / HD_SPT;
 
 	/* Do the maths once and on 16 bit numbers */
 	head = cyl % p->g.head;
 	cyl /= p->g.head;
-	if (minor)
-		cyl += p->cyl[(minor-1)&0x0F];
+	if (minor & 0x0F)
+		cyl += p->cyl[(minor - 1) & 0x0F];
 
 	dptr = udata.u_dptr;
 	nblock = udata.u_nblock;
 
-	/* Here be dragons. In the swap case we will load over udata, but
-	   because our block size is 256 bytes we will run this loop so we
-	   must make cache everything we needed from udata before we load
-	   data */
+	/* Here be dragons. In the swap case we will load over udata so we
+	   must cache everything we needed from udata before we load data */
 
 	while (ct < nblock) {
-		/* Head next bits, plus drive */
-		hd_sdh = 0x80 | head | (dev << 3);
-		hd_secnum = sector;
+		/* Head next bits, plus drive and sector size */
+		hd_sdh = HDSDH_ECC | HDSDH_512 | head | (dev << 3);
+		hd_secnum = sector + hd_secbase;
 		/* cylinder bits */
 		hd_cyllo = cyl & 0xFF;
 		hd_cylhi = cyl >> 8;
@@ -136,17 +137,16 @@ int hd_transfer(uint8_t minor, bool is_read, uint8_t rawflag)
 			if (tries > 1) {
 				hd_cmd = HDCMD_RESTORE | p->g.seek;
 				if (hd_waitready() & 1)
-					kprintf("hd%d: restore error %z\n", minor, err);
+					kprintf("hd%d: restore error %x\n", minor, err);
 			}
 		}
-		/* FIXME: should we try the other half and then bale out ? */
-		if (tries == 3)
+		if (tries == 4)
 			goto bad;
 		ct++;
-		dptr += 256;
+		dptr += 512;
 		sector++;
 		/* Cheaper than division! */
-		if (sector == 32) {
+		if (sector == HD_SPT) {
 			sector = 0;
 			head++;
 			if (head == p->g.head) {
@@ -155,7 +155,7 @@ int hd_transfer(uint8_t minor, bool is_read, uint8_t rawflag)
 			}
 		}
 	}
-	return ct << 8;
+	return ct << 9;
 bad:
 	if (err & 1)
 		kprintf("hd%d: error %x\n", minor, hd_err);

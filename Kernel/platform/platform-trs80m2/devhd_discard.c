@@ -18,9 +18,9 @@ static void hd_swapon(struct minipart *p, unsigned int d, unsigned int i)
 		cyls = p->cyl[i+1];
 	cyls -= p->cyl[i];
 	cyls *= p->g.head;
-	/* This is now the number of sets of 32 sectors (16K) in swap.
-	   We need 32K per process: hardwire it here - FIX if you change
-	   the mapping model */
+	/* This is now the number of 8K tracks in swap. We need 32K per
+	   process: hardwire it here - FIX if you change the mapping model */
+	cyls /= 4;
 
 	swap_dev = (d << 4) + i + 1;
 
@@ -46,33 +46,42 @@ void hd_probe(void)
 	hd_ctrl = HDCTRL_ENABLE | HDCTRL_WAITENABLE;
 
 	udata.u_dptr = tmpbuf();
-	p = (struct minipart *)(udata.u_dptr + 128);
+	/* The label lives at offset 384 of the first sector */
+	p = (struct minipart *)(udata.u_dptr + 384);
 
 	for (dev = 0; dev < 4; dev++) {
-		hd_sdh = 0x80 | (dev << 3);
+		hd_sdh = HDSDH_ECC | HDSDH_512 | (dev << 3);
 		hd_cmd = HDCMD_RESTORE | RATE_4MS;
 		if (hd_waitready() & 1) {
 			if ((hd_err & 0x12) == 0x12)
 				continue;
 		}
-		hd_seccnt = 1;
-		hd_sdh = 0x80 | (dev << 3);
-		hd_secnum = 1;
-		hd_cyllo = 0;
-		hd_cylhi = 0;
-		hd_cmd = HDCMD_READ;
-		if (hd_waitdrq() & 1)
+		/* Read the first sector. Drives formatted with sectors
+		   numbered from 1 have no sector 0 */
+		for (hd_secbase = 0; hd_secbase < 2; hd_secbase++) {
+			hd_seccnt = 1;
+			hd_sdh = HDSDH_ECC | HDSDH_512 | (dev << 3);
+			hd_secnum = hd_secbase;
+			hd_cyllo = 0;
+			hd_cylhi = 0;
+			hd_cmd = HDCMD_READ;
+			if (hd_waitdrq() & 1)
+				continue;
+			if ((hd_xfer(1, udata.u_dptr) & 0x41) == 0x40)
+				break;
+		}
+		if (hd_secbase == 2) {
+			hd_secbase = 0;
 			continue;
-		if((hd_xfer(1, udata.u_dptr) & 0x41) != 0x40)
-			continue;
+		}
 		kprintf("hd%c: ", dev + 'a');
 		if (p->g.magic != MP_SIG_0) {
 			p->g.cyl = 1;
 			p->g.head = 1;
-			p->g.sec = 32;
+			p->g.sec = 16;
 			p->g.precomp = 0;
 			p->g.seek = 10;
-			p->g.secsize = 8;
+			p->g.secsize = 9;
 			for (i = 0; i < 15; i++)
 				p->cyl[i] = 0xFFFFU;
 			kputs("(unlabelled)\n");

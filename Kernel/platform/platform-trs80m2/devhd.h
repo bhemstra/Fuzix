@@ -37,7 +37,10 @@ __sfr __at 0xCF hd_cmd;
 #define HDCTRL_ENABLE		0x08
 #define HDCTRL_WAITENABLE	0x04
 
-#define HDSDH_ECC256		0x80
+/* SDH register: the Model II boot ROM uses plain CRC mode with the
+   sector size in bits 5-6 */
+#define HDSDH_ECC		0x00
+#define HDSDH_512		0x20
 
 /* Seek and restore low 4 bits are the step rate, read/write support
    multi-sector mode but not all emulators do .. */
@@ -49,6 +52,7 @@ extern struct minipart parts[MAX_HD];
 extern uint8_t hd_waitready(void);
 extern uint8_t hd_waitdrq(void);
 extern uint8_t hd_xfer(bool is_read, uint8_t *dptr);
+extern uint8_t hd_secbase;
 
 /* helpers in common memory for the block transfers */
 extern int hd_xfer_in(uint8_t *addr);

@@ -32,14 +32,18 @@ to a hard disk partition of type 0x56.
 
 - 80x24 video with the 6845 hardware cursor, reverse video
 - Keyboard (polled on the clock tick; HOLD acts as ^S/^Q, BREAK is ^C,
-  F1/F2 and the arrow keys give the usual Fuzix key codes)
+  F1 and the arrow keys give the usual Fuzix key codes). The keyboard
+  has its own CAPS lock; if everything comes out in capitals turn CAPS
+  off, or press F2, which swaps upper and lower case in the driver
 - Real time clock interrupt (30Hz, on NMI)
 - Two serial ports on the Z80 SIO (tty2 = A, tty3 = B), 150-9600 baud,
   clocks from the CTC
 - 8" floppy drives on the FD1791 using the Z80 DMA, double density
   26 x 256 byte sectors, single or double sided
-- Tandy 8MB (WD1010 style) hard disk at 0xC0-0xCF, using the same driver
-  and partition label as the Model 4 port
+- Tandy 8MB (WD1010 style) hard disk at 0xC0-0xCF with 512 byte sectors,
+  16 per track (the same 8K per track as the Model 4 layout, so images
+  use the same partition label). Whether sectors are numbered from 0 or
+  1 is detected at boot
 - Parallel printer on the FDC board PIO
 
 ## Not Supported / To Do

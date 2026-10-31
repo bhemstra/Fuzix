@@ -18,9 +18,10 @@ static void hd_swapon(struct minipart *p, unsigned int d, unsigned int i)
 		cyls = p->cyl[i+1];
 	cyls -= p->cyl[i];
 	cyls *= p->g.head;
-	/* This is now the number of sets of 32 sectors (16K) in swap.
-	   We need 32K per process: hardwire it here - FIX if you change
-	   the mapping model */
+	/* This is now the number of 32 sector (8K) tracks in swap. We need
+	   32K per process: hardwire it here - FIX if you change the mapping
+	   model */
+	cyls /= 4;
 
 	swap_dev = (d << 4) + i + 1;
 

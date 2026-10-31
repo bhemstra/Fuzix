@@ -291,12 +291,20 @@ void scroll_down(void)
  *
  *	Most keys are plain ASCII. The specials are
  *	00 HOLD  01 F1  02 F2  03 BREAK  1C left  1D right  1E up  1F down
+ *
+ *	F2 is used to toggle case swapping (see keydecode)
  */
 
 static uint8_t held;
+static uint8_t swapcase;
 
 static void keydecode(uint8_t c)
 {
+	/* The keyboard has its own CAPS lock which may be on (everything
+	   arrives in upper case). F2 swaps the case of letters in software
+	   for when that cannot be turned off */
+	if (swapcase && ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z')))
+		c ^= 0x20;
 	switch (c) {
 	case 0x00:
 		/* HOLD acts as a ^S / ^Q toggle */
@@ -307,8 +315,8 @@ static void keydecode(uint8_t c)
 		c = KEY_F1;
 		break;
 	case 0x02:
-		c = KEY_F2;
-		break;
+		swapcase ^= 1;
+		return;
 	case 0x1C:
 		c = KEY_LEFT;
 		break;

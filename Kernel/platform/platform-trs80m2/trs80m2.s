@@ -146,6 +146,12 @@ nmi_entry:
 	    retn
 nmi_irq:
 	    pop af
+	    ; Accepting the NMI cleared IFF1 but left IFF2 set. Clear it as
+	    ; well, otherwise a second tick during the handler would think
+	    ; interrupts were on and re-enter it, and the RETI at the end of
+	    ; the handler would turn interrupts back on too early. The
+	    ; handler re-enables interrupts itself on the way out.
+	    di
 	    jp interrupt_handler
 
 ;
@@ -302,9 +308,9 @@ nopage:
 	    ret
 
 ;
-;	Hard disk transfer helpers (256 byte sectors). Called with a pointer
-;	to the buffer and hd_page set to the page to transfer to (0 for the
-;	kernel).
+;	Hard disk transfer helpers. The Model II hard disks use 512 byte
+;	sectors. Called with a pointer to the buffer and hd_page set to the
+;	page to transfer to (0 for the kernel).
 ;
 _hd_xfer_in:
 	   pop de
@@ -314,7 +320,8 @@ _hd_xfer_in:
 	   ld a, (_hd_page)
 	   or a
 	   call nz, map_proc_a
-	   ld bc, #0xC8			; 256 bytes from 0xC8
+	   ld bc, #0xC8			; 512 bytes from 0xC8
+	   inir
 	   inir
 	   call map_kernel
 	   ret
@@ -327,7 +334,8 @@ _hd_xfer_out:
 	   ld a, (_hd_page)
 	   or a
 	   call nz, map_proc_a
-	   ld bc, #0xC8			; 256 bytes to 0xC8
+	   ld bc, #0xC8			; 512 bytes to 0xC8
+	   otir
 	   otir
 	   call map_kernel
 	   ret

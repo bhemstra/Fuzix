@@ -133,11 +133,11 @@ int hd_transfer(uint8_t minor, bool is_read, uint8_t rawflag)
 			if (tries > 1) {
 				hd_cmd = HDCMD_RESTORE | p->g.seek;
 				if (hd_waitready() & 1)
-					kprintf("hd%d: restore error %z\n", minor, err);
+					kprintf("hd%d: restore error %x\n", minor, err);
 			}
 		}
 		/* FIXME: should we try the other half and then bale out ? */
-		if (tries == 3)
+		if (tries == 4)
 			goto bad;
 		ct++;
 		dptr += 256;
