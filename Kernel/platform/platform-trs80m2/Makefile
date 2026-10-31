@@ -113,7 +113,8 @@ diskimage: image
 	# Hard disk: header, boot zone (cylinder 0), file system on cylinders
 	# 1-169 (hda2) and swap on 170-201 (hda3). The header (xtrsheader)
 	# has byte 8 = 0x0A: Model II drive (0x02) with 512 byte sectors
-	# (0x08), which is what trs80gp expects for a Model II hard disk.
+	# (0x08), which is what trs80gp expects for a Model II hard disk,
+	# and with the Model II flag byte 29 is the sectors per track (16).
 	(cd $(FUZIX_ROOT)/Standalone/filesystem-src; ./build-filesystem $(ENDIANFLAGH) $(IMAGES)/filesys.img 256 21632)
 	cat xtrsheader hdzone.bin $(IMAGES)/filesys.img >$(IMAGES)/hard2-0.hdv
 	../../tools/trslabel $(IMAGES)/hard2-0.hdv

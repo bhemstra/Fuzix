@@ -38,9 +38,18 @@ int main(int argc, const char *argv[]) {
   
   memset(&p, 0xFF, sizeof(p));
   p.g.magic = MP_SIG_0;
-  p.g.cyl = buf[28] | (buf[29] << 8);
+  if (buf[8] & 0x02) {
+    /* Model II drive (trs80gp/FreHD extension): 512 byte sectors and
+       byte 29 is the number of sectors per track. The label keeps
+       counting in 256 byte units so the cylinder maths below is the
+       same for both. */
+    p.g.cyl = buf[28];
+    p.g.sec = buf[29] * 2;
+  } else {
+    p.g.cyl = buf[28] | (buf[29] << 8);
+    p.g.sec = 32;
+  }
   p.g.head = buf[30];
-  p.g.sec = 32;
 
   printf("Disk is %d cylinders, %d heads (%dKib)\n", p.g.cyl, p.g.head,
     (p.g.cyl * p.g.head * p.g.sec * 256) >> 10);
