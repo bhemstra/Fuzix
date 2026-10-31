@@ -1,8 +1,20 @@
 # Atari 8bit
 
-Initial work on an 8bit Atari port. Still writing the driver pieces and
-will need to redo tricks.S big time for 6502 single task in memory (and
-some of that is tricky see below)
+An initial port to Atari 8bit machines with 128K or more of RAMBO style
+memory (so 130XE etc). This kind of works but because the Atari uses NMI
+and IRQ as a pair of interrupts with external masks it doesn't quite fit
+our model so there's some work needed to wrangle in a timer interrupt.
+
+Performance is not great at startup as we end up doing a lot of disk
+switching of tasks but it's not quite so bad once we are running. As with
+the C64 our big problem is the slow disk I/O, but unlike the C64 we've got
+no REU style DMA options.
+
+## TODO
+-	ink/paper/border/video modes
+-	NMI/IRQ handling for timer tick
+-	AXLON style support
+-	Fix bug in cursor undraw/redraw or scroll somewhere
 
 Runs from a 128K SpartaDOS style cartridge
 
@@ -89,51 +101,6 @@ cards will feed ANTIC whatever bank the CPU is using. Not clear we can do
 much with such cards.
 
 ### Problems To Solve
-ZP we can handle between the process and kernel by splitting the allocation.
-Need a special disk loader for ZP for swap that only stores some of the
-stack so we have a bit of space for swap (say top 32 bytes with careful
-management)
-
-S is a real problem. User space is fine, syscall is fine as it will use the
-same stack. Might need an Apple like "stack is a bit deep copy/fix/replace"
-helper but we can do that fine.
-
-The problems are context switches and swapping
-
-Possible option
-- Custom 'read page 0' routine in disk swap driver
-
-Load 00-EF skip F0-FF as workspace for swapper asm
-Load 100-1BF as ustack and kstack. preserve 1C0-1FF (maybe less) as swap
-stack. We'd still have the separate C swap and main stacks too
-
-So something like
-
-```
-next1:
-	lda	diskdata
-	sta	(@swapptr),y
-	iny
-	cpy	#0xF0
-	bne	next1
-disc1	lda	diskdata
-	iny
-	bne	disc1
-	inc	@swapptr+1
-next2:	lda	diskdata
-	sta	(@swapptr),y
-	iny
-	cpy	#0xC0
-	bne	next2
-disc2	lda	diskdata
-	iny
-	bne	disc2
-```
-
-With a big RAM card we can use the extra pages of extra RAM as swap as we've
-got only the 16K window but it would be more optimal to copy 32K and treat
-is as banked as that cuts our copy down by 16K.
-
 
 
 
