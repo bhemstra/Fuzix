@@ -48,8 +48,6 @@ to a hard disk partition of type 0x56.
 
 ## Not Supported / To Do
 
-- Booting directly from hard disk (boot from floppy, root on hard disk or
-  floppy)
 - Floppy formatting, single density data tracks
 - Hardware flow control and carrier detect on the serial ports
 - Graphics boards
@@ -65,6 +63,24 @@ cylinders 67-76 into 0x0100-0xEFFF.
 `/dev/fd0` starts at cylinder 1, so cylinders 1-66 (858 blocks on a single
 sided disk) of the boot disk can hold a file system.
 
+## Hard Disk Layout
+
+Boot ROMs that can boot from hard disk read 512 byte sectors from
+cylinder 0 head 0, starting at sector 1, into 0x0000 until a sector starts
+with `/* END BOOT */`, then jump just past it. The ROM covers 0x0000-0x0FFF
+while it does this, so the signature has to be in sector 9 or later.
+
+| Cylinders | Partition     | Contents                                  |
+|-----------|---------------|-------------------------------------------|
+| 0         | hda1 (0xAA)   | boot zone: label in sector 1, `hdboot.s` in sector 9, kernel in the rest of the cylinder |
+| 1-169     | hda2 (0x55)   | root file system                          |
+| 170-201   | hda3 (0x56)   | swap                                      |
+
+`hdboot.s` copies itself to 0xF000, loads the kernel into 0x0100-0xEEFF
+and leaves `hda2` as the kernel command line, so the system comes up
+without asking for the root device. Early Model II boot ROMs cannot boot
+from hard disk; boot from `boot.imd` and answer `hda2` instead.
+
 ## Building
 
 ```
@@ -76,16 +92,17 @@ make TARGET=trs80m2 diskimage
 puts these in `Images/trs80m2`:
 
 - `boot.imd`: single sided boot floppy (ImageDisk, for MAME, trs80gp or
-  writing a real disk). Use with the root file system on the hard disk.
+  writing a real disk). Answer `hda2` at the boot prompt to use the root
+  file system on the hard disk.
   `boot.raw` is the same data as a plain sector dump.
 - `bootds.imd`: double sided boot floppy that also holds a minimal root
   file system on cylinders 1-66 (both sides, 1716 blocks), for machines
   without a hard disk. Answer `fda` at the boot prompt (the root
-  device prompt takes a drive letter: `fda`, `hda1`).
-- `hard2-0.hdv`: hard disk image with the full Fuzix file system on
-  `hda1` and swap at the end. Answer `hda1` at the boot prompt. The
-  header marks it as a Model II drive with 512 byte sectors (byte 8 =
-  0x0A), as trs80gp expects.
+  device prompt takes a drive letter: `fda`, `hda2`).
+- `hard2-0.hdv`: bootable hard disk image (see Hard Disk Layout) with the
+  full Fuzix file system on `hda2` and swap at the end. The header marks
+  it as a Model II drive with 512 byte sectors (byte 8 = 0x0A), as
+  trs80gp expects.
 
 `Tools/m2sim` is a small simulator that boots these images far enough
 to debug the kernel (see its README).

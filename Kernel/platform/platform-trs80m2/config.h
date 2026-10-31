@@ -59,8 +59,10 @@
 #define BOOT_TTY (512 + 1)      /* Set this to default device for stdio, stderr */
                           /* In this case, the default is the first TTY device */
 
-/* We need a tidier way to do this from the loader */
-#define CMDLINE	NULL	  /* Location of root dev name */
+/* The loaders leave a command line here ("hda2" from the hard disk
+   loader, empty from the floppy one). It is in the discard area which is
+   only reclaimed after the root is mounted */
+#define CMDLINE	((char *)0xF7E0)
 
 /* Device parameters */
 #define NUM_DEV_TTY 3		/* Console, serial A, serial B */

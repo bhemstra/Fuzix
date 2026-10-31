@@ -39,6 +39,8 @@ def parse_args():
     ap.add_argument('--hd-write', action='store_true',
                     help='write hard disk changes back to the image file')
     ap.add_argument('--kernel', help='load this fuzix.bin at 0x0100 instead of booting through the boot ROM path')
+    ap.add_argument('--hd-boot', action='store_true',
+                    help='boot from the hard disk the way the boot ROM does (needs --hd-secbase 1, as the ROM reads from sector 1)')
     ap.add_argument('--mem', type=int, default=512, choices=[64 + 32 * n for n in range(1, 15)],
                     help='total RAM in KiB (default 512)')
     ap.add_argument('--keys', action='append', default=[],
@@ -346,6 +348,28 @@ class Model2:
         self.m.pc = 0x0000
         self.m.sp = 0x2000
 
+    def boot_rom_hd(self):
+        """Hard disk boot as in the boot ROM: read 512 byte sectors from
+        cylinder 0 head 0 starting at sector 1 into 0x0000 until one starts
+        with "/* END BOOT */", then jump just past it. At most 19 sectors."""
+        sig = b'/* END BOOT */'
+        if self.hdimg is None:
+            raise SystemExit('--hd-boot needs --hdv')
+        addr = 0
+        for sector in range(1, 20):
+            s = sector - self.args.hd_secbase
+            if not 0 <= s < 16:
+                raise SystemExit('ROM: hard disk read error at sector %d' % sector)
+            data = self.hdimg[256 + s * 512:256 + (s + 1) * 512]
+            self.mem[addr:addr + 512] = data
+            if bytes(data[:len(sig)]) == sig:
+                self.set_ff(0x80)
+                self.m.pc = addr + len(sig)
+                self.m.sp = 0x2800
+                return
+            addr += 512
+        raise SystemExit('ROM: no /* END BOOT */ signature on the hard disk')
+
     def load_kernel(self, path):
         kern = open(path, 'rb').read()
         self.set_ff(0x01)
@@ -393,8 +417,8 @@ class Symbols:
 
 def main():
     args = parse_args()
-    if not args.floppy and not args.kernel:
-        raise SystemExit('need --floppy or --kernel')
+    if not args.floppy and not args.kernel and not args.hd_boot:
+        raise SystemExit('need --floppy, --hd-boot or --kernel')
     sim = Model2(args)
     m = sim.m
     syms = Symbols(args.map) if args.map else None
@@ -407,6 +431,8 @@ def main():
 
     if args.kernel:
         sim.load_kernel(args.kernel)
+    elif args.hd_boot:
+        sim.boot_rom_hd()
     else:
         sim.boot_rom()
 

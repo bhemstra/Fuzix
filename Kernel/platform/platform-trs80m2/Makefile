@@ -23,7 +23,7 @@ $(DISCARD_COBJS): %.rel: %.c
 
 clean:
 	rm -f $(OBJS) *.lst *.asm *.sym *.rst *.lk *.ihx *.map *.noi core *~
-	rm -f boot.bin loader.bin boot.raw boot.imd bootds.raw
+	rm -f boot.bin loader.bin boot.raw boot.imd bootds.raw hdboot.bin hdzone.bin
 	rm -f ../../tools/makeimd
 
 #
@@ -45,6 +45,27 @@ loader.bin: loader.s
 	dd if=loader.tmp of=loader.bin bs=256 skip=240 count=8
 	rm -f loader.tmp
 
+#
+#	Hard disk loader: one 512 byte sector, assembled to run at 0xF000
+#
+hdboot.bin: hdboot.s
+	sdasz80 -o hdboot.s
+	sdldz80 -i hdboot.rel
+	makebin -s 61952 hdboot.ihx hdboot.tmp
+	dd if=hdboot.tmp of=hdboot.bin bs=512 skip=120 count=1
+	rm -f hdboot.tmp
+
+#
+#	Hard disk boot zone (cylinder 0, 64K): head 0 sectors 1-8 filler
+#	(the label goes in the first one), sector 9 the loader, then the
+#	kernel 0x0100-0xEEFF in sector order through the rest of the
+#	cylinder
+#
+hdzone.bin: hdboot.bin ../../fuzix.bin
+	dd if=/dev/zero of=hdzone.bin bs=512 count=128 2>/dev/null
+	dd if=hdboot.bin of=hdzone.bin bs=512 seek=8 conv=notrunc 2>/dev/null
+	dd if=../../fuzix.bin of=hdzone.bin bs=512 seek=9 count=119 conv=notrunc 2>/dev/null
+
 ../../tools/makeimd: ../../tools/makeimd.c
 	cc -O2 -Wall -o $@ $<
 
@@ -62,8 +83,9 @@ RAW_SIZE = 509184
 
 image: boot.bin loader.bin ../../tools/makeimd
 	@E=`awk '$$2 == "s__INITIALIZER" { print $$1 }' ../../fuzix.map`; \
-	if [ $$((0x$$E)) -gt $$((0xF000)) ]; then \
-		echo "Kernel image ends at 0x$$E and runs into the loader at 0xF000"; exit 1; fi
+	if [ $$((0x$$E)) -gt $$((0xEF00)) ]; then \
+		echo "Kernel image ends at 0x$$E: it must end below 0xEF00 to fit the loaders"; exit 1; fi
+	$(MAKE) hdzone.bin
 	rm -f boot.raw
 	dd if=/dev/zero of=boot.raw bs=1 count=0 seek=$(RAW_SIZE)
 	dd if=boot.bin of=boot.raw conv=notrunc
@@ -88,14 +110,16 @@ IMAGES = $(FUZIX_ROOT)/Images/$(TARGET)
 diskimage: image
 	cp boot.imd $(IMAGES)/boot.imd
 	cp boot.raw $(IMAGES)/boot.raw
-	# Build a file system for the hard disk. The header (xtrsheader) has
-	# byte 8 = 0x0A: Model II drive (0x02) with 512 byte sectors (0x08),
-	# which is what trs80gp expects for a Model II hard disk
-	(cd $(FUZIX_ROOT)/Standalone/filesystem-src; ./build-filesystem $(ENDIANFLAGH) $(IMAGES)/filesys.img 256 21760)
-	cat xtrsheader $(IMAGES)/filesys.img >$(IMAGES)/hard2-0.hdv
+	# Hard disk: header, boot zone (cylinder 0), file system on cylinders
+	# 1-169 (hda2) and swap on 170-201 (hda3). The header (xtrsheader)
+	# has byte 8 = 0x0A: Model II drive (0x02) with 512 byte sectors
+	# (0x08), which is what trs80gp expects for a Model II hard disk.
+	(cd $(FUZIX_ROOT)/Standalone/filesystem-src; ./build-filesystem $(ENDIANFLAGH) $(IMAGES)/filesys.img 256 21632)
+	cat xtrsheader hdzone.bin $(IMAGES)/filesys.img >$(IMAGES)/hard2-0.hdv
 	../../tools/trslabel $(IMAGES)/hard2-0.hdv
 	# Pad to the full 202 x 8 x 8K so the swap area exists in the file
 	truncate -s 13238528 $(IMAGES)/hard2-0.hdv
+	rm -f $(IMAGES)/filesys.img
 	# Double sided boot floppy with a minimal root file system
 	(cd $(FUZIX_ROOT)/Standalone/filesystem-src; ./build-mini-filesystem $(ENDIANFLAGH) $(IMAGES)/fsmini.img 64 1716)
 	rm -f bootds.raw

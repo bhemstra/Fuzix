@@ -17,7 +17,7 @@ It models what the Fuzix kernel touches:
   (the `hard2-0.hdv` layout)
 - serial port A output (kernel debug output)
 
-Without `--kernel` it starts the way the boot ROM does: it loads the 26
+Without `--kernel` or `--hd-boot` it starts the way the boot ROM does: it loads the 26
 single density sectors of cylinder 0 into 0x0E00, checks the `BOOT` and
 `DIAG` signatures and runs the boot track, so `boot.s` and `loader.s`
 are exercised too.
@@ -35,14 +35,15 @@ venv/bin/pip install z80
 
 ## Usage
 
-Boot from the double sided floppy and use the hard disk as root:
+Boot from the double sided floppy and use the hard disk as root (or use
+`--hd-boot --hd-secbase 1` without `--floppy` to boot from the hard disk):
 
 ```
 venv/bin/python Tools/m2sim/m2sim.py \
 	--floppy Images/trs80m2/bootds.imd \
 	--hdv Images/trs80m2/hard2-0.hdv \
 	--map Kernel/fuzix.map --mem 512 --seconds 400 \
-	--keys 'bootdev=hda1' --keys 'new date:=' --keys 'new time:=' \
+	--keys 'bootdev=hda2' --keys 'new date:=' --keys 'new time:=' \
 	--keys 'login:=root' --keys 'Welcome to FUZIX=ls /bin | wc -l'
 ```
 
@@ -53,6 +54,8 @@ Other options:
 
 - `--kernel Kernel/fuzix.bin`: load the kernel directly at 0x0100
   instead of going through the boot track
+- `--hd-boot`: boot from the hard disk the way the boot ROM does (reads
+  from sector 1, so use it with `--hd-secbase 1`)
 - `--hd-secbase 1`: number the hard disk sectors from 1 instead of 0
 - `--hd-write`: write hard disk changes back to the image
 - `--mem N`: RAM in KiB, 96 to 512

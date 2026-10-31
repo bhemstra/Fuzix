@@ -77,6 +77,8 @@ secok:
 		jr nextcyl
 
 done:
+		xor a			; no kernel command line, so the kernel
+		ld (0xF7E0), a		; asks for the root device
 		ld a, #0x01		; page 1, the kernel sets up the rest
 		out (0xFF), a
 		jp 0x0100
