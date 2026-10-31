@@ -40,7 +40,7 @@ def parse_args():
                     help='write hard disk changes back to the image file')
     ap.add_argument('--kernel', help='load this fuzix.bin at 0x0100 instead of booting through the boot ROM path')
     ap.add_argument('--hd-boot', action='store_true',
-                    help='boot from the hard disk the way the boot ROM does (needs --hd-secbase 1, as the ROM reads from sector 1)')
+                    help='boot from the hard disk the way the boot ROM does (reads from sector 1 into 0x0000)')
     ap.add_argument('--mem', type=int, default=512, choices=[64 + 32 * n for n in range(1, 15)],
                     help='total RAM in KiB (default 512)')
     ap.add_argument('--keys', action='append', default=[],
@@ -365,6 +365,7 @@ class Model2:
             if bytes(data[:len(sig)]) == sig:
                 self.set_ff(0x80)
                 self.m.pc = addr + len(sig)
+                self.m.hl = addr + len(sig)	# the ROM jumps with jp (hl)
                 self.m.sp = 0x2800
                 return
             addr += 512

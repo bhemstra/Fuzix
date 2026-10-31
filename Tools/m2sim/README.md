@@ -36,7 +36,7 @@ venv/bin/pip install z80
 ## Usage
 
 Boot from the double sided floppy and use the hard disk as root (or use
-`--hd-boot --hd-secbase 1` without `--floppy` to boot from the hard disk):
+`--hd-boot` without `--floppy` to boot from the hard disk):
 
 ```
 venv/bin/python Tools/m2sim/m2sim.py \
@@ -55,7 +55,9 @@ Other options:
 - `--kernel Kernel/fuzix.bin`: load the kernel directly at 0x0100
   instead of going through the boot track
 - `--hd-boot`: boot from the hard disk the way the boot ROM does (reads
-  from sector 1, so use it with `--hd-secbase 1`)
+  sectors from number 1 into 0x0000 until one starts with
+  `/* END BOOT */`). trs80gp numbers sectors from 0, which is the default
+  here as well
 - `--hd-secbase 1`: number the hard disk sectors from 1 instead of 0
 - `--hd-write`: write hard disk changes back to the image
 - `--mem N`: RAM in KiB, 96 to 512
