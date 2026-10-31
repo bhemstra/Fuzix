@@ -42,6 +42,7 @@ uint8_t plt_param(char *p)
 	if (strcmp(p, "t1") == 0) {
 		lower = 1;
 		*((volatile uint8_t *)0xFF22) |= 0x50;
+		return 1;
 	}
 	return 0;
 }
