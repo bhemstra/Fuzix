@@ -7,6 +7,7 @@
 #define ALIGNDOWN(v) aligndown(v, 4)
 
 #define uputp    uputl      /* Copy user pointer type */
+#define _uputp   _uputl      /* Copy user pointer type */
 #define ugetp(x) ugetl(x)   /* between user and kernel */
 #define uputi    uputl      /* Copy user int type */
 #define ugeti(x) ugetl(x)   /* between user and kernel */
@@ -57,7 +58,7 @@ typedef union {            /* this structure is endian dependent */
 	__asm__ __volatile__(" \
 		wsr %0, ps; isync" \
 		:: "a" (ps) : "memory")
-	
+
 #define no_cache_udata()
 
 #define CPUTYPE	CPUTYPE_LX106
