@@ -71,7 +71,7 @@ ___hard_ei:
 ___hard_irqrestore:
 	ldab	2(s)
 	stab	(irqflag)
-	bz	eiret
+	bnz	eiret		; interrupts were on, put them back
 	di
 	rsr
 eiret:
