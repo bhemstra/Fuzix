@@ -116,28 +116,52 @@ map_save:
 ;	on a 68000, so store the result a byte at a time.
 ;
 devide_read_data:
+	move.l	d2,-(sp)
 	move.l	blk_op,a0
 	move.l	#$900000,a1
 	move.w	#255,d0
+	moveq	#8,d2
+	btst	#0,blk_op
+	bne	devide_read_ma
 devide_read_l:
 	move.w	(a1),d1
-	move.b	d1,(a0)+
-	lsr.w	#8,d1
-	move.b	d1,(a0)+
+	rol.w	d2,d1
+	move.w	d1,(a0)+
 	dbra	d0,devide_read_l
+	move.l	(sp)+,d2
+	rts
+devide_read_ma:
+	move.w	(a1),d1
+	move.b	d1,(a0)+
+	lsr.w	d2,d1
+	move.b	d1,(a0)+
+	dbra	d0,devide_read_ma
+	move.l	(sp)+,d2
 	rts
 
 devide_write_data:
+	move.l	d2,-(sp)
 	move.l	blk_op,a0
 	move.l	#$900000,a1
 	move.w	#255,d0
+	moveq	#8,d2
+	btst	#0,blk_op
+	bne	devide_write_ma
 devide_write_l:
+	move.w	(a0)+,d1
+	rol.w	d2,d1
+	move.w	d1,(a1)
+	dbra	d0,devide_write_l
+	move.l	(sp)+,d2
+	rts
+devide_write_ma:
 	move.b	(a0)+,d1
 	lsl.w	#8,d1
 	move.b	(a0)+,d1
-	rol.w	#8,d1
+	rol.w	d2,d1
 	move.w	d1,(a1)
 	dbra	d0,devide_write_l
+	move.l	(sp)+,d2
 	rts
 
 ;
@@ -150,11 +174,10 @@ devide_write_l:
 
 outchar:
 outcharw:
-	; TODO
+	btst	#5,$A0000A
+	beq	outcharw
+	move.b	d0,$A00000
 	rts
-;
-
-
 ;
 ;	Receive a byte not caring about what we send (FF)
 ;

@@ -22,7 +22,7 @@
  *	Until we add the SD card just deal with the tick
  */
 
-#undef  DEBUG			/* UNdefine to delete debug code sequences */
+#undef  DEBUG			/* Undefine to delete debug code sequences */
 
 struct uart16x50 {
 	uint8_t data;		/* ls, rx, tx */
@@ -329,7 +329,7 @@ static void timer_event(void)
 }
 
 void tty_poll(uint8_t minor, struct uart16x50 volatile *u)
-{	
+{
 	/* Should be IRQ driven but we might not be so poll anyway if
 	   pending. IRQs are off here so this is safe */
 	if (uart->lsr & 0x01)
