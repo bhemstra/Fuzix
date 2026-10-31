@@ -33,8 +33,8 @@ __ugetw:
 
 __uget:
 	pshs	u
-	tfr	d,u		; kernel
-	ldx	4,s		; user
+	tfr	d,x		; user
+	ldu	4,s		; kernel
 	ldy	6,s		; count
 	jsr	map_proc_always
 ugetl:
