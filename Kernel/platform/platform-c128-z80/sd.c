@@ -68,16 +68,15 @@ bool sd_spi_rx_sector(void) __naked
     ld a, (_blk_op+BLKPARAM_IS_USER_OFFSET)
     ld hl, (_blk_op+BLKPARAM_ADDR_OFFSET)
     or a
-    jr nz, from_user
+    jr nz, rx_user
     call map_buffers
-    jr doread
-to_user:
+    jr rx_go
+rx_user:
     call map_proc_always
-doread:
+rx_go:
     ld bc,#0xDF10
-    ld e,#0xFF
-    ld d,#0x80
-r_next:
+    ld de,#0x80FF	; D = 128 groups of 4, E = dummy byte out
+rx_next:
     out (c),e
     in a,(c)
     ld (hl),a
@@ -94,8 +93,8 @@ r_next:
     in a,(c)
     ld (hl),a
     inc hl
-    dec e
-    jr nz, r_next
+    dec d
+    jr nz, rx_next
     jp map_kernel_restore
   __endasm;
 }
@@ -106,14 +105,15 @@ bool sd_spi_tx_sector(void) __naked
     ld a, (_blk_op+BLKPARAM_IS_USER_OFFSET)
     ld hl, (_blk_op+BLKPARAM_ADDR_OFFSET)
     or a
-    jr nz, from_user
+    jr nz, tx_user
     call map_buffers
-from_user:
+    jr tx_go
+tx_user:
     call map_proc_always
-dowrite:
+tx_go:
     ld bc,#0xDF10
     ld d,#0x80
-w_next:
+tx_next:
     ld a,(hl)
     out (c),a
     inc hl
@@ -126,8 +126,8 @@ w_next:
     ld a,(hl)
     out (c),a
     inc hl
-    dec e
-    jr nz, w_next
+    dec d
+    jr nz, tx_next
     jp map_kernel_restore
   __endasm;
 }
