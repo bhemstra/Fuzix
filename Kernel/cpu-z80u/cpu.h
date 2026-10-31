@@ -20,6 +20,9 @@ extern void *memset(void *dest, int c, size_t n);
 /* There is no compiler optimized inline memmove */
 extern void *memmove(void *dest, const void *src, size_t n);
 
+extern int memcmp(const void *a, const void *b, size_t n);
+extern int strcmp(const char *s1, const char *s2);
+
 extern int16_t strlen(const char *p);
 
 #define	staticfast	static
