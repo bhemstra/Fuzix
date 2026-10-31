@@ -69,8 +69,6 @@ start2:
 		; Kernel mapping, video on, RTC interrupt off for now
 		ld a, #M2_VIDEO + M2_KPAGE
 		out (0xFF), a
-		ld a, #'K'		; first sign of life, top right
-		ld (0xF84F), a
 		; zero the data area
 		ld hl, #s__DATA
 		ld de, #s__DATA + 1

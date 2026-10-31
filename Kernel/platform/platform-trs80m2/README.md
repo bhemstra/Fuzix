@@ -1,7 +1,7 @@
 # TRS-80 Model II / 12 / 16 / 6000 (Z80)
 
-**Status: new port, compiles but has not yet been run on real hardware or
-an emulator.** Treat it as a starting point for bring-up.
+**Status: new port. Boots from floppy and hard disk and runs multi user
+in the trs80gp emulator; not yet tried on real hardware.**
 
 ## Base Systems
 

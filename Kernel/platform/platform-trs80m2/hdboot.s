@@ -60,14 +60,11 @@ go:
 		xor a
 		out (0xF9), a		; boot ROM off
 		ld (0x0066), hl		; and in the RAM that now shows
-		ld a, #'L'		; progress on the top line: L = running
-		ld (0xF800), a
 		ld a, #0x0C		; controller enable, wait states on
 		out (0xC1), a		; (the ROM turned it off)
 
 		ld hl, #msg_load
 		call print
-		ld ix, #0xF801		; progress pointer
 
 		; Find out whether the sectors are numbered from 0 or 1: try
 		; to read sector 0 of head 0
@@ -85,8 +82,6 @@ go:
 		call hdwait
 		and #1			; error: no sector 0, numbered from 1
 		ld (secbase), a
-		ld (ix), #'P'		; P = numbering probed
-		inc ix
 		jr nz, probed
 		ld hl, #0xF200		; drain the data into scratch space
 		ld bc, #0x00C8
@@ -136,8 +131,6 @@ failed:
 		jr nz, retry
 		jr error
 secok:
-		ld (ix), #'.'		; one dot per kernel sector
-		inc ix
 		pop bc
 		inc d			; next sector
 		ld a, d
@@ -154,46 +147,6 @@ samehead:
 		ld bc, #root_end - root
 		ldir
 
-		ld (ix), #'J'		; J = jumping to the kernel
-		; Show the first bytes at 0x0100 and at the address the kernel
-		; jumps to from there, so a screenshot tells us what is there
-		ld ix, #0xF800 + 80 * 2
-		ld hl, #0x0100
-		call hex3
-		ld hl, (0x0101)
-		call hex3
-		; Show which 4K blocks of the upper 32K keep what is written:
-		; for each block from 0x8000 write 0x5A then 0xA5 and read it
-		; back, show a hex digit for the block if it works, - if not
-		ld ix, #0xF800 + 80 * 3
-		ld hl, #0x8FFF
-		ld b, #8
-memtest:
-		ld c, (hl)		; keep what is there
-		ld (hl), #0x5A
-		ld a, (hl)
-		cp #0x5A
-		jr nz, membad
-		ld (hl), #0xA5
-		ld a, (hl)
-		cp #0xA5
-		jr nz, membad
-		ld a, h
-		rrca
-		rrca
-		rrca
-		rrca
-		call hex1
-		jr memnext
-membad:
-		ld (ix), #'-'
-		inc ix
-memnext:
-		ld (hl), c
-		ld a, h
-		add #0x10
-		ld h, a
-		djnz memtest
 		ld a, #0x01		; page 1, the kernel sets up the rest
 		out (0xFF), a
 		jp 0x0100
@@ -203,44 +156,6 @@ error:
 		call print
 stop:
 		jr stop
-
-;
-;	Show the address in HL and the three bytes there at (IX)
-;
-hex3:
-		ld a, h
-		call hex2
-		ld a, l
-		call hex2
-		ld (ix), #':'
-		inc ix
-		ld b, #3
-hex3l:
-		ld a, (hl)
-		call hex2
-		inc hl
-		djnz hex3l
-		ld (ix), #' '
-		inc ix
-		ret
-hex2:
-		push af
-		rrca
-		rrca
-		rrca
-		rrca
-		call hex1
-		pop af
-hex1:
-		and #0x0F
-		add #'0'
-		cp #'9' + 1
-		jr c, hexd
-		add #'A' - '9' - 1
-hexd:
-		ld (ix), a
-		inc ix
-		ret
 
 ;
 ;	Wait for the controller to finish, return the status in A
