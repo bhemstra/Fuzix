@@ -24,7 +24,7 @@ $(COBJS): %.o: %.c
 	$(CROSS_CC) $(CROSS_CCOPTS) -c $<
 
 clean:
-	rm -f $(OBJS) core *~ 
+	rm -f $(OBJS) core *~ sysmod_E000.o sysmod_D000.o
 
 image: sysmod_E000.o sysmod_D000.o
 	$(CROSS_LD) -b -C 0x100 -S 0xF000 -f CLDBbXSs -o ../../fuzix.bin \
