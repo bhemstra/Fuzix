@@ -36,11 +36,12 @@ static uint16_t hawk_status(void)
 
 static int hawk_command(uint_fast8_t cmd)
 {
-    uint_fast8_t st;
+    uint16_t st;
     *((volatile uint8_t *)0xF148) = cmd;
-    /* If this doesn't go straight to setting bit 4 then bail */
+    /* If this doesn't go straight to setting bit 4 then bail. The caller
+       only looks at the error bits so report the failure as one */
     if (!(hawk_status() & 0x10))
-        return 1;
+        return 0x0400;
     /* Wait for completion bit */
     while((st = hawk_status()) & 0x0100);
     /* Return status bits */
@@ -115,24 +116,24 @@ static int hawk_transfer(uint_fast8_t minor, uint_fast8_t rawflag, uint_fast8_t 
        conveniently means we can just ram the value into the controller */
     hawk_unit(minor);
     while (udata.u_count) {
-        tries = 0;
-        while (tries-- < 5) {
+        tries = 5;
+        nsec = 0;
+        while (tries-- && nsec == 0) {
             if (hawk_seek(udata.u_block) == -1)
                 continue;
             /* Sectors we can do this run */
             nsec = 16 - (udata.u_block & 15);
             if (nsec > udata.u_count)
                 nsec = udata.u_count;
-            if (hawk_xfer(cmd, nsec) == 0) {
-                udata.u_count -= nsec;
-                udata.u_block += nsec;
-                break;
-            }
+            if (hawk_xfer(cmd, nsec))
+                nsec = 0;
         }
-        if (tries == 0) {
+        if (nsec == 0) {
             kputs("hawk: I/O error.\n");
             break;
         }
+        udata.u_count -= nsec;
+        udata.u_block += nsec;
     }
     return (udata.u_nblock - udata.u_count) * 400;
 }
