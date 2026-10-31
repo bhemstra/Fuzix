@@ -1014,12 +1014,14 @@ _clear_lines:
 	beq	nowork
 	ldx	#0
 	jsr	set_addr	; start of line
-	lda	#' '
+	ldx	@tmp2+1
 line:
-	ldy	#40
+	ldy	#39
 doline:
+	lda	#' '
 	sta	(@tmp),y
 	dey
+	cpy	#0xFF
 	bne	doline
 	lda	@tmp
 	clc
@@ -1028,8 +1030,8 @@ doline:
 	lda	#' '
 	bcc	nline
 	inc	@tmp+1
-nline:	dec	@tmp2
-	bne	doline
+nline:	dex
+	bne	line
 nowork:
 	jmp	__add2sp
 
