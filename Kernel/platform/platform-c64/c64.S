@@ -86,13 +86,8 @@ ___hard_ei:
 ___hard_irqrestore:
 	ldy	#0
 	lda	(@sp),y
-	and	#4		; IRQ flag
-	bne	irq_off
-	cli
-	jmp	__add1sp
-
-irq_off:
-	sei
+	pha
+	plp
 	jmp	__add1sp
 
 	.code			; TODO can we get this into discard ?
@@ -587,7 +582,7 @@ vector3:
 
 ;	Check for kernel return path
 
-	lda	_kernel_flag
+	lda	_udata + U_DATA__U_INSYS
 	bne	kirqout
 ;
 ;	Pre-emption ?
@@ -1289,8 +1284,40 @@ cpup2:	lda	(@tmp2),y
 	bne	cpup2
 	rts
 
+; Back scrolling is the same idea but we have to work backwards
+; Screen is 400-7E8
 _scroll_down:
-	; TODO
+	; 255 bytes from end of frame buffer
+	lda	#0xE7
+	ldx	#0x07
+	sta	@tmp
+	stx	@tmp+1
+	lda	#0x0BF
+	sta	@tmp2
+	stx	@tmp2+1
+	ldy	#255
+	ldx	#3
+cpdown:
+	lda	(@tmp2),y
+	sta	(@tmp),y
+	dey
+	bne	cpdown
+	lda	(@tmp2),y
+	sta	(@tmp),y
+	dey
+	;	256 bytes moved
+	dex
+	dec	@tmp2+1
+	dec	@tmp+1
+	bne	cpdown
+	;	We have done 768 bytes, We need to do
+	;	192 more
+cplast:
+	lda	(@tmp2),y
+	sta	(@tmp),y
+	dey
+	cpy	#0x3F
+	bne	cplast
 	rts
 
 	.data
@@ -1403,7 +1430,7 @@ key_down:
 	clc
 	adc	@tmp
 	;	TODO shift checks need to go here and not touch keydown
-	sta	_keydown
+		sta	_keydown
 	inc	_kdown		; one more key down
 	rts
 keydone:

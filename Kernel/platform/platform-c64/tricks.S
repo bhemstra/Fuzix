@@ -1,8 +1,6 @@
 ;
 ;	6502 version
 ;
-;	TODO: convert for single process model
-;
         .export _plt_switchout
         .export _switchin
         .export _dofork

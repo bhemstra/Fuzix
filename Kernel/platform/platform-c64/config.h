@@ -27,7 +27,7 @@
 
 #define swap_map(x)	((uint8_t *)(x))
 
-#define MAX_SWAPS	14
+#define MAX_SWAPS	16
 #define SWAPDEV		(swap_dev)
 /* We have one mapping from our working of memory */
 #define MAX_MAPS	1
@@ -49,7 +49,7 @@
 #define CONFIG_TD_NUM	2
 #define CONFIG_TD_IDE
 #define CONFIG_TINYIDE_8BIT
-#define IDE_IS_8BIT(x)	1
+#define IDE_IS_8BIT(x)	0
 
 #define BOOT_TTY 513        /* Set this to default device for stdio, stderr */
 

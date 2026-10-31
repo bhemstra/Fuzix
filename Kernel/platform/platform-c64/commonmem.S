@@ -25,7 +25,7 @@
 _ub:    ; first 512 bytes: starts with struct u_block, with the kernel stack working down from above
 _udata:
 kstack_base:
-	.ds 512
+	.ds 512 - STASHSIZE
 kstack_top:
 
 ;
@@ -36,18 +36,11 @@ kstack_top:
 CTemp:
 	.ds	STASHSIZE
 
+;
+;	istack is not per task context
+;
 istack_base:
 	.ds	256
 istack_top:
 istack_switched_sp:
 	.word	0
-;
-;	TODO set vectors up properly includign hooking kernel
-;
-	.common
-
-vectors:
-	.word	vector
-	.word	_plt_reboot		; does it matter ???
-	.word	nmi_handler
-

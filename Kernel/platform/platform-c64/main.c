@@ -2,13 +2,10 @@
 #include <timer.h>
 #include <kdata.h>
 #include <printf.h>
-#define _TINYDISK_PRIVATE
-/* Our swap hack has to stick its nose in places it shouldn't */
 #include <tinydisk.h>
 #include <tinyide.h>
 #include <devtty.h>
 
-uint8_t kernel_flag = 1;
 uint16_t swap_dev = 0xFFFF;
 
 void plt_idle(void)

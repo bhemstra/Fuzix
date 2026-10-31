@@ -13,7 +13,6 @@ CF mode.
 - Switch to a proper keyboard scan routine maybe
 - Colour attributes + ink/paper/border
 - Graphics mode setting (but really need more memory for a full 2K video)
-- Write scroll_down
 - Performance is horrible
 
 Our performance is mainly bounded by the speed of the disk sector transfers
