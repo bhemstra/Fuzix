@@ -88,9 +88,17 @@ m2_save:
 m2_rtc:
 	    .db 0			; M2_RTC once the clock is running
 
+;
+;	Stop for good. The real time clock NMI would wake a plain halt, so
+;	turn the clock off and keep halting.
+;
 _plt_monitor:
 	    di
+	    ld a, #M2_VIDEO + M2_KPAGE	; clock interrupt off
+	    out (0xFF), a
+monitor_stop:
 	    halt
+	    jr monitor_stop
 
 plt_interrupt_all:
 	    ret
