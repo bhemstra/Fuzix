@@ -88,10 +88,14 @@ IMAGES = $(FUZIX_ROOT)/Images/$(TARGET)
 diskimage: image
 	cp boot.imd $(IMAGES)/boot.imd
 	cp boot.raw $(IMAGES)/boot.raw
-	# Build a file system for the hard disk
+	# Build a file system for the hard disk. The header (xtrsheader) has
+	# byte 8 = 0x0A: Model II drive (0x02) with 512 byte sectors (0x08),
+	# which is what trs80gp expects for a Model II hard disk
 	(cd $(FUZIX_ROOT)/Standalone/filesystem-src; ./build-filesystem $(ENDIANFLAGH) $(IMAGES)/filesys.img 256 21760)
-	cat xtrsheader $(IMAGES)/filesys.img >$(IMAGES)/hard2-0
-	../../tools/trslabel $(IMAGES)/hard2-0
+	cat xtrsheader $(IMAGES)/filesys.img >$(IMAGES)/hard2-0.hdv
+	../../tools/trslabel $(IMAGES)/hard2-0.hdv
+	# Pad to the full 202 x 8 x 8K so the swap area exists in the file
+	truncate -s 13238528 $(IMAGES)/hard2-0.hdv
 	# Double sided boot floppy with a minimal root file system
 	(cd $(FUZIX_ROOT)/Standalone/filesystem-src; ./build-mini-filesystem $(ENDIANFLAGH) $(IMAGES)/fsmini.img 64 1716)
 	rm -f bootds.raw

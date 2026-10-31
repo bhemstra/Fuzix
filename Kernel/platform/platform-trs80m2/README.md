@@ -82,8 +82,13 @@ puts these in `Images/trs80m2`:
   file system on cylinders 1-66 (both sides, 1716 blocks), for machines
   without a hard disk. Answer `fda` at the boot prompt (the root
   device prompt takes a drive letter: `fda`, `hda1`).
-- `hard2-0`: hard disk image with the full Fuzix file system on `hda1`
-  and swap at the end. Answer `hda1` at the boot prompt.
+- `hard2-0.hdv`: hard disk image with the full Fuzix file system on
+  `hda1` and swap at the end. Answer `hda1` at the boot prompt. The
+  header marks it as a Model II drive with 512 byte sectors (byte 8 =
+  0x0A), as trs80gp expects.
+
+`Tools/m2sim` is a small simulator that boots these images far enough
+to debug the kernel (see its README).
 
 ## Things To Check During Bring-Up
 
