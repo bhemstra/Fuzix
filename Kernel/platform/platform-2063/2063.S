@@ -159,6 +159,8 @@ _program_vectors:
 program_kvectors:
 	ld	a,0xC3			; JP instruction
 	ld	(0x0000),a		; Must be present for NULL checker
+	ld	hl,null_handler		; to Our Trap Handler
+	ld	(0x0001),hl
 
 	; now install the interrupt vector at 0x0038 (shouldn't be use)
 	ld	(0x0038),a

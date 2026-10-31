@@ -41,7 +41,8 @@ int lpr_write(uint_fast8_t minor, uint_fast8_t rawflag, uint_fast8_t flag)
 	while (p < pe) {
 		/* Printer busy ? */
 		while (in(GPIO_IN) & 0x08) {
-			if ((n = iopoll(pe - p)) != 0)
+			/* Report what we have written, not what is left */
+			if ((n = iopoll(p - udata.u_base)) != 0)
 				return n;
 		}
 		out(LP, ugetc(p++));
@@ -58,7 +59,7 @@ int lpr_write(uint_fast8_t minor, uint_fast8_t rawflag, uint_fast8_t flag)
 #endif
 		irqrestore(irq);
 	}
-	return pe - p;
+	return udata.u_count;
 }
 
 int lpr_ioctl(uint_fast8_t minor, uarg_t arg, char *ptr)
@@ -79,7 +80,7 @@ int lpr_ioctl(uint_fast8_t minor, uarg_t arg, char *ptr)
 		if (s & 0x08)
 			r |= LP_BUSY;
 		if (s & 0x10)
-			r = LP_ACK;
+			r |= LP_ACK;
 		return r;
 	}
 	return -1;

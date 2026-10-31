@@ -23,7 +23,7 @@ static uint8_t vswitch;
 int8_t vt_tright = 39;
 int8_t vt_twidth = 40;
 uint16_t vdpport = 0x2881;	/* 40 chars wide port 0x81 */
-uint16_t inputtty;		/* Only one tty setup but need this */
+uint16_t inputtty = 1;		/* Only one tty setup but need this */
 
 static uint8_t sleeping;
 
@@ -35,8 +35,8 @@ struct s_queue ttyinq[NUM_DEV_TTY + 1] = {	/* ttyinq[0] is never used */
 
 tcflag_t termios_mask[NUM_DEV_TTY + 1] = {
 	0,
-	CSIZE|CSTOPB|PARENB|PARODD|_CSYS,
-	CSIZE|CSTOPB|PARENB|PARODD|_CSYS
+	CSIZE|CBAUD|CSTOPB|PARENB|PARODD|_CSYS,
+	CSIZE|CBAUD|CSTOPB|PARENB|PARODD|_CSYS
 };
 
 uint8_t sio_r[] = {
