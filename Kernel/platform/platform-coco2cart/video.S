@@ -18,6 +18,9 @@
 	.export _video_write
 	.export _video_cmd
 
+	.export _lower
+	.export _spaces
+
 
 ; No room currently for text mode so just disable it and point it at C000
 
@@ -85,11 +88,25 @@ _plot_char:
 	bne plot_cg3
 	bsr txtaddr
 	tfr y,d
+	tst _lower
+	beq map_cases
+	; We want to map
+;	; 20-3F	to 60-7F		40-5F	^20	60-7F
+	; 40-5F to 40-5F		60-7F	^20	40-5F
+	; 60-7F to 00-1F		80-9F	^20	A0-BF
+	addb #$20
+	bmi low
+	eorb #$20
+	bra plotit
+low:	andb #$1f
+	bra plotit
+map_cases:
 	cmpb #0x60
 	bcs upper
 	subb #0x20
 upper:
 	andb #0x3F
+plotit:
 	stb ,x
 	rts
 plot_cg3:
@@ -336,7 +353,7 @@ clearnext:
 clat:
 	jsr	txtaddr	; X now holds address
 	tfr	y,d		; count into B
-	lda	#$20
+	lda	_spaces
 clatl:
 	sta	,x+
 	decb
@@ -356,7 +373,7 @@ _clear_lines:
 	lsl	2,s
 	lsl	2,s
 	lsl	2,s		; x 16 as dword
-	ldd	#$2020
+	ldd	_spaces
 clt:
 	std	,x++
 	dec	2,s		; 32 bytes per line max 16 lines in text
@@ -515,3 +532,7 @@ _vtrow:
 	.byte	0
 vidmode:
 	.byte	0
+_lower:
+	.byte	0
+_spaces:
+	.word	0x2020

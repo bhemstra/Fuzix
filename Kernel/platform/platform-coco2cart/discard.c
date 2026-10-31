@@ -11,6 +11,8 @@ static const char *sysname[] = {"Dragon", "COCO", "COCO3", "Unknown"};
 
 extern uint16_t framedet;
 extern uint8_t sys_hz;
+extern uint8_t lower;
+extern uint16_t spaces;
 
 void map_init(void)
 {
@@ -38,6 +40,12 @@ uint8_t plt_param(char *p)
 {
 	if (strcmp(p, "over") == 0 || strcmp(p, "overclock") == 0) {
 		*((volatile uint8_t *)0xFFD7) = 0;
+		return 1;
+	}
+	if (strcmp(p, "t1") == 0) {
+		lower = 1;
+		spaces = 0x6060;
+		*((volatile uint8_t *)0xFF22) |= 0x50;
 		return 1;
 	}
 	return 0;

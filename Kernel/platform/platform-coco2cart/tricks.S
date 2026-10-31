@@ -1,7 +1,3 @@
-;
-;	TODO: udata needs to be in common space so swap needs to be smarter
-;	about split udata
-;
         .export _plt_switchout
         .export _switchin
         .export _dofork
