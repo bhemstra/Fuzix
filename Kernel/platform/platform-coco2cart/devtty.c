@@ -82,6 +82,7 @@ void tty_data_consumed(uint_fast8_t minor)
 /* 6551 mode handling */
 
 static uint8_t baudbits[] = {
+	0x1E,		/* 0 - unused */
 	0x11,		/* 50 */
 	0x12,		/* 75 */
 	0x13,		/* 110 */
@@ -126,6 +127,7 @@ void tty_setup(uint_fast8_t minor, uint_fast8_t flags)
 		if (ttydata[ACIA_TTY].termios.c_cflag & PARMRK)
 			r |= 0x80;	/* Mark/space */
 	}
+	*uart_command = r;
 }
 
 int tty_carrier(uint_fast8_t minor)
