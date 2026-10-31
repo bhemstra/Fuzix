@@ -208,6 +208,8 @@ _ncr_command:
 	jz	via_k
 	dcr	a
 	jz	via_u
+	; td_page holds the page to map for swap I/O, not a raw flag
+	lda	_td_page
 	call	map_for_swap
 via_k:
 	call	ncr_op

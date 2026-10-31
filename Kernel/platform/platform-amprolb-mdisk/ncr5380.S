@@ -272,6 +272,8 @@ _ncr5380_command:
 	jr	z, via_k
 	dec	a
 	jr	z, via_u
+	; td_page holds the page to map for swap I/O, not a raw flag
+	ld	a,(_td_page)
 	call	map_for_swap
 via_k:
 	call	ncr5380_op
