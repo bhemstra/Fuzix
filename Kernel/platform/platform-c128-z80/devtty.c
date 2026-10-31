@@ -136,8 +136,8 @@ static void keydecode(void)
 {
 	uint8_t c;
 
-	uint8_t ss = keymap[1] & 0x08;	/* SHIFT */
-	uint8_t cs = keymap[2] & 0x08;	/* CTRL (we use for caps) */
+	uint8_t ss = keymap[1] & 0x08;	/* SHIFT, PA6 PB3 */
+	uint8_t cs = keymap[0] & 0x20;	/* CTRL, PA7 PB5 (we use for caps) */
 
 	c = keyboard[keybyte][keybit];
 	/* ctrl-shift => ctrl */
@@ -169,7 +169,7 @@ void handle_keys(void)
 		int n;
 		uint8_t key = keybuf[i] ^ keymap[i];
 		if (key) {
-			uint8_t m = 0x80;
+			uint8_t m = 0x01;
 			for (n = 0; n < 8; n++) {
 				if ((key & m) && (keymap[i] & m))
 					if (!(shiftmask[i] & m))
@@ -183,7 +183,7 @@ void handle_keys(void)
 						keybit = n;
 					}
 				}
-				m >>= 1;
+				m <<= 1;
 			}
 		}
 		keymap[i] = keybuf[i];
