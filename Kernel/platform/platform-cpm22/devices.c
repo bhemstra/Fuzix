@@ -39,8 +39,11 @@ void device_init(void)
   int i;
   fdhd_init();
 #ifdef MAX_SWAPS
-  /* Add 64 swaps (4MB) to use the entire J drive */
-  for (i = 0; i < MAX_SWAPS; i++)
-    swapmap_init(i);
+  /* Only offer swap space once fdhd_init() has actually found a swap
+     drive. swap_dev is NO_DEVICE until then, so a populated swap map
+     would make the memory manager try to swap to dev_tab[255]. */
+  if (swap_dev != 0xFFFF)
+    for (i = 0; i < MAX_SWAPS; i++)
+      swapmap_init(i);
 #endif    
 }
