@@ -71,8 +71,8 @@ static uaddr_t argptr, old_argptr;
 void add_argument(const char *s)
 {
 	int l = strlen(s) + 1;
-	uput(s, (void *)progptr, l);
-	uputp(progptr, (void *)argptr);
+	_uput(s, (void *)progptr, l);
+	_uputp(progptr, (void *)argptr);
 	progptr += ((l + 3) & ~3);
 	argptr += sizeof(uptr_t);
 }
@@ -103,14 +103,14 @@ void create_init(void)
 	argptr = PROGLOAD;
 	progptr = PROGLOAD + 256;
 
-	uzero((void *)progptr, 32);
+	_uzero((void *)progptr, 32);
 	add_argument("/init");
 }
 
 void complete_init(void)
 {
 	/* Terminate argv, also use this as the env ptr */
-	uputp(0, (void *)argptr);
+	_uputp(0, (void *)argptr);
 	/* Set up things to look like the process is calling _execve() */
 	udata.u_argn2 = (arg_t)argptr; /* Environment (none) */
 	udata.u_argn =  (arg_t)PROGLOAD + 256; /* "/init" */
