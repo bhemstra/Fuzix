@@ -19,6 +19,7 @@ void map_init(void)
 	else
 		sys_hz = 6;
 	kprintf("%d0Hz %s system.\n", sys_hz, sysname[system_id]);
+	tty_detect();
 }
 
 int strcmp(const char *a, const char *b)

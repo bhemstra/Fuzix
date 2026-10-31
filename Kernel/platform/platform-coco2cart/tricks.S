@@ -48,7 +48,7 @@ badswitchmsg:
 
 newpp:   .word 0
 
-; new process pointer is in 2,s
+; new process pointer is in D
 _switchin:
 	tfr	d,x
         orcc	#0x10		; irq off
@@ -101,14 +101,13 @@ not_swapped:
         ; restore machine state -- note we may be returning from either
         ; _switchout or _dofork
         lds	_udata + U_DATA__U_SP
-        puls	d,u ; return code and saved U
 
         ; enable interrupts, if the ISR isn't already running
 	lda	_udata + U_DATA__U_ININTERRUPT
         bne	swtchdone ; in ISR, leave interrupts off
 	andcc	#0xef
 swtchdone:
-        rts
+        puls	d,u,pc ; return code and saved U
 
 switchinfail:
 	jsr	outx
@@ -187,8 +186,8 @@ udsave:
 	ldx	fork_proc_ptr
 	ldd	P_TAB__P_PID_OFFSET,x
 	; Clean up and return child pid
-	puls	d,u
 	; TODO - for now return with ints off as we were called. This should
 	; eventually go away
 	orcc	#$10
-	rts
+	; Toss the spare value into X so we preserve D
+	puls	x,u,pc

@@ -12,15 +12,17 @@
 
 #undef  DEBUG			/* UNdefine to delete debug code sequences */
 
-uint8_t *uart_data = (uint8_t *)0xFF04;		/* ACIA data */
-uint8_t *uart_status = (uint8_t *)0xFF05;	/* ACIA status */
-uint8_t *uart_command = (uint8_t *)0xFF06;	/* ACIA command */
-uint8_t *uart_control = (uint8_t *)0xFF07;	/* ACIA control */
+static volatile uint8_t *uart_data = (uint8_t *)0xFF04;		/* ACIA data */
+static volatile uint8_t *uart_status = (uint8_t *)0xFF05;	/* ACIA status */
+static volatile uint8_t *uart_command = (uint8_t *)0xFF06;	/* ACIA command */
+static volatile uint8_t *uart_control = (uint8_t *)0xFF07;	/* ACIA control */
 
 #define ACIA_TTY 2
 
 static unsigned char tbuf1[TTYSIZ];
 static unsigned char tbuf2[TTYSIZ];
+
+static uint8_t has_acia;
 
 struct s_queue ttyinq[NUM_DEV_TTY + 1] = {	/* ttyinq[0] is never used */
 	{NULL, NULL, NULL, 0, 0, 0},
@@ -294,6 +296,8 @@ static void do_plt_interrupt(unsigned reenter)
 {
 	static uint8_t tick;
 	uint8_t i = *pia_ctrl;
+	if (has_acia)
+		tty_interrupt();
 	if (i & 0x80) {
 		if (vblank_wait)
 			wakeup(&vblank_wait);
@@ -460,3 +464,18 @@ int gfx_ioctl(uint_fast8_t minor, uarg_t arg, char *ptr)
 /* This is used by the vt asm code, but needs to live at the top of the kernel */
 uint16_t cursorpos;
 
+/* It would be nice to make this a more robust check but it seems to work
+   so far */
+void tty_detect(void)
+{
+	/* Ensure any data was read if present */
+	*uart_data;
+	/* Should now be no error bits and recevier should be empty */
+	if (*uart_status & 0x0F)
+		return;
+	/* Should be nothing in TX */
+	if (*uart_status & 0x10) {
+		kputs("6551 ACIA at 0xFF04.\n");
+		has_acia = 1;
+	}
+}
