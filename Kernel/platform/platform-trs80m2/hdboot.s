@@ -50,13 +50,23 @@ sig:
 
 go:
 		ld sp, #0xF800
+		; Low memory takes over from the ROM when we switch it off:
+		; make a stray real time clock NMI harmless and clear any
+		; pending tick
+		ld hl, #0x45ED		; RETN at the NMI vector
+		ld (0x0066), hl
+		in a, (0xFE)
 		xor a
 		out (0xF9), a		; boot ROM off
+		ld (0x0066), hl		; and in the RAM that now shows
+		ld a, #'L'		; progress on the top line: L = running
+		ld (0xF800), a
 		ld a, #0x0C		; controller enable, wait states on
 		out (0xC1), a		; (the ROM turned it off)
 
 		ld hl, #msg_load
 		call print
+		ld ix, #0xF801		; progress pointer
 
 		; Find out whether the sectors are numbered from 0 or 1: try
 		; to read sector 0 of head 0
@@ -74,6 +84,8 @@ go:
 		call hdwait
 		and #1			; error: no sector 0, numbered from 1
 		ld (secbase), a
+		ld (ix), #'P'		; P = numbering probed
+		inc ix
 		jr nz, probed
 		ld hl, #0xF200		; drain the data into scratch space
 		ld bc, #0x00C8
@@ -123,6 +135,8 @@ failed:
 		jr nz, retry
 		jr error
 secok:
+		ld (ix), #'.'		; one dot per kernel sector
+		inc ix
 		pop bc
 		inc d			; next sector
 		ld a, d
@@ -139,6 +153,7 @@ samehead:
 		ld bc, #root_end - root
 		ldir
 
+		ld (ix), #'J'		; J = jumping to the kernel
 		ld a, #0x01		; page 1, the kernel sets up the rest
 		out (0xFF), a
 		jp 0x0100
