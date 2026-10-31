@@ -45,12 +45,13 @@ int lpr_write(uint_fast8_t minor, uint_fast8_t rawflag, uint_fast8_t flag)
 	while (p < pe) {
 		/* Printer busy ? */
 		while (!lpstat()) {
-			if ((n = iopoll(pe - p)) != 0)
+			/* Report what we have written, not what is left */
+			if ((n = iopoll(p - udata.u_base)) != 0)
 				return n;
 		}
 		out(LPDATA, ugetc(p++));
 		out(LPSTON, 1);
 		out(LPSTROFF, 1);
 	}
-	return pe - p;
+	return udata.u_count;
 }

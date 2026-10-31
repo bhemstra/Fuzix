@@ -37,7 +37,7 @@ bootstrap:
 r_wait:
 	djnz	r_wait
 	xor	a
-	out	(B_RST),a
+	out	(ncr_cmd),a
 	ld	hl,0
 re_wait:
 	dec	hl

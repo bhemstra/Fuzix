@@ -61,7 +61,7 @@ clean:
 cpmboot.com: cpmboot.S
 	fcc -mz80 -c cpmboot.S
 	ldz80 -b -C 0x100 cpmboot.o -o cpmboot.tmp
-	dd if=cpmboot.tmp of=cmpboot.com bs=256 skip=1
+	dd if=cpmboot.tmp of=cpmboot.com bs=256 skip=1
 
 image: cpmboot.com
 	$(CROSS_LD) -b -C 0x500 -S 0xB000 -X0xA000 -f CXSsLDBb -o ../../fuzix.bin \
