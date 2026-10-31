@@ -17,7 +17,7 @@
 #include "kernel.h"
 #include "kdata.h"
 #include "printf.h"
-#include "centurion.h"
+#include "device.h"
 
 static void hawk_unit(uint_fast8_t unit)
 {
