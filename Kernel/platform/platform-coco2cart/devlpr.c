@@ -46,7 +46,7 @@ int lpr_write(uint_fast8_t minor, uint_fast8_t rawflag, uint_fast8_t flag)
 
 	if (minor == 1) {
 		while (p < pe) {
-			if ((n = iopoll(pe - p)) != 0)
+			if ((n = iopoll(p - udata.u_base)) != 0)
 				return n;
 			dw_lpr(ugetc(p++));
 		}
@@ -54,7 +54,7 @@ int lpr_write(uint_fast8_t minor, uint_fast8_t rawflag, uint_fast8_t flag)
 		while (p < pe) {
 			/* Printer busy ? */
 			while (*pia1b & 1) {
-				if ((n = iopoll(pe - p)) != 0)
+				if ((n = iopoll(p - udata.u_base)) != 0)
 					return n;
 			}
 			/* The Dragon shares the printer and keyboard scan
@@ -66,5 +66,5 @@ int lpr_write(uint_fast8_t minor, uint_fast8_t rawflag, uint_fast8_t flag)
 			irqrestore(irq);
 		}
 	}
-	return pe - p;
+	return udata.u_count;
 }

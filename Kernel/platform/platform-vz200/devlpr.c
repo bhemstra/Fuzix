@@ -43,10 +43,10 @@ int lpr_write(uint_fast8_t minor, uint_fast8_t rawflag, uint_fast8_t flag)
 	while (p < pe) {
 		/* Printer busy ? */
 		while (in(STATUS) & 1) {
-			if ((n = iopoll(pe - p)) != 0)
+			if ((n = iopoll(p - udata.u_base)) != 0)
 				return n;
 		}
 		out(DATA, ugetc(p++));
 	}
-	return pe - p;
+	return udata.u_count;
 }

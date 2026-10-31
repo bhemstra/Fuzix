@@ -52,7 +52,7 @@ int lpr_write(uint_fast8_t minor, uint_fast8_t rawflag, uint_fast8_t flag)
 
 	if (minor == 0) {
 		while (p < pe) {
-			if ((n = iopoll(pe - p)) != 0)
+			if ((n = iopoll(p - udata.u_base)) != 0)
 				return n;
 			dw_lpr(ugetc(p++));
 		}
