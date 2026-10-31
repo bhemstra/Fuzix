@@ -161,6 +161,38 @@ samehead:
 		call hex3
 		ld hl, (0x0101)
 		call hex3
+		; Show which 4K blocks of the upper 32K keep what is written:
+		; for each block from 0x8000 write 0x5A then 0xA5 and read it
+		; back, show a hex digit for the block if it works, - if not
+		ld ix, #0xF800 + 80 * 3
+		ld hl, #0x8FFF
+		ld b, #8
+memtest:
+		ld c, (hl)		; keep what is there
+		ld (hl), #0x5A
+		ld a, (hl)
+		cp #0x5A
+		jr nz, membad
+		ld (hl), #0xA5
+		ld a, (hl)
+		cp #0xA5
+		jr nz, membad
+		ld a, h
+		rrca
+		rrca
+		rrca
+		rrca
+		call hex1
+		jr memnext
+membad:
+		ld (ix), #'-'
+		inc ix
+memnext:
+		ld (hl), c
+		ld a, h
+		add #0x10
+		ld h, a
+		djnz memtest
 		ld a, #0x01		; page 1, the kernel sets up the rest
 		out (0xFF), a
 		jp 0x0100
