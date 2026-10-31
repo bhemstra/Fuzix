@@ -35,9 +35,9 @@ _plt_switchout:
 	sta	(_udata + U_DATA__U_SP)	; Save old SP
 
         ; find another process to run (may select this one again) returns it
-        ; in A
+        ; in B
         jsr	_getproc
-	sta	(-s)		; stack it as an argument
+	stb	(-s)		; stack it as an argument
         jsr	_switchin
         ; we should never get here
         jmp	_plt_monitor
