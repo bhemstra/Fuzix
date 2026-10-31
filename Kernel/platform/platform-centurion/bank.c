@@ -20,6 +20,10 @@
 #define PTSIZE		32
 #define MAX_MAPS	256
 
+/* Entries 29..31 of every map hold the common and the two I/O pages,
+   see map_init(). Only the rest can belong to a process. */
+#define MAP_ENTRIES	29
+
 #define PAGE_INVALID	0
 
 uint8_t pmap[PTABSIZE][PTSIZE];
@@ -40,7 +44,7 @@ void pagemap_add(uint8_t page)
 void pagemap_free(ptptr p)
 {
 	uint8_t *pt = (uint8_t *)p->p_page;
-	uint8_t *e = (uint8_t *)p->p_page + 29;
+	uint8_t *e = (uint8_t *)p->p_page + MAP_ENTRIES;
 	uint8_t last = PAGE_INVALID;
 
 	while(pt < e) {
@@ -83,6 +87,11 @@ static int maps_needed(uint16_t top)
 	/* Usually we have 0x1000 common - 1 for shift and inc */
 	needed >>= 11;		/* in banks */
 	++needed;		/* rounded */
+	/* A full size process works out as 32 maps, but the top three
+	   belong to the common and the I/O and must not be handed out or
+	   the udata disappears from the address space */
+	if (needed > MAP_ENTRIES)
+		needed = MAP_ENTRIES;
 	return needed;
 }
 
@@ -119,7 +128,7 @@ int pagemap_alloc(ptptr p)
 	/*
 	 * 29 is the common, 30 and 31 are I/O
 	 */
-	while (i++ < 29) {
+	while (i++ < MAP_ENTRIES) {
 		*ptr = ptr[-1];
 		ptr++;
 	}
