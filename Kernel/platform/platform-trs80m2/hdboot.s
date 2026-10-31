@@ -154,6 +154,13 @@ samehead:
 		ldir
 
 		ld (ix), #'J'		; J = jumping to the kernel
+		; Show the first bytes at 0x0100 and at the address the kernel
+		; jumps to from there, so a screenshot tells us what is there
+		ld ix, #0xF800 + 80 * 2
+		ld hl, #0x0100
+		call hex3
+		ld hl, (0x0101)
+		call hex3
 		ld a, #0x01		; page 1, the kernel sets up the rest
 		out (0xFF), a
 		jp 0x0100
@@ -163,6 +170,44 @@ error:
 		call print
 stop:
 		jr stop
+
+;
+;	Show the address in HL and the three bytes there at (IX)
+;
+hex3:
+		ld a, h
+		call hex2
+		ld a, l
+		call hex2
+		ld (ix), #':'
+		inc ix
+		ld b, #3
+hex3l:
+		ld a, (hl)
+		call hex2
+		inc hl
+		djnz hex3l
+		ld (ix), #' '
+		inc ix
+		ret
+hex2:
+		push af
+		rrca
+		rrca
+		rrca
+		rrca
+		call hex1
+		pop af
+hex1:
+		and #0x0F
+		add #'0'
+		cp #'9' + 1
+		jr c, hexd
+		add #'A' - '9' - 1
+hexd:
+		ld (ix), a
+		inc ix
+		ret
 
 ;
 ;	Wait for the controller to finish, return the status in A
