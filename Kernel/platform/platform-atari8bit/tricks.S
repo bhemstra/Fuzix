@@ -1,5 +1,5 @@
 ;
-;	6502 version
+;	6502 version single task in memory
 ;
         .export _plt_switchout
         .export _switchin
@@ -15,7 +15,7 @@
 ; and its a constant for the others from before init forks so it'll be fine
 ; here
 _ramtop:
-	.word 0xC000
+	.word $FE00
 
 ; Switchout switches out the current process, finds another that is READY,
 ; possibly the same process, and switches it in.  When a process is
@@ -124,11 +124,11 @@ lbaset:
 	sta	0xD502		; 1 sector
 
 waitbusy2:
-	lda	0xD502		; wait not busy
+	lda	0xD507		; wait not busy
 	bmi	waitbusy2
 
 	lda	#0x20
-	sta	0x507		; READ
+	sta	0xD507		; READ
 waitdrq:
 	lda	0xD507
 	and	#0x08
@@ -137,11 +137,8 @@ waitdrq:
 	;
 	; We need to avoid using the stack or ZP at this point
 
-	; Discard the memory mapping register bits
-	lda	0xD500
-	lda	0xD500
 	; Copy ZP
-	ldx	#2
+	ldx	#0
 load_zp:
 	lda	0xD500
 	sta	0x0000,x
@@ -154,7 +151,7 @@ load_s:
 	bne	load_s
 
 waitbusy3:
-	lda	0x507
+	lda	0xD507
 	bmi	waitbusy3
 
 	lda	0xD507		; Status (TODO check & 1)
@@ -193,8 +190,6 @@ not_swapped:
 	lda	_udata + U_DATA__U_ININTERRUPT
         beq	swtchdone		; in ISR, leave interrupts off
 	cli
-	lda	#0x40
-	sta	0xD40E	; NMI back on too
 swtchdone:
 	pla		; Return code
 	tax

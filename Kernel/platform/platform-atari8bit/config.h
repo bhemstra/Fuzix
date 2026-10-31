@@ -17,9 +17,12 @@
  *	One process in memory only
  */
 #define CONFIG_SWAP_ONLY
-#define SWAPBASE 0x0000		/* Special handling needed on the in part ! */
+#define CONFIG_DYNAMIC_SWAP
+#define SWAPBASE 0x0200
 #define SWAPTOP  0xC000
-#define SWAP_SIZE 0x60		/* including the udata */
+#define SWAP_SIZE 0x61		/* including the udata and ZP/S */
+#define CONFIG_SWAP_6502	/* need to handle S and ZP specially */
+#define CONFIG_PARENT_FIRST	/* We write the child to media */
 
 #define swap_map(x)	((uint8_t *)(x))
 

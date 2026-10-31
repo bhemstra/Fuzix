@@ -897,13 +897,8 @@ hd_do_write:
 ; inc/dec stuff ?
 
 hd_write256:
-	iny
 	lda	(@tmp3),y
 	sta	0xD500
-	dey
-	lda	(@tmp3),y
-	sta	0xD500
-	iny
 	iny
 	bne	hd_write256
 	rts
