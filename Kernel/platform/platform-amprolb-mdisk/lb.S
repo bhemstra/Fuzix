@@ -162,7 +162,7 @@ counted: ; B 256K banks
 	ld de, 0xFD00			; Vector page (hard coded for now)
 	ld bc,32
 	ldir				; Vectors installed
-	ld b,96				; Other 96 vectors
+	ld b,112			; Fill the other 112 vectors
 	ex de,hl
 	ld de,invalid_irq		; Fill page with invalid_irq
 vecset:

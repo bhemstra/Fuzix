@@ -67,7 +67,7 @@ static void dart_setup(uint_fast8_t minor, uint_fast8_t flags)
 	baud = t->c_cflag & CBAUD;
 	if (baud < B110)
 		baud = B110;
-	if (baud > 38400)
+	if (baud > B38400)
 		baud = B38400;
 	if (minor !=1 && baud > B9600)
 		baud = B9600;
