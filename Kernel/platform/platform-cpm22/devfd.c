@@ -139,7 +139,10 @@ static int fd_transfer(bool is_read, uint8_t type, uint8_t rawflag)
        overrruns on sys accesses as you should know what you are doing then
        and might need a way to access data for special cases */
 
-    if (!cpm_sys && udata.u_block + udata.u_nblock >= secsize[cpm_drive]) {
+    /* secsize is the whole volume in 128 byte records, so the last legal
+       record is secsize - 1 and a transfer ending exactly on the end of
+       the volume is still valid */
+    if (!cpm_sys && udata.u_block + udata.u_nblock > secsize[cpm_drive]) {
         udata.u_error = EIO;
         cpm_busy = 0;
         return -1;
