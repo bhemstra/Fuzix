@@ -127,6 +127,7 @@ void tty_setup(uint_fast8_t minor, uint_fast8_t flags)
 		if (ttydata[ACIA_TTY].termios.c_cflag & PARMRK)
 			r |= 0x80;	/* Mark/space */
 	}
+	*uart_command = r;
 }
 
 int tty_carrier(uint_fast8_t minor)
