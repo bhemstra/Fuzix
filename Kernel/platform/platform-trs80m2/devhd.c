@@ -57,12 +57,11 @@ uint8_t hd_xfer(bool is_read, uint8_t *dptr)
 }
 
 /*
- *	The Model II drives use 512 byte sectors, 16 to a track (the same 8K
- *	per track as the 256 byte, 32 sector Model 4 layout, so images keep
- *	the same byte layout). Depending on how the drive was formatted the
- *	sectors are numbered from 0 or from 1; hd_probe() finds out.
+ *	The Model II drives use 512 byte sectors. The number per track comes
+ *	from the label (which counts 256 byte units, so it is halved here);
+ *	trs80gp uses 32 per track. Depending on how the drive was formatted
+ *	the sectors are numbered from 0 or from 1; hd_probe() finds out.
  */
-#define HD_SPT		16
 uint8_t hd_secbase;
 
 int hd_transfer(uint8_t minor, bool is_read, uint8_t rawflag)
@@ -77,10 +76,12 @@ int hd_transfer(uint8_t minor, bool is_read, uint8_t rawflag)
 	uint8_t dev = minor >> 4;
 	uint8_t *dptr;
 	uint16_t nblock;
+	uint8_t spt;
 
 	staticfast struct minipart *p;
 
 	p = &parts[dev];
+	spt = p->g.sec >> 1;
 
 	hd_page = 0;
 	if (rawflag == 1) {
@@ -97,8 +98,8 @@ int hd_transfer(uint8_t minor, bool is_read, uint8_t rawflag)
 	hd_seccnt = 1;
 
 	/* One 512 byte Fuzix block is one sector */
-	sector = udata.u_block & (HD_SPT - 1);
-	cyl = udata.u_block / HD_SPT;
+	sector = udata.u_block % spt;
+	cyl = udata.u_block / spt;
 
 	/* Do the maths once and on 16 bit numbers */
 	head = cyl % p->g.head;
@@ -146,7 +147,7 @@ int hd_transfer(uint8_t minor, bool is_read, uint8_t rawflag)
 		dptr += 512;
 		sector++;
 		/* Cheaper than division! */
-		if (sector == HD_SPT) {
+		if (sector == spt) {
 			sector = 0;
 			head++;
 			if (head == p->g.head) {

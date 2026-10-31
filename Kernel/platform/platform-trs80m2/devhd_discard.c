@@ -18,9 +18,10 @@ static void hd_swapon(struct minipart *p, unsigned int d, unsigned int i)
 		cyls = p->cyl[i+1];
 	cyls -= p->cyl[i];
 	cyls *= p->g.head;
-	/* This is now the number of 8K tracks in swap. We need 32K per
-	   process: hardwire it here - FIX if you change the mapping model */
-	cyls /= 4;
+	/* This is now the number of tracks in swap, each g.sec * 256 bytes.
+	   We need 32K per process: hardwire it here - FIX if you change the
+	   mapping model */
+	cyls = (cyls * p->g.sec) / 128;
 
 	swap_dev = (d << 4) + i + 1;
 
@@ -78,7 +79,7 @@ void hd_probe(void)
 		if (p->g.magic != MP_SIG_0) {
 			p->g.cyl = 1;
 			p->g.head = 1;
-			p->g.sec = 16;
+			p->g.sec = 64;
 			p->g.precomp = 0;
 			p->g.seek = 10;
 			p->g.secsize = 9;

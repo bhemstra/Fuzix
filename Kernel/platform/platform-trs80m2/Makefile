@@ -56,13 +56,13 @@ hdboot.bin: hdboot.s
 	rm -f hdboot.tmp
 
 #
-#	Hard disk boot zone (cylinder 0, 64K): head 0 sectors 1-8 filler
-#	(the label goes in the first one), sector 9 the loader, then the
-#	kernel 0x0100-0xEEFF in sector order through the rest of the
-#	cylinder
+#	Hard disk boot zone (cylinder 0, 128K with trs80gp's 32 sectors of
+#	512 bytes per track and 8 heads): sectors 0-7 filler (the label goes
+#	in the first one), sector 8 the loader, then the kernel 0x0100-0xEEFF
+#	in sector order, the rest of the cylinder unused
 #
 hdzone.bin: hdboot.bin ../../fuzix.bin
-	dd if=/dev/zero of=hdzone.bin bs=512 count=128 2>/dev/null
+	dd if=/dev/zero of=hdzone.bin bs=512 count=256 2>/dev/null
 	dd if=hdboot.bin of=hdzone.bin bs=512 seek=8 conv=notrunc 2>/dev/null
 	dd if=../../fuzix.bin of=hdzone.bin bs=512 seek=9 count=119 conv=notrunc 2>/dev/null
 
@@ -110,15 +110,16 @@ IMAGES = $(FUZIX_ROOT)/Images/$(TARGET)
 diskimage: image
 	cp boot.imd $(IMAGES)/boot.imd
 	cp boot.raw $(IMAGES)/boot.raw
-	# Hard disk: header, boot zone (cylinder 0), file system on cylinders
-	# 1-169 (hda2) and swap on 170-201 (hda3). The header (xtrsheader)
-	# has byte 8 = 0x0A: Model II drive (0x02) with 512 byte sectors
-	# (0x08), which is what trs80gp expects for a Model II hard disk,
-	# and with the Model II flag byte 29 is the sectors per track (16).
-	(cd $(FUZIX_ROOT)/Standalone/filesystem-src; ./build-filesystem $(ENDIANFLAGH) $(IMAGES)/filesys.img 256 21632)
+	# Hard disk: 101 cylinders of 8 heads x 32 x 512 bytes. Header,
+	# boot zone (cylinder 0), file system on cylinders 1-68 (hda2) and
+	# swap on 69-100 (hda3). The header (xtrsheader) has byte 8 = 0x0A:
+	# Model II drive (0x02) with 512 byte sectors (0x08), and byte 29 = 0
+	# (256 sectors per cylinder), which is how trs80gp lays out a Model
+	# II hard disk.
+	(cd $(FUZIX_ROOT)/Standalone/filesystem-src; ./build-filesystem $(ENDIANFLAGH) $(IMAGES)/filesys.img 256 17408)
 	cat xtrsheader hdzone.bin $(IMAGES)/filesys.img >$(IMAGES)/hard2-0.hdv
 	../../tools/trslabel $(IMAGES)/hard2-0.hdv
-	# Pad to the full 202 x 8 x 8K so the swap area exists in the file
+	# Pad to the full 101 x 8 x 16K so the swap area exists in the file
 	truncate -s 13238528 $(IMAGES)/hard2-0.hdv
 	rm -f $(IMAGES)/filesys.img
 	# Double sided boot floppy with a minimal root file system

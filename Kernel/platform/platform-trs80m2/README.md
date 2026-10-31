@@ -40,10 +40,9 @@ to a hard disk partition of type 0x56.
   clocks from the CTC
 - 8" floppy drives on the FD1791 using the Z80 DMA, double density
   26 x 256 byte sectors, single or double sided
-- Tandy 8MB (WD1010 style) hard disk at 0xC0-0xCF with 512 byte sectors,
-  16 per track (the same 8K per track as the Model 4 layout, so images
-  use the same partition label). Whether sectors are numbered from 0 or
-  1 is detected at boot
+- Tandy 8MB (WD1010 style) hard disk at 0xC0-0xCF with 512 byte sectors.
+  The sectors per track come from the partition label (trs80gp uses 32);
+  whether sectors are numbered from 0 or 1 is detected at boot
 - Parallel printer on the FDC board PIO
 
 ## Not Supported / To Do
@@ -72,9 +71,12 @@ while it does this, so the signature has to be in sector 9 or later.
 
 | Cylinders | Partition     | Contents                                  |
 |-----------|---------------|-------------------------------------------|
-| 0         | hda1 (0xAA)   | boot zone: label in sector 1, `hdboot.s` in sector 9, kernel in the rest of the cylinder |
-| 1-169     | hda2 (0x55)   | root file system                          |
-| 170-201   | hda3 (0x56)   | swap                                      |
+| 0         | hda1 (0xAA)   | boot zone: label in the first sector, `hdboot.s` in the ninth, then the kernel |
+| 1-68      | hda2 (0x55)   | root file system                          |
+| 69-100    | hda3 (0x56)   | swap                                      |
+
+The image has 101 cylinders of 8 heads with 32 sectors of 512 bytes per
+track, the way trs80gp lays out a Model II hard disk image.
 
 `hdboot.s` copies itself to 0xF000, loads the kernel into 0x0100-0xEEFF
 and leaves `hda2` as the kernel command line, so the system comes up

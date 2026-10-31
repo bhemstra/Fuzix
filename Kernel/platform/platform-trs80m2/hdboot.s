@@ -11,8 +11,9 @@
 ;	sectors start at 0, at 0x1000 when they start at 1. The loader works
 ;	out where it is from HL and probes sector 0 to find the numbering.
 ;
-;	Cylinder 0 is a 64K boot zone (partition 1, type 0xAA), counting
-;	512 byte sectors from 0 through head 0 to head 7:
+;	Cylinder 0 (128K with 32 sectors per track and 8 heads) is the boot
+;	zone (partition 1, type 0xAA). Counting 512 byte sectors from 0
+;	through head 0 and on into heads 1-3:
 ;	0-7		filler, the first one holds the partition label
 ;	8		this loader
 ;	9-127		the kernel, 0x0100-0xEEFF
@@ -28,7 +29,7 @@
 
 		.org 0xF000
 
-HD_SPT		.equ	16
+HD_SPT		.equ	32		; 512 byte sectors per track (as trs80gp)
 KSECTORS	.equ	119		; 0x0100-0xEEFF
 CMDLINE		.equ	0xF7E0
 

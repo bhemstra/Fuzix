@@ -13,8 +13,8 @@ It models what the Fuzix kernel touches:
 - keyboard (port 0xFC, ready bit in port 0xFF)
 - real time clock NMI, cleared by reading port 0xFE
 - FD1791 floppy controller with the Z80 DMA, reading ImageDisk files
-- WD1010 hard disk, drive 0, 512 byte sectors, 16 per track, 8 heads
-  (the `hard2-0.hdv` layout)
+- WD1010 hard disk, drive 0, 512 byte sectors, 8 heads, 32 sectors per
+  track by default (the trs80gp and `hard2-0.hdv` layout)
 - serial port A output (kernel debug output)
 
 Without `--kernel` or `--hd-boot` it starts the way the boot ROM does: it loads the 26
@@ -58,6 +58,7 @@ Other options:
   sectors from number 1 into 0x0000 until one starts with
   `/* END BOOT */`). trs80gp numbers sectors from 0, which is the default
   here as well
+- `--hd-spt N`: 512 byte sectors per hard disk track (default 32)
 - `--hd-secbase 1`: number the hard disk sectors from 1 instead of 0
 - `--hd-write`: write hard disk changes back to the image
 - `--mem N`: RAM in KiB, 96 to 512

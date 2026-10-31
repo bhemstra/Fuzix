@@ -33,7 +33,9 @@ SLICE = 2000		# T states per run() call
 def parse_args():
     ap = argparse.ArgumentParser(description=__doc__ or "TRS-80 Model II simulator")
     ap.add_argument('--floppy', help='ImageDisk (.imd) file for drive 0')
-    ap.add_argument('--hdv', help='hard disk image (256 byte header, then 512 byte sectors, 8 heads, 16 per track)')
+    ap.add_argument('--hdv', help='hard disk image (256 byte header, then 512 byte sectors, 8 heads)')
+    ap.add_argument('--hd-spt', type=int, default=32,
+                    help='512 byte sectors per track on the hard disk (default 32, as trs80gp)')
     ap.add_argument('--hd-secbase', type=int, default=0, choices=(0, 1),
                     help='first sector number on the hard disk tracks (default 0)')
     ap.add_argument('--hd-write', action='store_true',
@@ -207,10 +209,11 @@ class Model2:
     # ---- WD1010 hard disk, drive 0 only
     def hd_offset(self):
         hd = self.hd
+        spt = self.args.hd_spt
         s = hd['sec'] - self.args.hd_secbase
-        if s < 0 or s >= 16 or (hd['sdh'] & 0x60) != 0x20 or (hd['sdh'] & 0x18):
+        if s < 0 or s >= spt or (hd['sdh'] & 0x60) != 0x20 or (hd['sdh'] & 0x18):
             return None
-        return 256 + ((hd['cyl'] * 8 + (hd['sdh'] & 7)) * 16 + s) * 512
+        return 256 + ((hd['cyl'] * 8 + (hd['sdh'] & 7)) * spt + s) * 512
 
     def hd_cmd(self, v):
         hd = self.hd
@@ -358,7 +361,7 @@ class Model2:
         addr = 0
         for sector in range(1, 20):
             s = sector - self.args.hd_secbase
-            if not 0 <= s < 16:
+            if not 0 <= s < self.args.hd_spt:
                 raise SystemExit('ROM: hard disk read error at sector %d' % sector)
             data = self.hdimg[256 + s * 512:256 + (s + 1) * 512]
             self.mem[addr:addr + 512] = data
