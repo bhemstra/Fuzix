@@ -21,6 +21,16 @@
  */
 
 #include <kernel.h>
+#include <printf.h>
+#include <tinydisk.h>
+
+/* Assembler glue, also in challenger.S */
+extern int osihd_read(void);
+extern int osihd_write(void);
+extern int osihd_restore(void);
+extern void osihd_copy_in(uint16_t off, uint8_t *dptr);
+extern void osihd_copy_out(uint16_t off, uint8_t *dptr);
+extern void osihd_move_data(void);
 
 /* The physical media runs in 3584 byte blocks (7 Fuzix sectors) so we
    have to do math. It also depends on drive type. For the moment assume
@@ -131,7 +141,7 @@ static uint8_t checksum(register uint8_t *p, register unsigned n)
 		sum += *p++;
 #ifdef CONFIG_HD_CD7
 		if (sum & 0x0100) {
-		      sum &= 0xFF:
+		      sum &= 0xFF;
 			sum++;
 		}
 #endif
@@ -159,7 +169,9 @@ static unsigned read_block(unsigned block)
 		irq = di();
 		/* Realign the head if needed */
 		if (hd_rest && osihd_restore() == 0) {
-			kprintf("oshid: unable to find track 0.\n");
+			irqrestore(irq);
+			kprintf("osihd: unable to find track 0.\n");
+			hd_rest = 0;
 			continue;
 		}
 		if (osihd_read() == 1) {

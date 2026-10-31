@@ -56,7 +56,7 @@ bankfork:
 	; 16 outer loops of 190 bytes (16 x 16 x 190)
 	ld a, 16
 	ld (copyct),a
-	ld a,190	; 190 inner loops of 16 (total 32k)
+	ld a,190	; 190 inner loops of 16
 copyloop:
 	ex af,af'	; Save A as we need an A for ioports
 cpatch0:
@@ -99,7 +99,7 @@ setdone:
 	ld hl, copyct
 	dec (hl)	
 	jr z, copy_over
-	ld a, 252
+	ld a, 190	;	16 x 190 x 16 = 484640 = PROGTOP
 	jr copy_cont
 copy_over:
 	;

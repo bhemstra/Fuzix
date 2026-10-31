@@ -9,7 +9,7 @@
 
 uint16_t bankmask;	/* One bit per bank present bit 15 being system */
 
-extern int strcmp(const char *, const char *);
+extern void osihd_install(void);
 
 /*
  *	Everything in this file ends up in discard which means the moment
