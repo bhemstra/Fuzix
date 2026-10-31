@@ -18,7 +18,7 @@ scrolling.
 - Switch to keeping all but tmpbuf buffers in the REU all the time
 - Use freed space to allow for full console and 2K character table
 - Set UDG and font symbols
-- Ink/paper/border
+DONE - Ink/paper/border
 - How to expose colour map for apps ?
 - Use REU space to allow for a second console and console switching
 - Better cursor - sprite maybe ?

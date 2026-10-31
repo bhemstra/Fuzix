@@ -624,8 +624,6 @@ vector3:
 ;
 	lda	_need_resched
 	beq	no_preempt
-;	FIXME
-	bne	no_preempt
 
 	;
 	; Put this task to sleep and continue with the next one. As we
