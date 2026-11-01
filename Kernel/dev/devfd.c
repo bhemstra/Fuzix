@@ -233,7 +233,7 @@ static int fd_transfer(bool rwflag, uint_fast8_t minor, uint_fast8_t rawflag)
 		if(--nblocks == 0)
 			break;
 
-		if (++devfd_sector > devfd_dtbl[minor].spt)
+		if (++devfd_sector >= devfd_dtbl[minor].spt)
 		{
 			devfd_sector = 0;
 			++devfd_track;
