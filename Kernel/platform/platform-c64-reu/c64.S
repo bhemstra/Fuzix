@@ -655,8 +655,6 @@ x2:
 	lda	#P_READY
 	sta	P_TAB__P_STATUS_OFFSET,x
 	; Switch out .. we will re-appear at some point
-	lda	_udata+U_DATA__U_PTAB
-	ldx	_udata+U_DATA__U_PTAB+1
 	; When we enter this code we will switch the low 16K underneath
 	; us. Other stuff will run on a different low bank, and at some
 	; point we will return with S correct and on our 6502 and C
