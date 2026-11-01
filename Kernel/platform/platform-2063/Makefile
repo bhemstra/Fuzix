@@ -24,28 +24,28 @@ serial.S: serialgen serial.hdr
 	./serialgen >serial.S
 
 $(AOBJS): %.o: %.S
-	$(CROSS_AS) $(ASOPTS) $<
+	$(CROSS_AS) $(ASOPTS) $< -o $@
 
 $(COBJS): %.o: %.c
-	$(CROSS_CC) $(CROSS_CCOPTS) -c $<
+	$(CROSS_CC) $(CROSS_CCOPTS) -c $< -o $@
 
 $(DOBJS): %.o: ../../dev/%.c
-	$(CROSS_CC) $(CROSS_CCOPTS) -c $<
+	$(CROSS_CC) $(CROSS_CCOPTS) -c $< -o $@
 
 $(DAOBJS): %.o: ../../dev/%.S
-	$(CROSS_AS) $(ASOPTS) $@ $<
+	$(CROSS_AS) $(ASOPTS) $< -o $@
 
 $(DISCARD_COBJS): %.o: %.c
-	$(CROSS_CC) $(CROSS_CCOPTS) $(CROSS_CC_SEGDISC) -c $<
+	$(CROSS_CC) $(CROSS_CCOPTS) $(CROSS_CC_SEGDISC) -c $< -o $@
 
 $(DISCARD_DOBJS): %.o: ../../dev/%.c
-	$(CROSS_CC) $(CROSS_CCOPTS) $(CROSS_CC_SEGDISC) -c $<
+	$(CROSS_CC) $(CROSS_CCOPTS) $(CROSS_CC_SEGDISC) -c $< -o $@
 
 $(NOBJS): %.o: ../../dev/net/%.c
-	$(CROSS_CC) $(CROSS_CCOPTS) -c $<
+	$(CROSS_CC) $(CROSS_CCOPTS) -c $< -o $@
 
 clean:
-	rm -f $(OBJS) core *~ boot.tmp boot.bin loader.inc
+	rm -f $(OBJS) core *~ boot.tmp boot.bin loader.inc fuzix.com fuzix.tmpmap
 
 boot:	boot.S
 	fcc -mz80 -c boot.S
@@ -67,8 +67,8 @@ image: boot
 	../../network.o ../../tty.o ../../vt.o ../../font/font6x8.o \
 	devinput.o ../../devinput.o ../../mm.o ../../mm/memalloc_none.o \
 	../../swap.o ../../mm/bankfixed.o ../../devsys.o devlpr.o sd.o \
-	devtty.o serial.o  vdp.o ../../dev/tinydisk.o ../../dev/tinydisk_discard.o \
-	../../dev/tinysd.o ../../dev/tinysd_discard.o \
+	devtty.o serial.o  vdp.o tinydisk.o tinydisk_discard.o \
+	tinysd.o tinysd_discard.o \
 	/opt/fcc/lib/z80/libz80.a -m fuzix.tmpmap
 	perl -lpe '$$_=hex' fuzix.tmpmap | paste -d" " - fuzix.tmpmap  |  sort -n |  cut -d" " -f 2- >../../fuzix.map
 
