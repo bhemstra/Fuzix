@@ -50,12 +50,12 @@ struct s_queue ttyinq[NUM_DEV_TTY + 1] = {	/* ttyinq[0] is never used */
 	{NULL, NULL, NULL, 0, 0, 0},
 	{tbuf1, tbuf1, tbuf1, TTYSIZ, 0, TTYSIZ / 2},  /* Console */
 	{tbuf2, tbuf2, tbuf2, TTYSIZ, 0, TTYSIZ / 2},  /* VC */
-	{tbuf2, tbuf2, tbuf2, TTYSIZ, 0, TTYSIZ / 2},  /* reserved */
-	{tbuf2, tbuf2, tbuf2, TTYSIZ, 0, TTYSIZ / 2},  /* reserved */
-	{tbuf3, tbuf3, tbuf3, TTYSIZ, 0, TTYSIZ / 2},  /* ACIA */
+	{tbuf3, tbuf3, tbuf3, TTYSIZ, 0, TTYSIZ / 2},  /* reserved */
+	{tbuf4, tbuf4, tbuf4, TTYSIZ, 0, TTYSIZ / 2},  /* reserved */
+	{tbuf5, tbuf5, tbuf5, TTYSIZ, 0, TTYSIZ / 2},  /* ACIA */
 	/* Drivewire Virtual Serial Ports */
-	{tbuf6, tbuf6, tbuf4, TTYSIZ, 0, TTYSIZ / 2},
-	{tbuf7, tbuf7, tbuf5, TTYSIZ, 0, TTYSIZ / 2},
+	{tbuf6, tbuf6, tbuf6, TTYSIZ, 0, TTYSIZ / 2},
+	{tbuf7, tbuf7, tbuf7, TTYSIZ, 0, TTYSIZ / 2},
 };
 
 tcflag_t termios_mask[NUM_DEV_TTY + 1] = {
