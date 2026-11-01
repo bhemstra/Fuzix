@@ -379,7 +379,7 @@ notsel:
 	; FIXME: longer motor spin up delay goes here
 	jsr	waitdisk
 	beq	motor_was_on	; ready and idle - success
-	ldb	#0xff		; not ready or no response
+	ldd	#0xff		; not ready or no response
 	puls	dp,pc
 
 ;

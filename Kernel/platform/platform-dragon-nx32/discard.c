@@ -159,7 +159,7 @@ void map_init(void)
 
 		/* The analysis needs to be in asm as we need to page in
 		   the ROM to peer at it */
-		if (rom->id == CART_HDBDOS) {
+		if (rom && rom->id == CART_HDBDOS) {
                         uint16_t t = cart_analyze_hdb();
                         struct hdb_rom_id *hdb = hdb_lookup(t);
                         if (hdb) {
