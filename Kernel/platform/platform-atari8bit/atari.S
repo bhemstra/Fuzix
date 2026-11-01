@@ -1019,8 +1019,7 @@ doline:
 	lda	#' '
 	sta	(@tmp),y
 	dey
-	cpy	#0xFF
-	bne	doline
+	bpl	doline
 	lda	@tmp
 	clc
 	adc	#40
