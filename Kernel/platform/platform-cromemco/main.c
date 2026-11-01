@@ -6,18 +6,20 @@
 
 uaddr_t ramtop = PROGTOP;
 
+#if 0
 void plt_idle(void)
 {
  __asm
   halt
  __endasm;
 }
+#endif
 
-__sfr __at 0x08 timer4;
+#define TIMER4	0x08
 
 void plt_interrupt(void)
 {
- timer4 = 156;
+ out(TIMER4, 156);
  tty_drain();
  timer_interrupt();
 }

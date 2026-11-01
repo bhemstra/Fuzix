@@ -391,6 +391,7 @@ num:    adda	#0x30 ; start at '0' (0x30='0')
 	.overlay1
 
 ; Compiler helpers
+; To be fixed for banked ABI
 
 	.export _swab
 

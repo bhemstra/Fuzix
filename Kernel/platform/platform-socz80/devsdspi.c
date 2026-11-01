@@ -15,16 +15,13 @@
    being used. At that point we've got mode setting but more importantly
    the tx port is r/w as rx/tx so the port can sit in (c) */
 
-__sfr __at 0x30 sd_spi_chipselect;
-__sfr __at 0x31 sd_spi_status;
-__sfr __at 0x32 sd_spi_tx;
-__sfr __at 0x33 sd_spi_rx;
-__sfr __at 0x34 sd_spi_divisor;
-__sfr __at 0x35 sd_spi_gpio;		/* only on later VHDL */
-__sfr __at 0x36 sd_spi_mode;		/* only on later VHDL */
-
-#define SD_SPI_TX 0x32
-#define SD_SPI_RX 0x33
+#define SD_SPI_CHIPSEL	0x30
+#define SD_SPI_STATUS	0x31
+#define SD_SPI_TX	0x32
+#define SD_SPI_RX	0x33
+#define SD_SPI_DIVISOR	0x34
+#define SD_SPI_GPIO	0x35	/* only on later VHDL */
+#define SD_SPI_MODE	0x36	/* only on later VHDL */
 
 void sd_spi_mode0(void)
 {
@@ -37,33 +34,35 @@ void sd_spi_clock(bool go_fast)
   /* Currently the sd driver just uses 'slow' and 'fast'. That's ok for
      sd but mmc really needs to be 16MHz */
   if (go_fast)
-    sd_spi_divisor = 3;	//2
+    out(SD_SPI_DIVISOR, 3);
   else
-    sd_spi_divisor = 255;
+    out(SD_SPI_DIVISOR, 255);
 }
 
 void sd_spi_raise_cs(void)
 {
-  sd_spi_chipselect = 0xFF;
+  out(SD_SPI_CHIPSEL, 0xFF);
 }
 
 void sd_spi_lower_cs(void)
 {
-  sd_spi_chipselect = 0xFE;
+  out(SD_SPI_CHIPSEL, 0xFE);
 }
 
 void sd_spi_transmit_byte(unsigned char byte)
 {
-  sd_spi_tx = byte;
+  out(SD_SPI_TX, byte);
 }
 
 uint8_t sd_spi_receive_byte(void)
 {
   uint8_t r;
-  sd_spi_tx = 0xFF;
-  r = sd_spi_rx;
+  out(SD_SPI_TX, 0xFF);
+  r = in(SD_SPI_RX);
   return r;
 }
+
+#if 0	// TODO
 
 COMMON_MEMORY
 
@@ -107,3 +106,4 @@ bool sd_spi_transmit_sector(void) __naked
     jr xferout
   __endasm;
 }
+#endif

@@ -18,12 +18,12 @@ extern uint8_t fd_cmd[7];
 
 static uint8_t fd_tab[MAX_DRIVE];
 
-__sfr __at 0x04	fd_aux;
-__sfr __at 0x30 fd_stcmd;
-__sfr __at 0x31 fd_track;
-__sfr __at 0x32 fd_sector;
-__sfr __at 0x33 fd_data;
-__sfr __at 0x34 fd_ctrlflag;
+#define	FD_AUX		0x04
+#define FD_STCMD	0x30
+#define FD_TRACK	0x31
+#define FD_SECTOR	0x32
+#define FD_DATA		0x33
+#define FD_CTRLFLAG	0x34
 
 /* 4 large disks (0 5" 1 8" 255 none */
 
@@ -71,7 +71,7 @@ static uint8_t live[4] = { 0xFF, 0xFF, 0xFF, 0xFF};
  */
 
 
-static int fd_transfer(uint8_t minor, bool is_read, uint8_t rawflag)
+static int fd_transfer(uint_fast8_t minor, bool is_read, uint_fast8_t rawflag)
 {
     int8_t tries;
     uint8_t err = 0;
@@ -115,7 +115,7 @@ static int fd_transfer(uint8_t minor, bool is_read, uint8_t rawflag)
     while (ct < udata.u_nblock) {
         /* Need to consider SS v DS here */
         if (large) {
-            fd_aux = 0x4C | ((udata.u_block & 16) ? 0 : 2) ;
+            out(FD_AUX, 0x4C | ((udata.u_block & 16) ? 0 : 2));
             trackno = udata.u_block / 32;
             sector = udata.u_block % 16;
         } else {
@@ -123,19 +123,19 @@ static int fd_transfer(uint8_t minor, bool is_read, uint8_t rawflag)
             sector = udata.u_block % 20;
             if (sector > 9) {
                 sector -= 10;
-                fd_aux = 0x5C;	/* side 1 */
+                out(FD_AUX, 0x5C);	/* side 1 */
             } else
-                fd_aux = 0x5E;
+                out(FD_AUX, 0x5E);
         }
         /* Buffer */
         fd_cmd[3] = ((uint16_t)udata.u_dptr) & 0xFF;
         fd_cmd[4] = ((uint16_t)udata.u_dptr) >> 8;
 
         for (tries = 0; tries < 4 ; tries++) {
-            (void)fd_data;
-            fd_sector = sector+1;/*FIXME/skew[sector];  Also makes 1 based */
-            if (fd_track != trackno) {
-                fd_data = trackno;
+            in(FD_DATA);
+            out(FD_SECTOR, sector + 1);	/*FIXME/skew[sector];  Also makes 1 based */
+            if (in(FD_TRACK) != trackno) {
+                out(FD_DATA, trackno);
                 if (fd_seek()) {
                     fd_reset();
                     continue;
@@ -169,7 +169,7 @@ bad2:
 /* We encode the minor has
         000[8/5][sd/dd][ss/ds][disk.2] */
 
-int fd_open(uint8_t minor, uint16_t flag)
+int fd_open(uint_fast8_t minor, uint16_t flag)
 {
     uint8_t *dp = live + (minor & 3);
 
@@ -188,22 +188,19 @@ int fd_open(uint8_t minor, uint16_t flag)
     return 0;
 }
 
-int fd_close(uint8_t minor)
+int fd_close(uint_fast8_t minor)
 {
     live[minor & 3] = 0xFF;
     return 0;
 }
 
-int fd_read(uint8_t minor, uint8_t rawflag, uint8_t flag)
+int fd_read(uint_fast8_t minor, uint_fast8_t rawflag, uint_fast8_t flag)
 {
-    flag;
     return fd_transfer(minor, true, rawflag);
 }
 
-int fd_write(uint8_t minor, uint8_t rawflag, uint8_t flag)
+int fd_write(uint_fast8_t minor, uint_fast8_t rawflag, uint_fast8_t flag)
 {
-    flag;rawflag;minor;
     return fd_transfer(minor, false, rawflag);
 }
 
-    

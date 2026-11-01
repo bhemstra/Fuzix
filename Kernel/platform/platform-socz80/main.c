@@ -20,35 +20,31 @@ uint8_t plt_param(char *p)
     return 0;
 }
 
-__sfr __at 0x00 uart0_status;
-__sfr __at 0x01 uart0_data;
-__sfr __at 0x28 uart1_status;
-__sfr __at 0x29 uart1_data;
+#define UART0_STATUS	0x00
+#define UART0_DATA	0x01
+#define UART1_STATUS	0x28
+#define UART1_DATA	0x29
 
 extern uint8_t irqwork;
 
 void plt_interrupt(void)
 {
-    uint8_t st0 = uart0_status;
-    uint8_t st1 = uart1_status;
+    uint8_t st0 = in(UART0_STATUS);
+    uint8_t st1 = in(UART1_STATUS);
     uint8_t ts = irqwork;
     uint8_t d;
 
     irqwork = 0;
     if (ts & 0xC0) {
-        if (ts & 0x80) { 	/* RX data */
-            d = uart0_data;
-            tty_inproc(1, d);
-        }
+        if (ts & 0x80) 	/* RX data */
+            tty_inproc(1, in(UART0_DATA));
         if (ts & 0x40)		/* TX idle */
             tty_outproc(1);
     }
     if (st1 & 0xC0) {
         uart1_status = st1 & 0xFC;
-        if (st1 & 0x80) { 	/* RX data */
-            d = uart1_data;
-            tty_inproc(2, d);
-        }
+        if (st1 & 0x80) 	/* RX data */
+            tty_inproc(2, in(UART1_DATA);
         if (st1 & 0x40)		/* TX idle */
             tty_outproc(2);
     }

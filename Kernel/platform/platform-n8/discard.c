@@ -9,14 +9,12 @@
 #include "config.h"
 #include <z180.h>
 
-extern uint8_t far_read(uint8_t page) __fastcall;
-extern uint8_t far_write(uint8_t page) __fastcall;
-extern uint8_t far_writable(uint8_t page) __fastcall;
+extern uint8_t far_read(uint8_t page);
+extern uint8_t far_write(uint8_t page);
+extern uint8_t far_writable(uint8_t page);
 
 static uint16_t low_mem = 128;
 static uint16_t high_mem = 0;
-
-uint8_t fontdata_6x8;		/* Dummy for linker */
 
 void init_hardware_c(void)
 {
@@ -77,6 +75,5 @@ void map_init(void)
 
 uint8_t plt_param(char *p)
 {
-    used(p);
     return 0;
 }

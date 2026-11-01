@@ -3,30 +3,26 @@
 #include <kdata.h>
 #include <devlpr.h>
 
-int lpr_open(uint8_t minor, uint16_t flag)
+int lpr_open(uint_fast8_t minor, uint16_t flag)
 {
-    minor; flag; // shut up compiler
     udata.u_error = ENODEV;
     return (-1);
 }
 
-int lpr_close(uint8_t minor)
+int lpr_close(uint_fast8_t minor)
 {
-    minor; // shut up compiler
     udata.u_error = ENODEV;
     return (-1);
 }
 
-int lpr_read(uint8_t minor, uint8_t rawflag, uint8_t flag)
+int lpr_read(uint_fast8_t minor, uint_fast8_t rawflag, uint_fast8_t flag)
 {
-    minor; rawflag; flag; // shut up compiler
     udata.u_error = EINVAL;
     return (-1);
 }
 
-int lpr_write(uint8_t minor, uint8_t rawflag, uint8_t flag)
+int lpr_write(uint_fast8_t minor, uint_fast8_t rawflag, uint_fast8_t flag)
 {
-    minor; rawflag; flag; // shut up compiler
     udata.u_error = ENODEV;
     return (-1);
 }
