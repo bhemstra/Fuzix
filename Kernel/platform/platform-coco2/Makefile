@@ -10,9 +10,9 @@ DDSRCS = ../../dev/tinydisk_discard.c ../../dev/tinyide_discard.c
 ASRCS = crt0.S coco2.S video.S
 ASRCS += tricks.S commonmem.S
 
-COBJS = $(CSRCS:.c=$(BINEXT))
-CDOBJS = $(CDSRCS:.c=$(BINEXT))
-AOBJS = $(ASRCS:.S=$(BINEXT))
+COBJS = $(CSRCS:.c=.o)
+CDOBJS = $(CDSRCS:.c=.o)
+AOBJS = $(ASRCS:.S=.o)
 DOBJS = $(patsubst ../../dev/%.c,%.o, $(DSRCS))
 DDOBJS = $(patsubst ../../dev/%.c,%.o, $(DDSRCS))
 OBJS  = $(COBJS) $(C3OBJS) $(CDOBJS) $(AOBJS) $(DOBJS) $(DDOBJS)
@@ -21,26 +21,26 @@ CROSS_CCOPTS += -I../../dev/
 
 all: $(OBJS)
 
-$(COBJS): %$(BINEXT): %.c
-	$(CROSS_CC) $(CROSS_CCOPTS) $(CROSS_CC_SEG2) -c $<
+$(COBJS): %.o: %.c
+	$(CROSS_CC) $(CROSS_CCOPTS) $(CROSS_CC_SEG2) -c $< -o $@
 
-$(CDOBJS): %$(BINEXT): %.c
-	$(CROSS_CC) $(CROSS_CCOPTS) $(CROSS_CC_SEGDISC) -c $<
+$(CDOBJS): %.o: %.c
+	$(CROSS_CC) $(CROSS_CCOPTS) $(CROSS_CC_SEGDISC) -c $< -o $@
 
 tinyide.o: ../../dev/tinyide.c
-	$(CROSS_CC) $(CROSS_CCOPTS) $(CROSS_CC_SEGD) -c $<
+	$(CROSS_CC) $(CROSS_CCOPTS) $(CROSS_CC_SEGD) -c $< -o $@
 
 tinydisk.o: ../../dev/tinydisk.c
-	$(CROSS_CC) $(CROSS_CCOPTS) $(CROSS_CC_SEGD) -c $<
+	$(CROSS_CC) $(CROSS_CCOPTS) $(CROSS_CC_SEGD) -c $< -o $@
 
-$(DDOBJS): %$(BINEXT): ../../dev/%.c
-	$(CROSS_CC) $(CROSS_CCOPTS) $(CROSS_CC_SEGDISC) -c $<
+$(DDOBJS): %.o: ../../dev/%.c
+	$(CROSS_CC) $(CROSS_CCOPTS) $(CROSS_CC_SEGDISC) -c $< -o $@
 
-$(AOBJS): %$(BINEXT): %.S
-	$(CROSS_AS) $(ASOPTS) $< -o $*.o
+$(AOBJS): %.o: %.S
+	$(CROSS_AS) $(ASOPTS) $< -o $@
 
 clean:
-	rm -f *.o *~ fuzix.tmp fuzix.img bootfuz.bin
+	rm -f *.o *~ fuzix.tmp fuzix.img bootfuz.bin fuzix.tmpmap
 
 image: bootfuz.bin
 	$(CROSS_LD) -b -C 0x0400 -f CLDBbsSX -o ../../fuzix.bin -m fuzix.tmpmap \
@@ -48,8 +48,7 @@ image: bootfuz.bin
 	coco2.o discard.o ../../mm/simple.o \
 	../../start.o ../../version.o ../../cpu-6809/lowlevel-6809.o ../../mm/memalloc_none.o \
 	tricks.o main.o ../../timer.o ../../kdata.o devices.o \
-	../../dev/tinydisk.o ../../dev/tinydisk_discard.o ../../dev/tinyide.o \
-	../../dev/tinyide_discard.o \
+	tinydisk.o tinydisk_discard.o tinyide.o tinyide_discard.o \
 	../../devio.o ../../filesys.o ../../process.o ../../inode.o ../../syscall_fs.o \
 	../../syscall_proc.o ../../syscall_other.o ../../mm.o ../../swap.o \
 	../../tty.o ../../devsys.o ../../usermem.o ../../syscall_fs2.o ../../syscall_exec16.o \
