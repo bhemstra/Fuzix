@@ -1,7 +1,6 @@
 ;
-;	Common is placed at 0xF000 by fuzix.lnk
+;	Common is placed at 0xF000
 ;
-
 	.common
-#include "../../cpu-z80u/std-commonmem.S"
 
+#include "../../cpu-z80u/std-commonmem.S"
