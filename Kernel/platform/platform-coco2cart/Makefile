@@ -11,50 +11,56 @@ DDSRCS = ../../dev/tinydisk_discard.c ../../dev/tinyide_discard.c
 
 ASRCS = crt0.S coco2.S ide.S usermem.S sdc.S
 ASRCS += bootstrap.S bootstrap_sdc.S #bootstrap_dw.S
-ASRCS += tricks.S commonmem.S ../../dev/drivewire/drivewire.S video.S
+ASRCS += tricks.S commonmem.S video.S
 
-COBJS = $(CSRCS:.c=$(BINEXT))
-CIOBJS = $(CISRCS:.c=$(BINEXT))
-C3OBJS = $(C3SRCS:.c=$(BINEXT))
-CDOBJS = $(CDSRCS:.c=$(BINEXT))
-AOBJS = $(ASRCS:.S=$(BINEXT))
+ADSRCS = ../../dev/drivewire/drivewire.S
+
+COBJS = $(CSRCS:.c=.o)
+CIOBJS = $(CISRCS:.c=.o)
+C3OBJS = $(C3SRCS:.c=.o)
+CDOBJS = $(CDSRCS:.c=.o)
+AOBJS = $(ASRCS:.S=.o)
+ADOBJS = $(patsubst ../../dev/drivewire/%.S,%.o, $(ADSRCS))
 DOBJS = $(patsubst ../../dev/%.c,%.o, $(DSRCS))
 DDOBJS = $(patsubst ../../dev/%.c,%.o, $(DDSRCS))
-OBJS  = $(COBJS) $(C3OBJS) $(CDOBJS) $(AOBJS) $(DOBJS) $(DDOBJS) $(CIOBJS)
+OBJS  = $(COBJS) $(C3OBJS) $(CDOBJS) $(AOBJS) $(DOBJS) $(DDOBJS) $(CIOBJS) $(ADOBJS)
 
 CROSS_CCOPTS += -I../../dev/
 
 all: $(OBJS)
 
-$(COBJS): %$(BINEXT): %.c
-	$(CROSS_CC) $(CROSS_CCOPTS) $(CROSS_CC_SEG1) -c $<
+$(COBJS): %.o: %.c
+	$(CROSS_CC) $(CROSS_CCOPTS) $(CROSS_CC_SEG1) -c $< -o $@
 
-$(CIOBJS): %$(BINEXT): %.c
-	$(CROSS_CC) $(CROSS_CCOPTS) $(CROSS_CC_SEG1) -c $<
+$(CIOBJS): %.o: %.c
+	$(CROSS_CC) $(CROSS_CCOPTS) $(CROSS_CC_SEG1) -c $< -o $@
 
-$(CDOBJS): %$(BINEXT): %.c
-	$(CROSS_CC) $(CROSS_CCOPTS) $(CROSS_CC_SEGDISC) -c $<
+$(CDOBJS): %.o: %.c
+	$(CROSS_CC) $(CROSS_CCOPTS) $(CROSS_CC_SEGDISC) -c $< -o $@
 
-$(DOBJS): %$(BINEXT): ../../dev/%.c
-	$(CROSS_CC) $(CROSS_CCOPTS) $(CROSS_CC_SEGD) -c $<
+$(DOBJS): %.o: ../../dev/%.c
+	$(CROSS_CC) $(CROSS_CCOPTS) $(CROSS_CC_SEGD) -c $< -o $@
 
-$(DDOBJS): %$(BINEXT): ../../dev/%.c
-	$(CROSS_CC) $(CROSS_CCOPTS) $(CROSS_CC_SEGDISC) -c $<
+$(DDOBJS): %.o: ../../dev/%.c
+	$(CROSS_CC) $(CROSS_CCOPTS) $(CROSS_CC_SEGDISC) -c $< -o $@
 
-$(AOBJS): %$(BINEXT): %.S
+$(AOBJS): %.o: %.S
+	$(CROSS_AS) $(ASOPTS) $< -o $*.o
+
+$(ADOBJS): %.o: ../../dev/drivewire/%.S
 	$(CROSS_AS) $(ASOPTS) $< -o $*.o
 
 clean:
-	rm -f *.o *~ fuzixide.rom fuzixsdc.rom fuxix.img
+	rm -f *.o *~ *.rom *.bin fuzix.ide fuzix.sdc fuzix.img fuzix.tmpmap
 
 image:
 	$(CROSS_LD) -b -C 0xC000 -X 0x0400 -S 0x1000 -f CXSsLDBb -o ../../fuzix.bin -m fuzix.tmpmap \
 	crt0.o bootstrap.o commonmem.o coco2.o discard.o ../../mm/simple.o \
 	../../start.o ../../version.o ../../cpu-6809/lowlevel-6809.o \
 	tricks.o main.o ../../timer.o ../../kdata.o devices.o \
-	../../dev/drivewire/drivewire.o ../../dev/devdw.o ../../dev/tinyide.o \
-	../../dev/tinyide_discard.o ide.o ../../dev/tinydisk.o \
-	../../dev/tinydisk_discard.o ../../mm/memalloc_none.o \
+	drivewire.o devdw.o tinyide.o \
+	tinyide_discard.o ide.o tinydisk.o \
+	tinydisk_discard.o ../../mm/memalloc_none.o \
 	../../devio.o ../../filesys.o ../../process.o ../../inode.o ../../syscall_fs.o \
 	../../syscall_proc.o ../../syscall_other.o ../../syscall_exec.o ../../mm.o ../../swap.o \
 	../../tty.o ../../devsys.o ../../usermem.o usermem.o ../../syscall_fs2.o \
@@ -73,8 +79,8 @@ image:
 	crt0.o bootstrap_sdc.o commonmem.o coco2.o discard.o ../../mm/simple.o \
 	../../start.o ../../version.o ../../cpu-6809/lowlevel-6809.o \
 	tricks.o main.o ../../timer.o ../../kdata.o devices.o \
-	../../dev/drivewire/drivewire.o ../../dev/devdw.o ../../dev/tinyide.o ../../dev/tinyide_discard.o ide.o \
-	../../dev/tinydisk.o ../../dev/tinydisk_discard.o ../../mm/memalloc_none.o \
+	drivewire.o devdw.o tinyide.o tinyide_discard.o ide.o \
+	tinydisk.o tinydisk_discard.o ../../mm/memalloc_none.o \
 	../../devio.o ../../filesys.o ../../process.o ../../inode.o ../../syscall_fs.o \
 	../../syscall_proc.o ../../syscall_other.o ../../syscall_exec.o ../../mm.o ../../swap.o \
 	../../tty.o ../../devsys.o ../../usermem.o usermem.o ../../syscall_fs2.o \
