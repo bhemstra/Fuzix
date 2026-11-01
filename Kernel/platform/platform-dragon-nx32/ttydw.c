@@ -182,6 +182,8 @@ void dw_vclose( uint8_t minor){
 	buf[2]=DW_VCLOSE;
 	if( p->flags & DW_FLG_OPEN ){
 		dw_transaction( buf, 3, NULL, 0, 0 );
+		p->flags &= ~DW_FLG_OPEN;
+		open_ports--;
 	}
 }
 
