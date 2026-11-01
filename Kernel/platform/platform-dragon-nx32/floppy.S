@@ -294,6 +294,8 @@ piaload:
 ;
 _fd_reset:
 	pshs	dp
+	tfr	d,x		; drive struct
+	clr	,x		; we will be on track 0
 	lda	#0xFF
 	tfr	a,dp
 	ldb	fdcctrl
