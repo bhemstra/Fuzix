@@ -633,13 +633,6 @@ void kputhexbyte(unsigned int v)
 void kputunum(unsigned int v)
 {
 	unsigned char n = 0;
-#ifdef CONFIG_32BIT
-	putdigit((v / 1000000000) % 10, &n);
-	putdigit((v / 100000000) % 10, &n);
-	putdigit((v / 10000000) % 10, &n);
-	putdigit((v / 1000000) % 10, &n);
-	putdigit((v / 100000) % 10, &n);
-#endif
 	putdigit((v / 10000) % 10, &n);
 	putdigit((v / 1000) % 10, &n);
 	putdigit((v / 100) % 10, &n);
@@ -680,10 +673,6 @@ void kprintf(const char *fmt, ...)
 					fmt++;
 					continue;
 				}
-#ifdef CONFIG_32BIT
-				case 'p':
-					fmt--;
-#endif
 				case 'l': /* assume an x is following */
 				{
 					long l = va_arg(ap, unsigned long);
@@ -702,9 +691,7 @@ void kprintf(const char *fmt, ...)
 					continue;
 				}
 
-#ifndef CONFIG_32BIT
 				case 'p':
-#endif
 				case 'x':
 				case 'd':
 				case 'u':

@@ -25,8 +25,6 @@ FUZIX_ROOT = $(shell pwd)
 
 # FIXME: we should make it possible to do things entirely without /opt/fcc
 PATH := /opt/fcc/bin:$(PATH)
-# Add the tools directory
-PATH := $(FUZIX_ROOT)/Build/tools/:$(PATH)
 
 # Use Berkeley yacc always (Bison output is too large)
 YACC = byacc

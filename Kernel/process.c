@@ -387,9 +387,6 @@ ptptr ptab_alloc(void)
 			}
 			newp->p_top = udata.u_top;		/* also for init creation */
 			if (udata.u_ptab) {		/* on forking */
-#ifdef CONFIG_UDATA_TEXTTOP
-				newp->p_texttop = udata.u_texttop;
-#endif
 				newp->p_pgrp = udata.u_ptab->p_pgrp;
 				memcpy(newp->p_name, udata.u_ptab->p_name, sizeof(newp->p_name));
 			}
@@ -936,9 +933,6 @@ void doexit(uint16_t val)
 	udata.u_cursig = 0;
 
 	/* Discard our memory before we blow away and reuse the memory */
-#ifdef CONFIG_PLATFORM_UDMA
-	plt_udma_kill(udata.u_ptab);
-#endif
 	pagemap_free(udata.u_ptab);
 
 	for (j = 0; j < UFTSIZE; ++j) {

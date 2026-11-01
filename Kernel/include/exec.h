@@ -5,13 +5,6 @@
 #ifndef _SYS_EXEC_H
 #define _SYS_EXEC_H
 
-#if defined(__mc68000__) || defined(__ns32k__) || defined(__ARM_ARCH_7EM__) || defined(__riscv)
-
-#include "a.out.h"
-
-/* Feature bits for 32bit to go with the 32bit exec header once done */
-#define AF_68000_020	1		/* Has 68020 features */
-#else
 
 /* 16 byte header for current style binary. We try to reflect the general
    pattern of naming in classic Unixlike systems */
@@ -81,6 +74,5 @@ struct exec {
 };
 
 
-#endif
 #endif
 

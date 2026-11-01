@@ -153,9 +153,6 @@ arg_t _execve(void)
 	if (pagemap_realloc(&hdr, top - MAPBASE))
 		goto nogood3;
 
-#ifdef CONFIG_PLATFORM_UDMA
-	plt_udma_kill(udata.u_ptab);
-#endif
 	/* From this point on we are commmited to the exec() completing */
 
 	/* Core dump and ptrace permission logic */
@@ -246,13 +243,8 @@ arg_t _execve(void)
 	/* Shove argc and the address of argv just below envp
 	   FIXME: should flip them in crt0.S of app for R2L setups
 	   so we can get rid of the ifdefs */
-#ifdef CONFIG_CALL_R2L	/* Arguments are stacked the 'wrong' way around */
-	uputp((uaddr_t) nargv, nenvp - 2);
-	uputp((uaddr_t) argc, nenvp - 1);
-#else
 	uputp((uaddr_t) nargv, nenvp - 1);
 	uputp((uaddr_t) argc, nenvp - 2);
-#endif
 
 	/* Set stack pointer for the program */
 	udata.u_isp = nenvp - 2;

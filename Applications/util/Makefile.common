@@ -142,9 +142,6 @@ $(APPTC): %: %.o
 $(APPCURSES): %: %.o
 	$(LINKER) $(CRT0) $^ -o $@ $(LINKER_OPT) -lcurses$(USERCPU) -ltermcap$(USERCPU) $(LINKER_TAIL)
 
-fforth: %: %.o
-	$(LINKER) $(CRT0) $^ -o $@ $(LINKER_OPT) $(LINKER_TAIL)
-	
 size.report: $(APPS) $(APPSNS) $(APPTC)
 	ls -l $^ > $@
 

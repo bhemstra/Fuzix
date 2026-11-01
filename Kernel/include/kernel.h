@@ -18,7 +18,6 @@ From UZI by Doug Braun and UZI280 by Stefan Nitschke.
 #include "exec.h"
 
 #include "cpu.h"
-#include "fpu.h"
 
 #include "panic.h"
 
@@ -178,10 +177,6 @@ typedef uint32_t uoff_t;	/* Internal use so we can keep the compiler happy */
 
 typedef uint16_t blkno_t;    /* Can have 65536 512-byte blocks in filesystem */
 #define NULLBLK ((blkno_t)-1)
-
-#if (BLKSIZE == 400)
-#include "blk400.h"
-#endif
 
 #ifndef BLKSIZE
 #include "blk512.h"
@@ -512,9 +507,6 @@ typedef struct p_tab {
     uint8_t	p_event;	/* Events */
     usize_t	p_top;		/* Copy of u_top */
     usize_t	p_size;		/* For ps (KBytes) */
-#ifdef CONFIG_UDATA_TEXTTOP
-    usize_t	p_texttop;	/* Copy of u_texttop */
-#endif
 #ifdef CONFIG_LEVEL_2
     uint16_t	p_session;
 #endif
@@ -594,14 +586,6 @@ typedef struct u_data {
     uint8_t	*u_dptr;	/* Address for I/O */
     usize_t	u_done;		/* Counter for driver methods */
 
-#ifdef CONFIG_UDATA_TEXTTOP
-    uaddr_t u_texttop;		/* Top of binary text (used for I/D systems) */
-#endif
-   /* TODO: A specific define for "32bit" */
-#if defined(__mc68000__) || defined(__ns32k__) || defined(__ARM_ARCH_7EM__) || defined(__riscv)
-    uaddr_t u_database;		/* data base for systems with separate code/data
-				   blocks. FIXME - sort this out in the usermode hdr */
-#endif
 #ifdef CONFIG_NET
     struct udata_net u_net;
 #endif
@@ -611,9 +595,6 @@ typedef struct u_data {
     uint8_t	u_flags;
 #define U_FLAG_NOCORE		1	/* Set if no core dump */
     struct rlimit u_rlimit[NRLIMIT];	/* Resource limits */
-#endif
-#ifdef CONFIG_FPU
-     struct fpu_context u_fpu;
 #endif
 } u_data;
 
@@ -1315,9 +1296,6 @@ extern arg_t _memalloc(void);	  /* FUZIX system call 64 */
 extern arg_t _memfree(void);	  /* FUZIX system call 65 */
 extern arg_t _ftruncate(void);    /* FUZIX system call 67 */
 
-#if defined(CONFIG_32BIT)
-#include "kernel32.h"
-#endif
 
 #endif /* __FUZIX__KERNEL_DOT_H__ */
 

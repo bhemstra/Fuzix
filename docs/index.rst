@@ -13,7 +13,6 @@ Welcome to Fuzix's documentation!
    Notices
    Intro
    Platforms
-   DevPlatforms
    DiskFormats
    build-filesystem-ng
    MemoryManagement

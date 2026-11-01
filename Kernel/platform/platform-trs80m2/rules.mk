@@ -1,4 +1,3 @@
-CROSS_CCOPTS += --peep-file $(FUZIX_ROOT)/Kernel/cpu-z80/rst.peep
 #
 #	All the C code goes in CODE2 so that _CODE (which the linker always
 #	places first, at 0x0100) stays small and the common memory and data

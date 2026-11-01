@@ -1,15 +1,36 @@
 ** TRS-80 ONLY TREE **
 
 This copy of FUZIX has been cut down to the Tandy TRS-80 Model 4 (target
-`trs80`) and the TRS-80 Model II family (target `trs80m2`, a new and so far
-untested port). All other processors and platforms have been removed. See
-BUILD_REQUIREMENTS.md for the tool chain and
+`trs80`) and the TRS-80 Model II family (target `trs80m2`, a new port that
+boots in the trs80gp emulator). All other processors, platforms, memory
+models and programs that are not built for these machines have been
+removed. See BUILD_REQUIREMENTS.md for the tool chain and
 Kernel/platform/platform-trs80*/README.md for the machines.
 
 ```
 make TARGET=trs80 kernel
 make TARGET=trs80m2 kernel
+make TARGET=trs80m2 diskimage
 ```
+
+## Layout
+
+| Directory              | Contents                                         |
+|------------------------|--------------------------------------------------|
+| `Kernel`               | Core kernel (SDCC)                               |
+| `Kernel/cpu-z80`       | Z80 low level code, compiler settings, `sdccrt` run time helpers |
+| `Kernel/mm`            | Memory management (`bankfixed.c` is used by both machines) |
+| `Kernel/lib`           | Shared Z80 bank switching code                   |
+| `Kernel/dev`           | DriveWire driver (Model 4)                       |
+| `Kernel/platform/platform-trs80`   | Model 4 port                         |
+| `Kernel/platform/platform-trs80m2` | Model II port                        |
+| `Kernel/tools`         | Host tools for building kernels and disk images  |
+| `Library`              | C library (built with fcc)                       |
+| `Applications`         | User programs                                    |
+| `Standalone`           | Host tools for Fuzix file systems (mkfs, fsck, ucp) and the file system contents |
+| `Target`               | fcc build rules for user programs                |
+| `Tools`                | Tool chain check and the Model II simulator (`m2sim`) |
+| `docs`                 | Design notes                                     |
 
 **FuzixOS**: Because Small Is Beautiful
 

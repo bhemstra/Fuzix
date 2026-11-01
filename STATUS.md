@@ -14,9 +14,10 @@ calling convention of the hand written assembly code.
 
 ## TRS80m2 (Model II, 12, 16, 16B, 6000 as a Z80 machine)
 
-New port. The kernel and boot floppy image build. Not yet run on hardware
-or in an emulator, see `Kernel/platform/platform-trs80m2/README.md` for the
-list of things to check first.
+New port. Boots from floppy and from hard disk, runs multi user and shuts
+down cleanly in the trs80gp emulator. Not yet run on real hardware, see
+`Kernel/platform/platform-trs80m2/README.md` for the things to check
+first.
 
 ## User space
 

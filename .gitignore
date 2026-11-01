@@ -37,3 +37,4 @@ Kernel/tools/modlib-z80
 Kernel/tools/trslabel
 Kernel/tools/visualize
 Library/tools/syscall_z80
+Kernel/cpu-z80/sdccrt/*.lib

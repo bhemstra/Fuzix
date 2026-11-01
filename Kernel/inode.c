@@ -145,9 +145,6 @@ void readi(regptr inoptr ino, uint_fast8_t flag)
 				brelse(bp);
 			}
 			/* Bletch */
-#if defined(__M6809__)
-                        gcc_miscompile_workaround();
-#endif
 			umove(amount);
 			if (ispipe && LOWORD(udata.u_offset) >= 18 * BLKSIZE)
 				udata.u_offset = 0;
