@@ -92,7 +92,7 @@ static struct hdb_rom_id hdb[] = {
 int cart_find(int id)
 {
 	int i;
-	for (i = 0; i < id; i++) {
+	for (i = 0; i < cartslots; i++) {
 		if (carttype[i] == id)
 			return i;
 	}
