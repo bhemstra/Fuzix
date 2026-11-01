@@ -23,39 +23,39 @@ CROSS_CCOPTS += -I../../dev/ -I../../dev/net/
 
 CROSS_CC_HIGH = --codeseg COMMONMEM
 
-JUNK = *.o *.lst *.asm *.Sym *.rst *.map *.ihx *.bin
+JUNK = *.o *.map *.bin
 
 all:	$(OBJS)
 
 $(AOBJS): %.o: %.S
-	$(CROSS_AS) $(ASOPTS) $<
+	$(CROSS_AS) $(ASOPTS) $< -o $@
 
 $(COBJS): %.o: %.c
-	$(CROSS_CC) $(CROSS_CCOPTS) -c $<
+	$(CROSS_CC) $(CROSS_CCOPTS) -c $< -o $@
 
 $(DOBJS): %.o: ../../dev/%.c
-	$(CROSS_CC) $(CROSS_CCOPTS) -c $<
+	$(CROSS_CC) $(CROSS_CCOPTS) -c $< -o $@
 
 $(DHOBJS): %.o: ../../dev/%.c
-	$(CROSS_CC) $(CROSS_CCOPTS) -c $<
+	$(CROSS_CC) $(CROSS_CCOPTS) -c $< -o $@
 
 $(DAOBJS): %.o: ../../dev/%.S
-	$(CROSS_AS) $(ASOPTS) $@ $<
+	$(CROSS_AS) $(ASOPTS) $@ $< -o $@
 
 $(DISCARD_COBJS): %.o: %.c
-	$(CROSS_CC) $(CROSS_CCOPTS) $(CROSS_CC_SEGDISC) -c $<
+	$(CROSS_CC) $(CROSS_CCOPTS) $(CROSS_CC_SEGDISC) -c $< -o $@
 
 $(DISCARD_DOBJS): %.o: ../../dev/%.c
-	$(CROSS_CC) $(CROSS_CCOPTS) $(CROSS_CC_SEGDISC) -c $<
+	$(CROSS_CC) $(CROSS_CCOPTS) $(CROSS_CC_SEGDISC) -c $< -o $@
 
 $(NOBJS): %.o: ../../dev/net/%.c
-	$(CROSS_CC) $(CROSS_CCOPTS) -c $<
+	$(CROSS_CC) $(CROSS_CCOPTS) -c $< -o $@
 
 dart.S: dartgen
 	./dartgen >dart.S
 
 clean:
-	rm -f $(OBJS) $(JUNK)  core *~ *.tmp *.o
+	rm -f $(OBJS) $(JUNK)  core *~ *.tmp *.o fuzix.com boot.com boot.rom
 
 boot.com: boot.S
 	fcc -mz80 -c boot.S
@@ -81,8 +81,8 @@ image: boot.com boot.rom
 	../../syscall_proc.o ../../syscall_other.o ../../syscall_net.o \
 	../../network.o ../../tty.o ../../mm.o ../../mm/memalloc_none.o \
 	../../swap.o ../../mm/bankfixed.o ../../devsys.o devlpr.o devfd.o floppy.o \
-	devtty.o dart.o  ../../dev/tinydisk.o ../../dev/tinydisk_discard.o \
-	../../dev/tinyscsi.o ../../dev/tinyscsi_discard.o devscsi.o ncr5380.o \
+	devtty.o dart.o  tinydisk.o tinydisk_discard.o \
+	tinyscsi.o tinyscsi_discard.o devscsi.o ncr5380.o \
 	/opt/fcc/lib/z80/libz80.a -m fuzix.tmpmap
 	perl -lpe '$$_=hex' fuzix.tmpmap | paste -d" " - fuzix.tmpmap  |  sort -n |  cut -d" " -f 2- >../../fuzix.map
 	../../tools/packdiscard ../../fuzix.bin fuzix.tmp <fuzix.tmpmap
