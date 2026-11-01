@@ -1,6 +1,5 @@
 ;
-;	We have a custom implementation of usermem. We really need
-;	to optimize ldir_to/from_user.
+;	The lack of a common single stack makes life a bit interesting
 ;
 #include "kernelu.def"
 #include "../../cpu-z80u/kernel-z80.def"
@@ -18,152 +17,175 @@
 	.common
 
 uputget:
+	ld	ix,10
+	add	ix, sp
         ; load DE with the byte count
-        ld c, (ix + 8) ; byte count
-        ld b, (ix + 9)
-	ld a, b
-	or c
-	ret z		; no work
+        ld	c, (ix + 4) ; byte count
+        ld	b, (ix + 5)
+	ld	a, b
+	or	c
+	ret	z		; no work
         ; load HL with the source address
-        ld l, (ix + 4) ; src address
-        ld h, (ix + 5)
+        ld	l, (ix + 0) ; src address
+        ld	h, (ix + 1)
         ; load DE with destination address
-        ld e, (ix + 6)
-        ld d, (ix + 7)
+        ld	e, (ix + 2)
+        ld	d, (ix + 3)
 	ret
 
 __uget:
-	push ix
-	ld ix,0
-	add ix, sp
-	push bc
-	call uputget
-	jr z, uget_out
-	push de
-	pop ix
-	call ldir_from_user
+	push	bc
+	push	ix
+	call	uputget
+	jr	z, uget_out
+	bit	7, d		; User below 0x8000 so may need to switch
+	jr	z, gcopy_slow
+do_ldir:
+	ldir
 uget_out:
-	pop bc
-	pop ix
-	ld hl,0
+	pop	ix
+	pop	bc
+	ld	hl,0
 	ret
+gcopy_slow:
+	;	Copy BC bytes from HL to DE switching banks as we go
+	ld	a,(_udata + U_DATA__U_PAGE)
+	exx
+	ld	d,a
+	ld	bc, 0x0D7F
+	jr	pcgo
 
 __uput:
-	push ix
-	ld ix,0
-	add ix,sp
-	push bc
-	call uputget
-	jr z, uget_out
-	push de
-	pop ix
-	call ldir_to_user
-	jr uget_out
+	push	bc
+	push	ix
+	call	uputget
+	jr	z, uget_out
+	bit	7, h		; User below 0x8000 same issue
+	jr	z, pcopy_slow
+	jr	do_ldir
+pcopy_slow:
+	;	Copy BC bytes from HL to DE switching banks as we go
+	ld	a,(_udata + U_DATA__U_PAGE)
+	exx
+	ld	b,a
+	ld	d,0x0D
+	ld	c,0x7F
+pcgo:
+	exx
 
-;
-;	The kernel IRQ code will restore the bank if it interrupts this
-;	logic
-;
+	; Optimize with djnz and split loop TODO
+pcloop:
+	ld	a, (hl)
+	exx
+	out	(c), b
+	exx
+	ld	(de), a
+	inc	hl
+	inc	de
+	exx
+	out	(c),d
+	exx
+	dec	bc
+	ld	a,b
+	or	c
+	jr	nz, pcloop
+	jr	uget_out
+	
 __uzero:
-	ld hl,5
-	add hl,sp
-	push bc
-	ld b,(hl)
-	dec hl
-	ld c,(hl)
-	dec hl
-	ld a,(hl)
-	dec hl
-	ld l,(hl)
-	ld h,a
-	ld a,b
-	or c
-	jr z,uzout
-	ld a,0x81
-	out (0x38),a		; user bank
-	rlca
-	out (0x30),a
-	ld (hl),0
-	dec bc
-	ld a,b
-	or c
-	jr z, uzout
-	ld e,l
-	ld d,h
-	inc de
+	ld	hl,7
+	add	hl,sp
+	push	bc
+	ld	b,(hl)
+	dec	hl
+	ld	c,(hl)
+	dec	hl
+	ld	a,(hl)
+	dec	hl
+	ld	l,(hl)
+	ld	h,a
+	ld	a,b
+	or	c
+	jr	z,uzout
+	ld	a, (_udata + U_DATA__U_PAGE)
+	out	(0x7F),a
+	ld	(hl),0
+	inc	hl
+	dec	bc
+	ld	a,b
+	or	c
+	jr	z, uzout
 	ldir
 uzout:
-	ld a,1
-	out (0x38),a
-	rlca
-	out (0x30),a
-	pop bc
+	ld	a,0x0D
+	out	(0x7F),a
+	pop	bc
 	ret
 
 __ugetc:
-	pop de
-	pop hl
-	push hl
-	push de
-	ld a,0x81
-	out (0x38),a
-	rlca
-	out (0x30),a
-	ld l,(hl)
-	ld h,#0
-	jp map_kernel
+	ld	hl,4
+	add	hl,sp
+	ld	e,(hl)
+	inc	hl
+	ld	d,(hl)
+	ld	a, _udata + U_DATA__U_PAGE
+	out	(0x7F),a
+	ld	l,(hl)
+	ld	a,0x0D
+	out	(0x7F),a
+	ld	h, 0
+	ret
 
 __ugetw:
-	pop de
-	pop hl
-	push hl
-	push de
-	ld a,0x81
-	out (0x38),a
-	rlca
-	out (0x30),a
-	ld a,(hl)
-	inc hl
-	ld h,(hl)
-	ld l,a
-	jp map_kernel
+	ld	hl,4
+	add	hl,sp
+	ld	e,(hl)
+	inc	hl
+	ld	d,(hl)
+	ld	a, _udata + U_DATA__U_PAGE
+	out	(0x7F),a
+	ld	a,(hl)
+	inc	hl
+	ld	h,(hl)
+	ld	l,a
+	ld	a,0x0D
+	out	(0x7F),a
+	ret
 	
 __uputc:
-	ld hl,2
-	add hl,sp
-	ld e,(hl)
-	inc hl
-	ld d,(hl)
-	inc hl
-	ld a,(hl)
-	inc hl
-	ld h,(hl)
-	ld l,a
-	ld a, 0x81
-	out (0x38),a
-	rlca
-	out (0x30),a
-	ld (hl),e
-	ld hl,0
-	jp map_kernel
+	ld	hl, 4
+	add	hl,sp
+	ld	e,(hl)
+	inc	hl
+	inc	hl
+	ld	a,(hl)
+	inc	hl
+	ld	h,(hl)
+	ld	l,a
+	ld	a, _udata + U_DATA__U_PAGE
+	out	(0x7F),a
+	ld	(hl),e
+	ld	a,0x0D
+	out	(0x7F),a
+	ld	hl,0
+	ret
 
 __uputw:
-	ld hl,2
-	add hl,sp
-	ld e,(hl)
-	inc hl
-	ld d,(hl)
-	inc hl
-	ld a,(hl)
-	inc hl
-	ld h,(hl)
-	ld l,a
-	ld a, 0x81
-	out (0x38),a
-	rlca
-	out (0x30),a
-	ld (hl),e
-	inc hl
-	ld (hl),d
-	ld hl,0
-	jp map_kernel
+	ld	hl, 4
+	add	hl,sp
+	ld	e,(hl)
+	inc	hl
+	ld	d,(hl)
+	inc	hl
+	ld	a,(hl)
+	inc	hl
+	ld	h,(hl)
+	ld	l,a
+	ld	a, _udata + U_DATA__U_PAGE
+	out	(0x7F),a
+	ld	(hl),e
+	inc	hl
+	ld	d,(hl)
+	ld	a,0x0D
+	out	(0x7F),a
+	ld	hl,0
+	ret

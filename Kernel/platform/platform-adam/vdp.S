@@ -1,4 +1,4 @@
-#include "kernel.def"
+#include "kernelu.def"
 #include "../../cpu-z80u/kernel-z80.def"
 
 	.common
@@ -12,8 +12,6 @@
 	.export _plot_char
 	.export _cursor_disable
 	.export _vdp_load_font
-
-	.export _fontdata_6x8
 
 ;
 ; VDP routines are directly hooked into the vt layer
@@ -34,6 +32,8 @@
 
 plt_interrupt_all:
 	ret
+
+	.export _vdpport
 
 _vdpport:
 	.word 0x28BF	; port 0xBF, 40 byte count in fastest load

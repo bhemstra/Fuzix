@@ -64,7 +64,8 @@ void tty_pollirq(void)
 
 void tty_putc(uint_fast8_t minor, uint_fast8_t c)
 {
-	vtoutput(&c, 1);
+	uint8_t ch = c;
+	vtoutput(&ch, 1);
 }
 
 void tty_sleeping(uint_fast8_t minor)
@@ -253,7 +254,7 @@ static uint8_t igrb_to_msx(uint8_t c)
 }
 
 
-int vdptty_ioctl(uint8_t minor, uarg_t arg, char *ptr)
+int vdptty_ioctl(uint_fast8_t minor, uarg_t arg, char *ptr)
 {
   unsigned i = 0;
   uint_fast8_t is_wr = 0;
