@@ -1,3 +1,6 @@
+vpath %.c ../platform-amprolb
+vpath %.S ../platform-amprolb
+
 ASRCS = crt0.S tricks.S commonmem.S lb.S ncr5380.S dart.S floppy.S
 CSRCS = devices.c main.c devtty.c devfd.c devscsi.c devlpr.c
 DISCARD_CSRCS = discard.c
@@ -19,7 +22,7 @@ NOBJS = $(patsubst ../../dev/net/%.c,%.o, $(NSRCS))
 
 OBJS  = $(AOBJS) $(COBJS) $(DOBJS) $(DHOBJS) $(DAOBJS) $(DISCARD_DOBJS) $(DISCARD_COBJS) $(NOBJS)
 
-CROSS_CCOPTS += -I../../dev/ -I../../dev/net/
+CROSS_CCOPTS += -I../../dev/ -I../../dev/net/ -I../platform-amprolb
 
 CROSS_CC_HIGH = --codeseg COMMONMEM
 
