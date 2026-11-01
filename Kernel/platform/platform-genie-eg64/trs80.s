@@ -4,7 +4,6 @@
 ;
 
         ; exported symbols
-        .export init_early
         .export _program_vectors
 	.export plt_interrupt_all
 
@@ -20,7 +19,6 @@
 
         ; exported debugging tools
         .export _plt_monitor
-        .export _plt_reboot
         .export outchar
 # 1 "kernelu.def"
 ; UZI mnemonics for memory addresses etc
@@ -43,7 +41,7 @@ CONFIG_SWAP		    .equ 1
  
 # 44
  
-# 28 "trs80.S"
+# 26 "trs80.S"
 ; -----------------------------------------------------------------------------
 ; COMMON MEMORY BANK (0x0000 upwards after the udata etc)
 ; -----------------------------------------------------------------------------
@@ -58,73 +56,13 @@ _need_resched:
 	.common
 
 _plt_monitor:
+	call	_vtflush		; get any panic onscreen
 monitor_spin:
 	di
 	jr monitor_spin
 
 plt_interrupt_all:
 	ret
-
-
-; -----------------------------------------------------------------------------
-; Needs to be higher than the ROM space
-; -----------------------------------------------------------------------------
-
-	.code
-
-_plt_reboot:
-	di
-	ld	sp,0
-	xor	a
-	out	(0x43),a
-	out	(0xC0),a
-	rst	0
-
-	.discard
-
-init_early:
-	ld	bc,0xC0	; map in the ROM at 0000-3FFF
-	out	(c),b
-	ld	a,(4)	; identify machine
-	out	(c),c	; ROM back out
-	cp	0x30
-	jr	nz, not_m3
-	ld	a,1
-	ld	(_trs80_model),a
-	ld	a,0x74
-	out	(0xE0),a	; Mask iobus, cassette
-	xor	a
-	out	(0xE4),a	; and NMI sources
-	jr	not_vg
-not_m3:
-	; Detect machine type (Model 1 or LNW80 or VideoGenie ?)
-	ld	a,8
-	out	(0xFE),a	; turn off ROM on the LNW80
-	ld	hl,0
-	ld	a,(hl)
-	inc	(hl)
-	cp	(hl)
-	jr	z, not_lnw	; if it's RAM it's an LNW80
-	dec	(hl)
-	xor	a
-	out	(0xFE),a	; ROM back on, normal video mode for now
-	ld	a,2		; LNW80
-	ld	(_trs80_model), a
-	jr	not_vg
-not_lnw:
-	out	(c),b		; ROM back in
-	ld	hl,(0x18F5)
-	out	(c),c
-	ld	de,0x4E53	; 'SN' for VG, 'L3' for TRS80 Model 1
-	or	a
-	sbc	hl,de
-	jr	nz, not_vg
-	ld	a,3
-	ld	(_trs80_model),a; Video Genie
-not_vg:
-	ld bc,	0xC0C0
-	out	(c),b		; Back to RAM mapping
-        ret
 
 
 	.common
@@ -139,14 +77,14 @@ not_vg:
 go_slow:
 	ld	a,(_trs80_model)
 	or	a
-	ret	z
+	ret	nz
 	xor	a
 	out	(254),a
 	ret
 go_fast:
 	ld	a,(_trs80_model)
 	or	a
-	ret	z
+	ret	nz
 	; A = 0
 	inc	a
 	out	(254),a

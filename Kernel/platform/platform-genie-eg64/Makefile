@@ -34,16 +34,16 @@ $(DISCARD_COBJS): %.o: %.c
 	$(CROSS_CC) $(CROSS_CCOPTS) $(CROSS_CC_SEGDISC) -c $<
 
 $(DOBJS): %.o: ../../dev/%.c
-	$(CROSS_CC) $(CROSS_CCOPTS) $(CROSS_CC_SEG2) -c $<
+	$(CROSS_CC) $(CROSS_CCOPTS) $(CROSS_CC_SEG2) -c $< -o $@
 
 $(DISCARD_DOBJS): %.o: ../../dev/%.c
-	$(CROSS_CC) $(CROSS_CCOPTS) $(CROSS_CC_SEGDISC) -c $<
+	$(CROSS_CC) $(CROSS_CCOPTS) $(CROSS_CC_SEGDISC) -c $< -o $@
 
 $(NOBJS): %.o: ../../dev/net/%.c
-	$(CROSS_CC) $(CROSS_CCOPTS) $(CROSS_CC_SEG2) -c $<
+	$(CROSS_CC) $(CROSS_CCOPTS) $(CROSS_CC_SEG2) -c $< -o $@
 
 clean:
-	rm -f *.o core *~ boot.raw
+	rm -f *.o core *~ boot.raw trs80load.bin boot.jv3 boot.raw fuzix.tmpmap
 
 image: trs80load.bin
 	$(CROSS_LD) -b -S 0x0100 -C 0x8000 -f SsLDBbXC -o ../../fuzix.bin \
