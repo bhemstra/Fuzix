@@ -31,28 +31,28 @@ dart.S: dartgen
 	./dartgen >dart.S
 
 $(AOBJS): %.o: %.S
-	$(CROSS_AS) $(ASOPTS) $<
+	$(CROSS_AS) $(ASOPTS) $< -o $@
 
 $(COBJS): %.o: %.c
-	$(CROSS_CC) $(CROSS_CCOPTS) $(CROSS_CC_HIGH) -c $<
+	$(CROSS_CC) $(CROSS_CCOPTS) $(CROSS_CC_HIGH) -c $< -o $@
 
 $(DOBJS): %.o: ../../dev/%.c
-	$(CROSS_CC) $(CROSS_CCOPTS) $(CROSS_CC_HIGH) -c $<
+	$(CROSS_CC) $(CROSS_CCOPTS) $(CROSS_CC_HIGH) -c $< -o $@
 
 $(DHOBJS): %.o: ../../dev/%.c
-	$(CROSS_CC) $(CROSS_CCOPTS) $(CROSS_CC_HIGH) -c $<
+	$(CROSS_CC) $(CROSS_CCOPTS) $(CROSS_CC_HIGH) -c $< -o $@
 
 $(DAOBJS): %.o: ../../dev/%.S
-	$(CROSS_AS) $(ASOPTS) $@ $<
+	$(CROSS_AS) $(ASOPTS) $< -o $@
 
 $(DISCARD_COBJS): %.o: %.c
-	$(CROSS_CC) $(CROSS_CCOPTS) $(CROSS_CC_SEGDISC) -c $<
+	$(CROSS_CC) $(CROSS_CCOPTS) $(CROSS_CC_SEGDISC) -c $< -o $@
 
 $(DISCARD_DOBJS): %.o: ../../dev/%.c
-	$(CROSS_CC) $(CROSS_CCOPTS) $(CROSS_CC_SEGDISC) -c $<
+	$(CROSS_CC) $(CROSS_CCOPTS) $(CROSS_CC_SEGDISC) -c $< -o $@
 
 $(NOBJS): %.o: ../../dev/net/%.c
-	$(CROSS_CC) $(CROSS_CCOPTS) -c $<
+	$(CROSS_CC) $(CROSS_CCOPTS) -c $< -o $@
 
 clean:
 	rm -f $(OBJS) $(JUNK)  core *~ diskstrap fuzix.rom *.s
@@ -75,8 +75,8 @@ image: cpmboot.com
 	../../syscall_proc.o ../../syscall_other.o ../../syscall_net.o \
 	../../network.o ../../tty.o ../../mm.o ../../mm/memalloc_none.o \
 	../../swap.o ../../mm/simple.o ../../devsys.o devlpr.o devfd.o floppy.o \
-	devtty.o dart.o  ../../dev/tinydisk.o ../../dev/tinydisk_discard.o \
-	../../dev/tinyscsi.o ../../dev/tinyscsi_discard.o devscsi.o ncr5380.o \
+	devtty.o dart.o  tinydisk.o tinydisk_discard.o \
+	tinyscsi.o tinyscsi_discard.o devscsi.o ncr5380.o \
 	/opt/fcc/lib/z80/libz80.a -m fuzix.tmpmap
 	perl -lpe '$$_=hex' fuzix.tmpmap | paste -d" " - fuzix.tmpmap  |  sort -n |  cut -d" " -f 2- >../../fuzix.map
 	dd if=../../fuzix.bin of=fuzix.rom bs=32768 count=1
