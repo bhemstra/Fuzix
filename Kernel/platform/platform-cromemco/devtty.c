@@ -30,8 +30,8 @@ static uint8_t ttybase[] = { 0, 0, 32, 80 };
 
 uint8_t tty_irqmode = 0;
 
-#define	TUART0_STATUS	0x00
-#define TUART0_DATA	0x01
+__sfr __at 0x00 tuart0_status;
+__sfr __at 0x01 tuart0_data;
 
 /* Write to system console */
 void kputchar(char c)
@@ -42,10 +42,10 @@ void kputchar(char c)
     /* FIXME: spins in irq on */
     while(1) {
         /* Spin with interrupts on if possible */
-        while(!(in(TUART0_STATUS) & 0x80));
+        while(!(tuart0_status & 0x80));
         irq = di();
-        if (in(TUART0_STATUS) & 0x80)) {
-            out(TUART0_DATA, c);
+        if (tuart0_status & 0x80) {
+            tuart0_data = c;
             irqrestore(irq);
             return;
         }
@@ -54,7 +54,7 @@ void kputchar(char c)
     }
 }
 
-char tty_writeready(uint_fast8_t minor)
+char tty_writeready(uint8_t minor)
 {
     if (minor == 1 && tuart0_txl < 63)
         return TTY_READY_NOW;
@@ -65,7 +65,7 @@ char tty_writeready(uint_fast8_t minor)
     return TTY_READY_SOON;
 }
 
-void tty_putc(uint_fast8_t minor, uint_fast8_t c)
+void tty_putc(uint8_t minor, unsigned char c)
 {
     irqflags_t irq;
     if (tty_writeready(minor) != TTY_READY_NOW)
@@ -80,13 +80,14 @@ void tty_putc(uint_fast8_t minor, uint_fast8_t c)
     irqrestore(irq);
 }
 
-void tty_sleeping(uint_fast8_t minor)
+void tty_sleeping(uint8_t minor)
 {
     ttypoll |= 1 << minor;
 }
 
-void tty_data_consumed(uint_fast8_t minor)
+void tty_data_consumed(uint8_t minor)
 {
+    used(minor);
 }
 
 void tty_drain(void)
@@ -109,8 +110,8 @@ void tty_drain(void)
         ttypoll &= ~(1 << 3);
         tty_outproc(3);
     }
-}
-
+}    
+ 
 static uint8_t baudbits[] = {
     1,
     1,
@@ -131,11 +132,13 @@ static uint8_t baudbits[] = {
     16
 };
 
-void tty_setup(uint_fast8_t minor, uint_fast8_t flags)
+void tty_setup(uint8_t minor, uint8_t flags)
 {
     struct termios *t = &ttydata[minor].termios;
     uint8_t baud = t->c_cflag & CBAUD;
     uint8_t r = ttybase[minor];
+
+    used(flags);
 
     out(r, baudbits[baud] | (t->c_cflag & CSTOPB) ? 0 : 0x80);
     if (baud <= B9600)
@@ -144,7 +147,8 @@ void tty_setup(uint_fast8_t minor, uint_fast8_t flags)
         out(r + 2, 0x18);
 }
 
-int tty_carrier(uint_fast8_t minor)
+int tty_carrier(uint8_t minor)
 {
+    used(minor);
     return 1;
 }

@@ -25,7 +25,7 @@ $(COBJS): %.rel: %.c
 	$(CROSS_CC) $(CROSS_CCOPTS) -c $<
 
 $(DOBJS): %.rel: ../../dev/%.c
-	$(CROSS_CC) $(CROSS_CCOPTS) -c $< -o $@
+	$(CROSS_CC) $(CROSS_CCOPTS) -c $<
 
 clean:
 	rm -f $(OBJS) $(JUNK)  core *~ 

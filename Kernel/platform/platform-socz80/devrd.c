@@ -1,4 +1,4 @@
-/* socz80 RAM disk driver
+/* socz80 RAM disk driver 
  *
  * Implements two RAM disks in the top 4MB of RAM, starting at 4MB and 6MB.
  * Each disk is 2MB in size.
@@ -13,23 +13,24 @@ volatile char   *rd_dptr;          /* pointer to data buffer */
 volatile int     rd_dlen;          /* data transfer length */
 volatile uint16_t  rd_address;     /* disk address (in 256-byte chunks) */
 
-int ramdisk_transfer(bool is_read, uint_fast8_t minor, uint_fast8_t rawflag);
+int ramdisk_transfer(bool is_read, uint8_t minor, uint8_t rawflag);
 int ramdisk_read(void); // assembler
 int ramdisk_write(void); // assembler
 
-int rd_read(uint_fast8_t minor, uint_fast8_t rawflag, uint_fast8_t flag)
+int rd_read(uint8_t minor, uint8_t rawflag, uint8_t flag)
 {
+    flag;
     return ramdisk_transfer(true, minor, rawflag);
 }
 
-int rd_write(uint_fast8_t minor, uint_fast8_t rawflag, uint_fast8_t flag)
+int rd_write(uint8_t minor, uint8_t rawflag, uint8_t flag)
 {
+    flag;
     return ramdisk_transfer(false, minor, rawflag);
 }
 
-int ramdisk_transfer(bool is_read, uint_fast8_t minor, uint_fast8_t rawflag)
+int ramdisk_transfer(bool is_read, uint8_t minor, uint8_t rawflag)
 {
-    irqflags_t irq;
     blkno_t block;
     uint16_t addr;
 
@@ -57,7 +58,7 @@ int ramdisk_transfer(bool is_read, uint_fast8_t minor, uint_fast8_t rawflag)
     //         is_read?"read":"write", minor, block, dptr, dlen);
 
     /* FIXME Should be able to avoid the __critical once bank switching is fixed */
-    irq = di();
+    __critical {
         rd_dlen = udata.u_nblock << 9;
         rd_dptr = udata.u_dptr;
         rd_address = addr;
@@ -65,13 +66,13 @@ int ramdisk_transfer(bool is_read, uint_fast8_t minor, uint_fast8_t rawflag)
             ramdisk_read();
         else
             ramdisk_write();
-    irqrestore(irq);
+    }
 
     return udata.u_nblock << BLKSHIFT;
 }
 
 
-int rd_open(uint_fast8_t minor)
+int rd_open(uint8_t minor)
 {
     if(minor < NUM_DEV_RD){
         return 0;

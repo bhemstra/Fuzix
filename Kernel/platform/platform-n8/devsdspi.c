@@ -15,14 +15,12 @@
 #include <blkdev.h>
 
 uint8_t rtc_shadow;			/* so we can stop the rtc messing us up */
-
-#define RTC_LATCH	0x88
+__sfr __at 0x88 rtc_latch;
 
 #define CSIO_CNTR_TE           (1<<4)   /* tx enable */
 #define CSIO_CNTR_RE           (1<<5)   /* rx enable */
 #define CSIO_CNTR_END_FLAG     (1<<7)   /* operation completed flag */
 
-#if 0
 /* the CSI/O and SD card send the bits of each byte in opposite orders, so we need to flip them over */
 static uint8_t reverse_byte(uint8_t byte) __naked
 {
@@ -52,23 +50,22 @@ reverse_byte_a:
     __endasm;
     byte; /* squelch compiler warning */
 }
-#endif
 
 void sd_spi_fast(void)
 {
     unsigned char c;
 
-    c = in(CSIO_CNTR) & 0xf8; /* clear low three bits, gives fastest rate (clk/20) */
-    out(CSIO_CNTR, c);
+    c = CSIO_CNTR & 0xf8; /* clear low three bits, gives fastest rate (clk/20) */
+    CSIO_CNTR = c;
 }
 
 void sd_spi_slow(void)
 {
     unsigned char c;
 
-    c = in(CSIO_CNTR) & 0xf8; /* clear low three bits, gives fastest rate (clk/20) */
+    c = CSIO_CNTR & 0xf8; /* clear low three bits, gives fastest rate (clk/20) */
     c = c | 0x03;     /* set low two bits, clk/160 (can go down to clk/1280, see data sheet) */
-    out(CSIO_CNTR, c);
+    CSIO_CNTR = c;
 }
 
 static void rtc_config(uint8_t m, uint8_t v)
@@ -76,14 +73,14 @@ static void rtc_config(uint8_t m, uint8_t v)
     irqflags_t irq = di();
     rtc_shadow &= ~m;
     rtc_shadow |= v;
-    out(RTC_LATCH, rtc_shadow);
+    rtc_latch = rtc_shadow;
     irqrestore(irq);
 }
 
 void sd_spi_raise_cs(void)
 {
     /* wait for idle */
-    while(in(CSIO_CNTR) & (CSIO_CNTR_TE | CSIO_CNTR_RE));
+    while(CSIO_CNTR & (CSIO_CNTR_TE | CSIO_CNTR_RE));
     /* Raise CS */
     rtc_config(0x04, 0x00);
 }
@@ -91,7 +88,7 @@ void sd_spi_raise_cs(void)
 void sd_spi_lower_cs(void)
 {
     /* wait for idle */
-    while(in(CSIO_CNTR) & (CSIO_CNTR_TE | CSIO_CNTR_RE));
+    while(CSIO_CNTR & (CSIO_CNTR_TE | CSIO_CNTR_RE));
     /* Lower CS */
     rtc_config(0x04, 0x04);
 }
@@ -104,13 +101,13 @@ void sd_spi_tx_byte(unsigned char byte)
     byte = reverse_byte(byte);
 
     /* wait for any current tx operation to complete */
-    do {
-        c = in(CSIO_CNTR);
-    } while(c & CSIO_CNTR_TE);
+    do{
+        c = CSIO_CNTR;
+    }while(c & CSIO_CNTR_TE);
 
     /* write the byte and enable txter */
-    out(CSIO_TRDR, byte);
-    out(CSIO_CNTR, c | CSIO_CNTR_TE);
+    CSIO_TRDR = byte;
+    CSIO_CNTR = c | CSIO_CNTR_TE;
 }
 
 uint8_t sd_spi_rx_byte(void)
@@ -118,21 +115,20 @@ uint8_t sd_spi_rx_byte(void)
     unsigned char c;
 
     /* wait for any current tx or rx operation to complete */
-    do {
-        c = in(CSIO_CNTR);
-    } while(c & (CSIO_CNTR_TE | CSIO_CNTR_RE));
+    do{
+        c = CSIO_CNTR;
+    }while(c & (CSIO_CNTR_TE | CSIO_CNTR_RE));
 
     /* enable rx operation */
-    out(CSIO_CNTR, c | CSIO_CNTR_RE);
+    CSIO_CNTR = c | CSIO_CNTR_RE;
 
     /* wait for rx to complete */
-    while(in(CSIO_CNTR) & CSIO_CNTR_RE);
+    while(CSIO_CNTR & CSIO_CNTR_RE);
 
     /* read byte */
-    return reverse_byte(in(CSIO_TRDR));
+    return reverse_byte(CSIO_TRDR);
 }
 
-#if 0
 /****************************************************************************/
 /* The innermost part of the transfer routines has to live in common memory */
 /* since it must be able to bank switch to the user memory bank.            */
@@ -140,12 +136,12 @@ uint8_t sd_spi_rx_byte(void)
 COMMON_MEMORY
 
 /* WRS: measured byte transfer time as approx 5.66us with Z180 @ 36.864MHz,
-   three times faster. Main change is to start the next rx operation
+   three times faster. Main change is to start the next rx operation 
    as soon as possible and overlap the loop housekeeping with the rx. */
 bool sd_spi_rx_sector(uint8_t *data) __naked
 {
     __asm
-waitrx:
+waitrx: 
         pop bc
         pop de
         push de			; address
@@ -259,7 +255,7 @@ txnextbyte:
         and #0x66
         xor c
         ld c, #_CSIO_CNTR       ; load IO port address
-waittx:
+waittx: 
         tstio #0x10             ; test bits in IO port (C)
         jr nz, waittx           ; wait for tx to complete
         out0 (_CSIO_TRDR), a    ; write byte to tx
@@ -274,4 +270,3 @@ transferdone:                   ; note this code is shared with sd_spi_rx_block
         jp map_kernel_restore   ; map kernel and return
     __endasm;
 }
-#endif

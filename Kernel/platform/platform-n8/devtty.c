@@ -131,36 +131,37 @@ void tty_setup(uint_fast8_t minor, uint_fast8_t flags)
 
 	/* ASCI serial set up */
 	if (minor == 1) {
-		out(ASCI_CNTLA0, cntla);
-		out(ASCI_CNTLB0, cntlb);
-		out(ASCI_ASEXT0, in(ASCEXT0) & ~0x20);
-		out(ASCI_ASEXT1, in(ASCI_ASEXT1) | ecr);
+		ASCI_CNTLA0 = cntla;
+		ASCI_CNTLB0 = cntlb;
+		ASCI_ASEXT0 &= ~0x20;
+		ASCI_ASEXT1 |= ecr;
 	} else if (minor == 2) {
-		out(ASCI_CNTLA1, cntla);
-		out(ASCI_CNTLB1, cntlb);
+		ASCI_CNTLA1 = cntla;
+		ASCI_CNTLB1 = cntlb;
 	}
 }
 
 /* For the moment */
 int tty_carrier(uint_fast8_t minor)
 {
+    minor;
     return 1;
 }
 
-void tty_pirq_asci0(void)
+void tty_pollirq_asci0(void)
 {
-    while(in(ASCI_STAT0) & 0x80)
-        tty_inproc(5, in(ASCI_RDR0));
-    if (in(ASCI_STAT0) & 0x70)
-        out(ASCI_CNTLA0, in(ASCI_CNTLA0) & ~0x08);
+    while(ASCI_STAT0 & 0x80)
+        tty_inproc(5, ASCI_RDR0);
+    if (ASCI_STAT0 & 0x70)
+        ASCI_CNTLA0 &= ~0x08;
 }
 
-void tty_pirq_asci1(void)
+void tty_pollirq_asci1(void)
 {
-    while(in(ASCI_STAT1) & 0x80)
-        tty_inproc(6, in(ASCI_RDR1));
-    if (in(ASCI_STAT1) & 0x70)
-        out(ASCI_CNTLA1, in(ASCI_CNTLA1) & ~0x08);
+    while(ASCI_STAT1 & 0x80)
+        tty_inproc(6, ASCI_RDR1);
+    if (ASCI_STAT1 & 0x70)
+        ASCI_CNTLA1 &= ~0x08;
 }
 
 static void tms_setoutput(uint_fast8_t minor)
@@ -192,11 +193,11 @@ void tty_putc(uint_fast8_t minor, uint_fast8_t c)
 	    break;
         case 5:
             while(!(ASCI_STAT0 & 2));
-            out(ASCI_TDR0, c);
+            ASCI_TDR0 = c;
             break;
         case 6:
             while(!(ASCI_STAT1 & 2));
-            out(ASCI_TDR1, c);
+            ASCI_TDR1 = c;
             break;
     }
 }
@@ -212,12 +213,9 @@ void tty_data_consumed(uint_fast8_t minor)
 
 ttyready_t tty_writeready(uint_fast8_t minor)
 {
-    if (minor == 1)
-	    return in(ASCI_STAT0) & 2 ? TTY_READY_NOW: TTY_READY_SOON;
-    else if (minor == 2)
-	    return in(ASCI_STAT1) & 2 ? TTY_READY_NOW: TTY_READY_SOON;
-    else
-    	return TYY_READY_NOW;
+    minor;
+    /* FIXME: */
+    return TTY_READY_NOW;
 }
 
 /* kernel writes to system console -- never sleep! */
@@ -519,8 +517,10 @@ int n8tty_ioctl(uint8_t minor, uarg_t arg, char *ptr)
 			return -1;
 		addr = (uint8_t *)rw.data;
 		size = rw.lines * rw.cols;
-		if (valaddr(addr, size, size, is_wr))
+		if (valaddr(addr, size, is_wr) != size) {
+			udata.u_error = EFAULT;
 			return -1;
+		}
 		if (arg == VDPIOC_READ)
 			udata.u_error = vdp_rop(&rw);
 		else
