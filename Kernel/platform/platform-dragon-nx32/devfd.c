@@ -66,13 +66,13 @@ static int fd_transfer(uint_fast8_t minor, bool is_read, uint_fast8_t rawflag)
         if (err)
             goto bad;
     }
-    udata.u_nblock *= 2;
-
     if (rawflag == 1 && d_blkoff(BLKSHIFT))
         return -1;
 
     if (rawflag > 1)
             goto bad2;
+
+    udata.u_nblock *= 2;	/* 512 byte blocks to 256 byte sectors */
 
 //    kprintf("Issue command: drive %d\n", minor);
     cmd[0] = rawflag;
