@@ -11,7 +11,7 @@ DOBJS = $(patsubst ../../dev/%.c,%.o, $(DSRCS))
 LSRCS = ../../lib/68000exception.c ../../lib/68000usercopy.c ../../lib/68000relocate.c
 LOBJS = $(patsubst ../../lib/%.c,%.o, $(LSRCS))
 
-COBJS = $(CSRCS:.c=$(BINEXT))
+COBJS = $(CSRCS:.c=.o)
 AOBJS = $(ASRCS:.S=.o)
 OBJS  = $(COBJS) $(AOBJS) $(DOBJS) $(LOBJS)
 
