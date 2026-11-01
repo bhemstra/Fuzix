@@ -378,7 +378,8 @@ notsel:
 	jsr	disknap
 	; FIXME: longer motor spin up delay goes here
 	jsr	waitdisk
-	tfr	a,b		; return in the right place
+	beq	motor_was_on	; ready and idle - success
+	ldb	#0xff		; not ready or no response
 	puls	dp,pc
 
 ;
