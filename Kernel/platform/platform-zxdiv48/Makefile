@@ -7,7 +7,7 @@ DZSRCS += ../../dev/zx/devinput.c
 DDZSRCS =
 ASRCS = crt0.S zx48.S zxvideo.S rd_divideplus.S
 ASRCS += tricks.S commonmem.S
-AZSRCS = ../../dev/zx/divide.S
+AZSRCS = ../../dev/zx/divide.S ../../dev/zx/keyscan.S
 
 COBJS = $(CSRCS:.c=.o)
 CDOBJS = $(CDSRCS:.c=.o)
@@ -30,31 +30,31 @@ font8x8.o: ../../font/font8x8.c force_over1.peep
 	$(CROSS_CC) $(CROSS_CCOPTS) -c ../../font/font8x8.c -o $@ -p force_over1.peep
 
 $(COBJS): %.o: %.c
-	$(CROSS_CC) $(CROSS_CCOPTS) $(CROSS_CC_SEG4) -c $<
+	$(CROSS_CC) $(CROSS_CCOPTS) $(CROSS_CC_SEG4) -c $< -o $@
 
 $(CDOBJS): %.o: %.c
-	$(CROSS_CC) $(CROSS_CCOPTS) $(CROSS_CC_SEGDISC) -c $<
+	$(CROSS_CC) $(CROSS_CCOPTS) $(CROSS_CC_SEGDISC) -c $< -o $@
 
 $(DOBJS): %.o: ../../dev/%.c
-	$(CROSS_CC) $(CROSS_CCOPTS) $(CROSS_CC_SEG4) -c $<
+	$(CROSS_CC) $(CROSS_CCOPTS) $(CROSS_CC_SEG4) -c $< -o $@
 
 $(DDOBJS): %.o: ../../dev/%.c
-	$(CROSS_CC) $(CROSS_CCOPTS) $(CROSS_CC_SEGDISC) -c $<
+	$(CROSS_CC) $(CROSS_CCOPTS) $(CROSS_CC_SEGDISC) -c $< -o $@
 
 $(AZOBJS): %.o: ../../dev/zx/%.S
-	$(CROSS_AS) $(ASOPTS) $<
+	$(CROSS_AS) $(ASOPTS) $< -o $@
 
 $(DZOBJS): %.o: ../../dev/zx/%.c
-	$(CROSS_CC) $(CROSS_CCOPTS) $(CROSS_CC_SEG3) -c $<
+	$(CROSS_CC) $(CROSS_CCOPTS) $(CROSS_CC_SEG3) -c $< -o $@
 
 $(DDZOBJS): %.o: ../../dev/zx/%.c
-	$(CROSS_CC) $(CROSS_CCOPTS) $(CROSS_CC_SEGDISC) -c $<
+	$(CROSS_CC) $(CROSS_CCOPTS) $(CROSS_CC_SEGDISC) -c $< -o $@
 
 $(AOBJS): %.o: %.S
-	$(CROSS_AS) $(ASOPTS) $<
+	$(CROSS_AS) $(ASOPTS) $< -o $@
 
 clean:
-	rm -f $(OBJS) *.lst *.asm *.Sym *.rst *.o core *~
+	rm -f *.o core *~ fuzix.tmpmap
 	rm -f *.ihx *.tmp loader loader-zxcf
 	rm -f FUZIX.BIN FUZIX comcode
 
@@ -77,7 +77,7 @@ image: loader loader-zxcf
 	crt0.o commonmem.o zx48.o ../../start.o \
 	../../version.o ../../cpu-z80u/lowlevel-z80u-banked.o \
 	../../usermem.o tricks.o main.o discard.o devrd.o rd_divideplus.o \
-	../../dev/zx/zxkeyboard.o ../../dev/zx/divide.o \
+	zxkeyboard.o divide.o \
 	../../timer.o ../../kdata.o devices.o ../../devio.o \
 	../../filesys.o ../../blk512.o ../../process.o \
 	../../inode.o ../../syscall_exec.o ../../syscall_exec16.o \
@@ -85,10 +85,8 @@ image: loader loader-zxcf
 	../../syscall_proc.o ../../syscall_other.o ../../syscall_net.o \
 	../../network.o ../../tty.o ../../mm.o ../../mm/memalloc_none.o \
 	../../swap.o ../../mm/simple.o ../../devsys.o ../../vt.o \
-	../../devinput.o ../../dev/zx/devinput.o ../../dev/zx/keyscan.o \
-	font8x8.o devtty.o zxvideo.o buffers.o \
-	../../dev/tinydisk.o ../../dev/tinydisk_discard.o \
-	../../dev/tinyide.o ../../dev/tinyide_discard.o \
+	../../devinput.o devinput.o keyscan.o font8x8.o devtty.o zxvideo.o \
+	buffers.o tinydisk.o tinydisk_discard.o tinyide.o tinyide_discard.o \
 	/opt/fcc/lib/z80/libz80.a -m fuzix.tmpmap -R fuzix.relocs
 	perl -lpe '$$_=hex' fuzix.tmpmap | paste -d" " - fuzix.tmpmap  |  sort -n |  cut -d" " -f 2- >../../fuzix.map
 	bankman ../../fuzix.bin fuzix.tmpmap fuzix.relocs z80
