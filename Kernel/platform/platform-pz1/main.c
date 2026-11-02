@@ -58,3 +58,30 @@ void plt_interrupt(void)
 	io_timer_reset = 0;
 	timer_interrupt();
 }
+
+/* TODO: put these into the asm bits */
+unsigned strlen(const char *p)
+{
+	unsigned n = 0;
+	while(*p++)
+		n++;
+	return n;
+}
+
+void *memcpy(void *to, const void *from, unsigned len)
+{
+	const uint8_t *f = from;
+	uint8_t *t = to;
+	while(len--)
+		*t++ = *f++;
+	return to;
+}
+
+void *memset(void *to, int v, unsigned len)
+{
+	uint8_t *t = to;
+	while(len--)
+		*t++ = v;
+	return to;
+}
+
