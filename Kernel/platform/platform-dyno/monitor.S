@@ -8,19 +8,20 @@
 #ifdef USE_FANCY_MONITOR
 
 	.code
-#include "../../lib/monitor-z80u.S"
+#include "../../lib/monitor-z80.S"
 
 	.common
-;
- just a stub goes in common memory
+; just a stub goes in common memory
+_plt_reboot:	; TODO
 _plt_monitor:
 	di
 	call	map_kernel
-	jp monitor_entry
+	jp	monitor_entry
 
 #else
 	.common
 
+_plt_reboot:	; TODO
 _plt_monitor:
 	di
 	call outnewline
@@ -33,8 +34,5 @@ stacknext:
 	call outchar
 	djnz stacknext
 	halt
-
-_plt_reboot:	; TODO
-	jr _plt_monitor
 
 #endif

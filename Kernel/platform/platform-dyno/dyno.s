@@ -20,10 +20,11 @@ OS_BANK                 .equ 0x00         ; value from include/kernel.h
 FIRST_RAM_BANK          .equ 0x80         ; low 512K of physical memory is ROM/ECB window.
 Z180_IO_BASE            .equ 0xC0
 
-USE_FANCY_MONITOR       .equ 1            ; disabling this saves around approx 0.5KB
+ 
+
 CPU_CLOCK_KHZ           .equ 18432        ; 18.432MHz * 1
-Z180_TIMER_SCALE        .equ 20           ; CPU clocks per timer tick
 TICKSPERSEC             .equ 40           ; timer interrupt rate (Hz)
+TCR_CLOCK		.equ 23040	  ; 18.432MHz 40 ticks / sec
 
 PROGBASE		.equ 0x0000
 PROGLOAD		.equ 0x0100
@@ -104,6 +105,10 @@ TIME_TMDR1H                 .equ Z180_IO_BASE+0x15     ; Timer data register,   
 TIME_RLDR1L                 .equ Z180_IO_BASE+0x16     ; Timer reload register,  channel 1L
 TIME_RLDR1H                 .equ Z180_IO_BASE+0x17     ; Timer reload register,  channel 1H
 TIME_FRC                    .equ Z180_IO_BASE+0x18     ; Timer Free running counter
+
+; CSIO
+CSIO_CNTR		    .equ Z180_IO_BASE+0x0A     ; CSIO control/status register
+CSIO_TRDR		    .equ Z180_IO_BASE+0x0B     ; CSIO transmit/receive data register
 
 ; Z180 Interrupts
 INT_IL                      .equ Z180_IO_BASE+0x33     ; Interrupt vector low register
