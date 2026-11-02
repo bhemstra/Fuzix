@@ -17,53 +17,71 @@
 	.common
 
 _sd_spi_tx_byte:
-	jp _spi_tx_byte
+	jp	_spi_tx_byte
 _sd_spi_rx_byte:
-	jp _spi_rx_byte
+	jp	_spi_rx_byte
 
+sd_map:
+	exx
+	call	spi0_set_regs
+	exx
+	ld	b,0
+	ld	a,(_td_raw)
+	or	a
+	ret	z
+	dec	a
+	jp	z,map_proc_always
+	ld	a,(_td_page)
+	jp	map_for_swap
 
 _sd_spi_rx_sector:
-	exx
-	call spi0_set_regs
-	exx
-	ld b, 0
+	pop	de
+	pop	hl
+	push	hl
+	push	de
+	push	bc
+	call	sd_map
 spi_rx_loop:
 	exx
-	call spi0_bitbang_rx
-	ld a,d
+	call	spi0_bitbang_rx
+	ld	a,d
 	exx
-	ld (hl),a
-	inc hl
+	ld	(hl),a
+	inc	hl
 	exx
-	call spi0_bitbang_rx
-	ld a,d
+	call	spi0_bitbang_rx
+	ld	a,d
 	exx
-	ld (hl),a
-	inc hl
-	djnz spi_rx_loop
+	ld	(hl),a
+	inc	hl
+	djnz	spi_rx_loop
 	exx
-	out (c),e
+	out	(c),e
 	exx
-	ret
+	pop	bc
+	jp	map_kernel
 
 _sd_spi_tx_sector:
-	exx
-	call spi0_set_regs
-	exx
-	ld b, 0
+	pop	de
+	pop	hl
+	push	hl
+	push	de
+	push	bc
+	call	sd_map
 spi_tx_loop:
-	ld a,(hl)
-	inc hl
+	ld	a,(hl)
+	inc	hl
 	exx
-	call spi0_bitbang_tx
+	call	spi0_bitbang_tx
 	exx
-	ld a,(hl)
-	inc hl
+	ld	a,(hl)
+	inc	hl
 	exx
-	call spi0_bitbang_tx
+	call	spi0_bitbang_tx
 	exx
-	djnz spi_tx_loop
+	djnz	spi_tx_loop
 	exx
-	out (c),e
+	out	(c),e
 	exx
-	ret
+	pop	bc
+	jp	map_kernel

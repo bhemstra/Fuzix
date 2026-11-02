@@ -1,0 +1,27 @@
+;
+;	Squash things down as much as we can with RST peepholes as it's
+;	really really tight
+;
+	call __ldword4
+=
+	rst 0x08
+
+	call __ldword6
+=
+	rst 0x10
+
+	call __ldword8
+=
+	rst 0x18
+
+	call __ldword10
+=
+	rst 0x20
+
+	call __ldword12
+=
+	rst 0x28
+
+	call __stword4
+=
+	rst 0x30

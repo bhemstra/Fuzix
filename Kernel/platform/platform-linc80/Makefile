@@ -22,31 +22,32 @@ serial.S: serialgen serial.hdr
 	./serialgen >serial.S
 
 $(AOBJS): %.o: %.S
-	$(CROSS_AS) $(ASOPTS) $<
+	$(CROSS_AS) $(ASOPTS) $< -o $@
 
 $(COBJS): %.o: %.c
-	$(CROSS_CC) $(CROSS_CCOPTS) -c $<
+	$(CROSS_CC) $(CROSS_CCOPTS) -c $< -o $@
 
 $(DOBJS): %.o: ../../dev/%.c
-	$(CROSS_CC) $(CROSS_CCOPTS) -c $<
+	$(CROSS_CC) $(CROSS_CCOPTS) -c $< -o $@
 
 $(DISCARD_COBJS): %.o: %.c
-	$(CROSS_CC) $(CROSS_CCOPTS) $(CROSS_CC_SEGDISC) -c $<
+	$(CROSS_CC) $(CROSS_CCOPTS) $(CROSS_CC_SEGDISC) -c $< -o $@
 
 $(DISCARD_DOBJS): %.o: ../../dev/%.c
-	$(CROSS_CC) $(CROSS_CCOPTS) $(CROSS_CC_SEGDISC) -c $<
+	$(CROSS_CC) $(CROSS_CCOPTS) $(CROSS_CC_SEGDISC) -c $< -o $@
 
 $(NOBJS): %.o: ../../dev/net/%.c
-	$(CROSS_CC) $(CROSS_CCOPTS) -c $<
+	$(CROSS_CC) $(CROSS_CCOPTS) -c $< -o $@
 
 clean:
-	rm -f $(OBJS) core *~ fuzix.com loader.tmp
+	rm -f $(OBJS) core *~ fuzix.com loader.tmp loader.bin
 
 image:  loader.bin
 	$(CROSS_LD) -b -S 0x300 -f SsCLDBbX -o ../../fuzix.bin \
 	crt0.o commonmem.o linc80.o ../../start.o \
 	../../version.o ../../cpu-z80u/lowlevel-z80u.o \
-	../../usermem.o ../../cpu-z80u/usermem_std-z80u.o tricks.o main.o discard.o \
+	../../usermem.o ../../cpu-z80u/usermem_std-z80u.o tricks.o \
+	main.o discard.o \
 	../../timer.o ../../kdata.o devices.o ../../devio.o \
 	../../filesys.o ../../blk512.o ../../process.o \
 	../../inode.o ../../syscall_exec.o ../../syscall_exec16.o \
@@ -55,9 +56,8 @@ image:  loader.bin
 	../../network.o ../../tty.o ../../vt.o ../../font/font6x8.o \
 	../../mm.o ../../mm/memalloc_none.o \
 	../../swap.o ../../mm/simple.o ../../devsys.o sd.o piospi.o piosd.o \
-	devtty.o serial.o ../../dev/tinydisk.o ../../dev/tinydisk_discard.o \
-	../../dev/tinysd.o ../../dev/tinysd_discard.o \
-	../../dev/tinyide.o ../../dev/tinyide_discard.o \
+	devtty.o serial.o tinydisk.o tinydisk_discard.o \
+	tinysd.o tinysd_discard.o tinyide.o tinyide_discard.o \
 	/opt/fcc/lib/z80/libz80.a -m fuzix.tmpmap
 	perl -lpe '$$_=hex' fuzix.tmpmap | paste -d" " - fuzix.tmpmap  |  sort -n |  cut -d" " -f 2- >../../fuzix.map
 	dd if=../../fuzix.bin of=fuzix.com bs=256 skip=1 count=248

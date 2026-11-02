@@ -134,26 +134,13 @@ map_restore:
 	jr map_a
 
 _program_early_vectors:
+	push	bc
         ; write zeroes across all vectors
-        ld hl, #0
-        ld de, #1
-        ld bc, #0x007f ; program first 0x80 bytes only
-        ld (hl), #0x00
-        ldir
-
-        ; now install the interrupt vector at 0x0038
-        ld a, #0xC3 ; JP instruction
-        ld (0x0038), a
-        ld hl, #interrupt_handler
-        ld (0x0039), hl
-
-        ld (0x0000), a   
-        ld hl, #null_handler   ;   to Our Trap Handler
-        ld (0x0001), hl
-
-        ld (0x0066), a  ; Set vector for NMI
-        ld hl, #nmi_handler
-        ld (0x0067), hl
+        ld hl, vectormap
+	ld de, #0
+	ld bc, #0x80
+	ldir
+	pop	bc
 
 _program_vectors:
 plt_interrupt_all:
@@ -282,3 +269,25 @@ _devide_write_data:
 	otir
 	pop bc
 	jp map_kernel
+
+	.discard
+
+vectormap:
+	jp	null_handler
+	.ds	5
+	jp	__ldword4
+	.ds	5
+	jp	__ldword6
+	.ds	5
+	jp	__ldword8
+	.ds	5
+	jp	__ldword10
+	.ds	5
+	jp	__ldword12
+	.ds	5
+	jp	__stword4
+	.ds	5
+	jp	interrupt_handler
+	.ds	43
+nmi:	jp	nmi_handler
+	.ds	0x17

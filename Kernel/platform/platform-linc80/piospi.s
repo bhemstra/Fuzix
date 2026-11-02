@@ -92,6 +92,7 @@ _spi_tx_byte:
 	pop hl
 	push hl
 	push de
+	push bc
 	ld a,l				; C argument
 	push af
 	call spi0_set_regs
@@ -102,10 +103,13 @@ _spi_tx_byte:
 	ret
 
 _spi_rx_byte:
+	push bc
 	call spi0_set_regs
 	call spi0_bitbang_rx
 	out (c),e
 	ld l,d
+	ld h,0
+	pop bc
 	ret
 
 ;
