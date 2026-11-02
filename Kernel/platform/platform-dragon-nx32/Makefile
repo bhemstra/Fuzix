@@ -5,7 +5,7 @@ MEMSRC = mem-nx32-mooh.S
 else
 MEMSRC = mem-nx32.S
 endif
-MEMOBJ = $(MEMSRC:.S=$(BINEXT))
+MEMOBJ = $(MEMSRC:.S=.o)
 
 CSRCS = devlpr.c devtty.c devfd.c ttydw.c devinput.c
 CSRCS += vc.c devices.c main.c libc.c
@@ -23,9 +23,9 @@ ASRCS = crt0.S dragon.S $(MEMSRC) video.S ide.S spi.S scsi_tc3.S
 ASRCS += tricks.S commonmem.S usermem_sam.S floppy.S ../../dev/drivewire/drivewire.S
 ASRCS += multihead.S vc_asm.S
 
-COBJS = $(CSRCS:.c=$(BINEXT))
-CDOBJS = $(CDSRCS:.c=$(BINEXT))
-AOBJS = $(ASRCS:.S=$(BINEXT))
+COBJS = $(CSRCS:.c=.o)
+CDOBJS = $(CDSRCS:.c=.o)
+AOBJS = $(ASRCS:.S=.o)
 DOBJS = $(patsubst ../../dev/%.c,%.o, $(DSRCS))
 DDOBJS = $(patsubst ../../dev/%.c,%.o, $(DDSRCS))
 OBJS  = $(COBJS) $(CDOBJS) $(AOBJS) $(DOBJS) $(DDOBJS)
@@ -34,27 +34,25 @@ CROSS_CCOPTS += -I../../dev/
 
 ../../dev/drivewire/drivewire.o: ASOPTS += -DBECKER=$(BECKER)
 
-JUNK = $(CSRCS:.c=.o) $(ASRCS:.S=.o)
-
 all: $(OBJS)
 
-$(COBJS): %$(BINEXT): %.c
+$(COBJS): %.o: %.c
 	$(CROSS_CC) $(CROSS_CCOPTS) $(CROSS_CC_SEG2) -c $<
 
-$(CDOBJS): %$(BINEXT): %.c
+$(CDOBJS): %.o: %.c
 	$(CROSS_CC) $(CROSS_CCOPTS) $(CROSS_CC_SEGDISC) -c $<
 
-$(DOBJS): %$(BINEXT): ../../dev/%.c
+$(DOBJS): %.o: ../../dev/%.c
 	$(CROSS_CC) $(CROSS_CCOPTS) $(CROSS_CC_SEG2) -c $< -o $@
 
-$(DDOBJS): %$(BINEXT): ../../dev/%.c
+$(DDOBJS): %.o: ../../dev/%.c
 	$(CROSS_CC) $(CROSS_CCOPTS) $(CROSS_CC_SEGDISC) -c $< -o $@
 
-$(AOBJS): %$(BINEXT): %.S
+$(AOBJS): %.o: %.S
 	$(CROSS_AS) $(ASOPTS) $< -o $*.o
 
 clean:
-	rm -f $(OBJS) $(JUNK)
+	rm -f *.o wrap fuzix.decb fuzix.tmpmap
 
 wrap: wrap.c
 	$(CC) -Wall -pedantic $< -o $@
