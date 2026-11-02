@@ -11,9 +11,9 @@
 ; Returns old slot.
 ; uint8_t mpi_set_slot(uint8_t slot);
 _mpi_set_slot:
-	ldb 0xFF7F
-	lda 2,s
-	sta 0xFF7F
+	lda 0xFF7F
+	stb 0xFF7F
+	tfr a,b
 	rts
 
 ; uint8_t mpi_present(void);
