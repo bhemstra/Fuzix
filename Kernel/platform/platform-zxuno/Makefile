@@ -4,7 +4,7 @@ DSRCS = ../../dev/tinysd.c ../../dev/tinydisk.c
 DDSRCS = ../../dev/tinysd_discard.c ../../dev/tinydisk_discard.c
 DZSRCS = ../../dev/zx/divmmc.c ../../dev/zx/zxkeyboard.c
 DZSRCS += ../../dev/zx/devinput.c
-AZSRCS = ../../dev/zx/divmmc-spi.S
+AZSRCS = ../../dev/zx/divmmc-spi.S ../../dev/zx/keyscan.S
 DDZSRCS = ../../dev/zx/zxuno.c
 ASRCS = crt0.S zx128.S zxvideo.S
 ASRCS += tricks.S commonmem.S
@@ -27,33 +27,33 @@ font8x8.o: ../../font/font8x8.c force_literal.peep
 	$(CROSS_CC) $(CROSS_CCOPTS) -c ../../font/font8x8.c -o $@ -p force_literal.peep
 
 $(COBJS): %.o: %.c
-	$(CROSS_CC) $(CROSS_CCOPTS) -c $<
+	$(CROSS_CC) $(CROSS_CCOPTS) -c $< -o $@
 
 $(CDOBJS): %.o: %.c
-	$(CROSS_CC) $(CROSS_CCOPTS) $(CROSS_CC_SEGDISC) -c $<
+	$(CROSS_CC) $(CROSS_CCOPTS) $(CROSS_CC_SEGDISC) -c $< -o $@
 
 $(DOBJS): %.o: ../../dev/%.c
-	$(CROSS_CC) $(CROSS_CCOPTS) -c $<
+	$(CROSS_CC) $(CROSS_CCOPTS) -c $< -o $@
 
 $(DDOBJS): %.o: ../../dev/%.c
-	$(CROSS_CC) $(CROSS_CCOPTS) $(CROSS_CC_SEGDISC) -c $<
+	$(CROSS_CC) $(CROSS_CCOPTS) $(CROSS_CC_SEGDISC) -c $< -o $@
 
 $(AZOBJS): %.o: ../../dev/zx/%.S
-	$(CROSS_AS) $(ASOPTS) -c $<
+	$(CROSS_AS) $(ASOPTS) -c $< -o $@
 
 $(DZOBJS): %.o: ../../dev/zx/%.c
-	$(CROSS_CC) $(CROSS_CCOPTS) -c $<
+	$(CROSS_CC) $(CROSS_CCOPTS) -c $< -o $@
 
 $(DDZOBJS): %.o: ../../dev/zx/%.c
-	$(CROSS_CC) $(CROSS_CCOPTS) -c $<
+	$(CROSS_CC) $(CROSS_CCOPTS) -c $< -o $@
 
 $(AOBJS): %.o: %.S
 	$(CROSS_AS) $(ASOPTS) $<
 
 clean:
-	rm -f $(OBJS) core *~ 
+	rm -f *.o core *~ 
 	rm -f BOOT.BIN strap.bin load-esx.ihx load-esx.tmp
-	rm -f FUZIX.BIN FUZIX
+	rm -f FUZIX.BIN FUZIX fuzix.tmpmap
 
 # Re-order the image and snapshop it
 # See the README crt0.S and NOTES. This platform is tricky to layout due to
@@ -71,13 +71,10 @@ image:
 	../../syscall_proc.o ../../syscall_other.o ../../syscall_net.o \
 	../../network.o ../../tty.o ../../mm.o ../../mm/memalloc_none.o \
 	../../swap.o ../../mm/simple.o ../../devsys.o ../../vt.o \
-	../../devinput.o ../../dev/zx/devinput.o ../../dev/zx/keyscan.o \
-	devtty.o font8x8.o ../../dev/tinydisk.o \
-	../../dev/tinydisk_discard.o ../../dev/tinysd.o \
-	../../dev/tinysd_discard.o ../../dev/zx/divmmc.o \
-	../../dev/zx/divmmc-spi.o zxvideo.o ../../dev/zx/zxuno.o \
-	../../dev/zx/zxkeyboard.o ../../mm/bankfixed.o \
-	/opt/fcc/lib/z80/libz80.a -m fuzix.tmpmap
+	../../devinput.o devinput.o keyscan.o \
+	devtty.o font8x8.o tinydisk.o tinydisk_discard.o tinysd.o \
+	tinysd_discard.o divmmc.o divmmc-spi.o zxvideo.o zxuno.o \
+	zxkeyboard.o ../../mm/bankfixed.o /opt/fcc/lib/z80/libz80.a -m fuzix.tmpmap
 	perl -lpe '$$_=hex' fuzix.tmpmap | paste -d" " - fuzix.tmpmap  |  sort -n |  cut -d" " -f 2- >../../fuzix.map
 	dd if=../../fuzix.bin of=fuzix.load bs=32768 count=1
 	# Build an esxdos friendly setup
