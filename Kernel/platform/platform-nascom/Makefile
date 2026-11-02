@@ -31,44 +31,42 @@ CROSS_CCOPTS += -I. -I../../dev/ -I../../dev/80bus/
 all:	$(OBJS)
 
 $(COBJS): %.o: %.c
-	$(CROSS_CC) $(CROSS_CCOPTS) $<
+	$(CROSS_CC) $(CROSS_CCOPTS) $< -o $@
 
 $(AOBJS): %.o: %.S
-	$(CROSS_AS) $(ASOPTS) $<
+	$(CROSS_AS) $(ASOPTS) $< -o $@
 
 $(DOBJS): %.o: ../../dev/%.c
-	$(CROSS_CC) $(CROSS_CCOPTS) $<
+	$(CROSS_CC) $(CROSS_CCOPTS) $< -o $@
 
 $(NOBJS): %.o: ../../dev/80bus/%.c
-	$(CROSS_CC) $(CROSS_CCOPTS) $<
+	$(CROSS_CC) $(CROSS_CCOPTS) $< -o $@
 
 $(DAOBJS): %.o: ../../dev/%.s
-	$(CROSS_AS) $(ASOPTS) $<
+	$(CROSS_AS) $(ASOPTS) $< -o $@
 
 $(NAOBJS): %.o: ../../dev/80bus/%.S
-	$(CROSS_AS) $(ASOPTS) $<
+	$(CROSS_AS) $(ASOPTS) $< -o $@
 
 $(DISCARD_DOBJS): %.o: ../../dev/%.c
-	$(CROSS_CC) $(CROSS_CCOPTS) $(CROSS_CC_SEGDISC) $<
+	$(CROSS_CC) $(CROSS_CCOPTS) $(CROSS_CC_SEGDISC) $< -o $@
 
 $(DISCARD_COBJS): %.o: %.c
-	$(CROSS_CC) $(CROSS_CCOPTS) $(CROSS_CC_SEGDISC) $<
+	$(CROSS_CC) $(CROSS_CCOPTS) $(CROSS_CC_SEGDISC) $< -o $@
 
 clean:
-	rm -f $(OBJS) core *~ *.o
+	rm -f core *~ *.o fuzix.tmpmap
 
 image:
 	# Note: if the code gets a tiny bit bigger then S will be over C000
 	# and the -S 0xC000 needs removing. Annoyingly it's right on the
 	# edge.
 	$(CROSS_LD) -b -C 0x0100 -8 0xFC00 -S 0xC000 -f CLDBSbXs -o ../../fuzix.bin \
-	crt0.o commonmem.o nascom.o ../../dev/80bus/nascom-pagemode.o \
-	../../dev/80bus/map80.o ../../start.o ../../version.o \
+	crt0.o commonmem.o nascom.o nascom-pagemode.o \
+	map80.o ../../start.o ../../version.o \
 	../../cpu-z80u/lowlevel-z80u.o ../../cpu-z80u/usermem_std-z80u.o \
-	../../usermem.o tricks.o main.o discard.o \
-	../../dev/80bus/devfdc.o ../../dev/80bus/floppy.o ide.o \
-	../../dev/80bus/nascom-vt.o devnascom.o ../../dev/80bus/devgm833.o mm58174.o \
-	../../dev/80bus/gmsasi.o ../../dev/80bus/devgmsasi.o \
+	../../usermem.o tricks.o main.o discard.o devfdc.o floppy.o ide.o \
+	nascom-vt.o devnascom.o devgm833.o mm58174.o gmsasi.o devgmsasi.o \
 	../../timer.o ../../kdata.o devices.o ../../devio.o \
 	../../filesys.o ../../blk512.o ../../process.o \
 	../../inode.o ../../syscall_exec.o ../../syscall_exec16.o \
@@ -76,9 +74,8 @@ image:
 	../../syscall_proc.o ../../syscall_other.o ../../syscall_net.o \
 	../../network.o ../../tty.o ../../vt.o ../../mm.o \
 	../../mm/memalloc_none.o ../../swap.o ../../mm/bankfixed.o \
-	../../devsys.o 	../../dev/tinydisk.o ../../dev/tinydisk_discard.o \
-	../../dev/tinyide.o ../../dev/tinyide_discard.o \
-	../../dev/tinyscsi.o ../../dev/tinyscsi_discard.o \
+	../../devsys.o 	tinydisk.o tinydisk_discard.o \
+	tinyide.o tinyide_discard.o tinyscsi.o tinyscsi_discard.o \
 	/opt/fcc/lib/z80/libz80.a -m fuzix.tmpmap
 	perl -lpe '$$_=hex' fuzix.tmpmap | paste -d" " - fuzix.tmpmap  |  sort -n |  cut -d" " -f 2- >../../fuzix.map
 
