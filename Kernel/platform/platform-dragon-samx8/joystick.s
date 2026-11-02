@@ -20,7 +20,8 @@
 ;
 
 _jsread:
-	; Buffer is in X on entry
+	; Buffer is in D on entry
+	tfr d,x
 	pshs u
 	lda #0xFF
 	sta 0xFF02	; Keyboard scan lines off
