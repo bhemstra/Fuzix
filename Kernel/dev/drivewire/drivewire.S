@@ -30,15 +30,16 @@
 ;;;  Brett M. Gordon
 _dw_transaction:
 	tfr	d,x		; X = send buffer
+	pshs	cc		; save the caller's interrupt state
 	orcc	#0x50		; stop interrupts
-	ldb	8,s		; rawflag?
+	ldb	9,s		; rawflag?
 	beq	skip		; nope - then skip switching to process map
 	jsr	map_proc_always
-skip:	ldy	2,s		; Y = number of bytes to send
+skip:	ldy	3,s		; Y = number of bytes to send
 	beq	ok		; no byte to write - leave
 	jsr	DWWrite		; send to DW
-	ldx	4,s		; X is receive buffer
-	ldy	6,s		; Y = number of bytes to receive
+	ldx	5,s		; X is receive buffer
+	ldy	7,s		; Y = number of bytes to receive
 	beq	ok		; no bytes to send - leave
 	jsr	DWRead		; read in that many bytes
 	bcs	frame		; C set on framing error
@@ -46,6 +47,7 @@ skip:	ldy	2,s		; Y = number of bytes to send
 ok:	clra
 	clrb			; no error
 out:	jsr	map_kernel
+	puls	cc		; restore the caller's interrupt state
 	rts
 frame:	ldd	#-1		; frame error
 	bra	out
