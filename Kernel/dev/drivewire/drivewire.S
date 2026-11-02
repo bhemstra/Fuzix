@@ -47,8 +47,7 @@ skip:	ldy	3,s		; Y = number of bytes to send
 ok:	clra
 	clrb			; no error
 out:	jsr	map_kernel
-	puls	cc		; restore the caller's interrupt state
-	rts
+	puls	cc,pc		; restore the caller's interrupt state
 frame:	ldd	#-1		; frame error
 	bra	out
 part:	ldd	#-2		; not all bytes received!
