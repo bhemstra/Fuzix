@@ -35,11 +35,10 @@ static uint8_t iopoll(void)
 
 int lpr_write(uint_fast8_t minor, uint_fast8_t rawflag, uint_fast8_t flag)
 {
-    int c = udata.u_count;
     char *p = udata.u_base;
     minor; rawflag; flag; // shut up compiler
 
-    while(c) {
+    while (udata.u_done < udata.u_count) {
         /* Note; on real hardware it might well be necessary to
            busy wait a bit just to get acceptable performance */
         while (in(LPSTAT) != 0xFF) {
