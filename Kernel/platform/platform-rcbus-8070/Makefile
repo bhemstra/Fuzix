@@ -10,9 +10,9 @@ CDSRCS = discard.c
 DSRCS = ../../dev/tinydisk.c ../../dev/tinyide.c ../../dev/ds12885.c
 DISCARD_DSRCS = ../../dev/tinydisk_discard.c ../../dev/tinyide_discard.c
 
-COBJS = $(CSRCS:.c=$(BINEXT))
-CDOBJS = $(CDSRCS:.c=$(BINEXT))
-AOBJS = $(ASRCS:.S=$(BINEXT))
+COBJS = $(CSRCS:.c=.o)
+CDOBJS = $(CDSRCS:.c=.o)
+AOBJS = $(ASRCS:.S=.o)
 DOBJS = $(patsubst ../../dev/%.c,%.o, $(DSRCS))
 DISCARD_DOBJS = $(patsubst ../../dev/%.c,%.o, $(DISCARD_DSRCS))
 
@@ -22,27 +22,24 @@ CROSS_CCOPTS += -I../../dev/
 
 all:	$(OBJS)
 
-$(COBJS): %$(BINEXT): %.c
+$(COBJS): %.o: %.c
 	$(CROSS_CC) $(CROSS_CCOPTS) $(CROSS_CC_SEG1) $<
 
-$(CDOBJS): %$(BINEXT): %.c
-	$(CROSS_CC) $(CROSS_CCOPTS) $(CROSS_CC_SEGDISC) $<
+$(CDOBJS): %.o: %.c
+	$(CROSS_CC) $(CROSS_CCOPTS) $(CROSS_CC_SEGDISC) $< -o $@
 
-$(AOBJS): %$(BINEXT): %.S
-	cpp -E $<  >$*.s
-	$(CROSS_AS) $(ASOPTS) $*.s
+$(AOBJS): %.o: %.S
+	$(CROSS_AS) $(ASOPTS) $< -o $@
 
-$(DOBJS): %$(BINEXT): ../../dev/%.c
-	$(CROSS_CC) $(CROSS_CCOPTS) $(CROSS_CC_SEG1) -c $<
-	mv ../../dev/$*.o .
+$(DOBJS): %.o: ../../dev/%.c
+	$(CROSS_CC) $(CROSS_CCOPTS) $(CROSS_CC_SEG1) -c $< -o $@
 
-$(DISCARD_DOBJS): %$(BINEXT): ../../dev/%.c
-	$(CROSS_CC) $(CROSS_CCOPTS) $(CROSS_CC_SEGDISC) -c $<
-	mv ../../dev/$*.o .
+$(DISCARD_DOBJS): %.o: ../../dev/%.c
+	$(CROSS_CC) $(CROSS_CCOPTS) $(CROSS_CC_SEGDISC) -c $< -o $@
 
 clean:
 	rm -f $(OBJS) *.o core *~ fuzix.bin fuzix.tmpmap loader.tmp
-	rm -f commonmem.s crt0.s rcbus-8070.s tricks.s
+	rm -f commonmem.s crt0.s rcbus-8070.s tricks.s loader.bin
 
 image:
 	$(CROSS_LD) -b -C 0x0000 -S 0xF000 -Z 0xFFC0 -o ../../fuzix.bin -m fuzix.tmpmap crt0.o commonmem.o \
