@@ -14,32 +14,30 @@ DSRCS = ../../dev/tinydisk.c ../../dev/tinyscsi.c
 COBJS = $(CSRCS:.c=.o)
 AOBJS = $(ASRCS:.S=.o)
 DISCOBJS = $(DISCSRCS:.c=.o)
-DISCARD_DOBJS = $(DISCARD_DSRCS:.c=.o)
-DOBJS = $(DSRCS:.c=.o)
+DISCARD_DOBJS = $(patsubst ../../dev/%.c,%.o, $(DISCARD_DSRCS))
+DOBJS = $(patsubst ../../dev/%c,%o, $(DSRCS))
 
 OBJS  = $(COBJS) $(AOBJS) $(DISCOBJS) $(DOBJS) $(DISCARD_DOBJS)
-
-JUNK =  *.o
 
 all:	$(OBJS)
 
 $(COBJS): %.o: %.c
-	$(CROSS_CC) $(CROSS_CCOPTS) -c $<
+	$(CROSS_CC) $(CROSS_CCOPTS) -c $< -o $@
 
 $(DISCOBJS): %.o: %.c
-	$(CROSS_CC) $(CROSS_CCOPTS) $(CROSS_CC_SEGDISC) -c $<
+	$(CROSS_CC) $(CROSS_CCOPTS) $(CROSS_CC_SEGDISC) -c $< -o $@
 
-$(DOBJS): %.o: %.c
-	$(CROSS_CC) $(CROSS_CCOPTS) -c $<
+$(DOBJS): %.o: ../../dev/%.c
+	$(CROSS_CC) $(CROSS_CCOPTS) -c $< -o $@
 
-$(DISCARD_DOBJS): %.o: %.c
-	$(CROSS_CC) $(CROSS_CCOPTS) $(CROSS_CC_SEGDISC) -c $<
+$(DISCARD_DOBJS): %.o: ../../dev/%.c
+	$(CROSS_CC) $(CROSS_CCOPTS) $(CROSS_CC_SEGDISC) -c $< -o $@
 
 $(AOBJS): %.o: %.S
-	$(CROSS_AS) $(ASOPTS) $<
+	$(CROSS_AS) $(ASOPTS) $< -o $@
 
 clean:
-	rm -f $(OBJS) $(JUNK)  core *~
+	rm -f *.o *.bin fuzix.tmpmap  core *~
 
 #
 #	Attach the kernel to the boot block
@@ -57,8 +55,7 @@ image:	boot
 	../../network.o ../../tty.o ../../mm.o ../../mm/memalloc_none.o \
 	../../swap.o ../../mm/bankfixed.o ../../devsys.o ../../font/font8x8.o \
 	../../devinput.o devinput.o ../../vt.o devsasi.o devlpr.o \
-	devtty.o ../../dev/tinydisk.o ../../dev/tinydisk_discard.o \
-	../../dev/tinyscsi.o ../../dev/tinyscsi_discard.o \
+	devtty.o tinydisk.o tinydisk_discard.o tinyscsi.o tinyscsi_discard.o \
 	/opt/fcc/lib/z80/libz80.a -m fuzix.tmpmap
 	perl -lpe '$$_=hex' fuzix.tmpmap | paste -d" " - fuzix.tmpmap  |  sort -n |  cut -d" " -f 2- >../../fuzix.map
 	
