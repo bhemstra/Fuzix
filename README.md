@@ -13,6 +13,12 @@ make TARGET=trs80m2 kernel
 make TARGET=trs80m2 diskimage
 ```
 
+The hard disk images include two programming languages that run on the
+machine itself:
+
+- `cc`, a small C compiler (see `Applications/scc/README.md`)
+- `basic`, an integer BASIC (see `Applications/basic/README`)
+
 ## Layout
 
 | Directory              | Contents                                         |
