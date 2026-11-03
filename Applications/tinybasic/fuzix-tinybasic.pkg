@@ -1,0 +1,4 @@
+package  tinybasic
+if-file  tbasic
+
+f 0755 /usr/bin/tbasic   tbasic

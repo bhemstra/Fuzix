@@ -1,0 +1,18 @@
+include $(FUZIX_ROOT)/Target/rules.$(USERCPU)
+
+#
+#	Tiny BASIC is one assembler file that talks to the kernel itself,
+#	so it is linked without crt0 and the C library.
+#
+all: tbasic
+
+tbasic.o: tbasic.s
+	$(AS) -c tbasic.s
+
+tbasic: tbasic.o
+	/opt/fcc/bin/ldz80 -o $@ -R tbasic.rel tbasic.o
+	/opt/fcc/bin/relocz80 $@ tbasic.rel
+	rm -f tbasic.rel
+
+clean:
+	rm -f tbasic tbasic.o tbasic.rel *~
