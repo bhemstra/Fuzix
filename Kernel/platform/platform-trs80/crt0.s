@@ -54,6 +54,15 @@
 ;	Once the loader completes it jumps here
 ;
 start:
+		jr start2
+;
+;	0x0102: the root device, written by the hard disk boot sector
+;	(hdload.s). The floppy loader leaves it empty and the kernel asks.
+;
+		.globl _bootcmd
+_bootcmd:
+		.ds 14
+start2:
 		ld sp, #kstack_top
 		; move the common memory where it belongs    
 		ld hl, #s__DATA

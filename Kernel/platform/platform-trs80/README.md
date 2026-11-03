@@ -7,7 +7,7 @@
 
 ## Supported Hardware
 
-- Floppy Disk (required for boot at this point)
+- Floppy Disk
 - Hard Disk (Tandy or compatible including things like FreHD)
 - Alpha Technology Style Joystick
 - Tandy Hi-res card (graphics use only)
@@ -15,7 +15,6 @@
 
 ## To Do
 
-- 4P and modified rom model 4 hard disk boot
 - Microlabs Grafyx reporting for graphics use only
 - Alpha technology supermem
 - Anitek MegaMem as a ramdisk/swap
@@ -28,17 +27,35 @@
 - XLR8R/4ccelerator - really deserves its own Z180 mode port
 - M3SE except as far as compatibility goes
 
+## Booting From Hard Disk (FreHD)
+
+`hard4p-0.hdv` boots by itself on a Model 4P (its boot ROM can start a
+hard disk) and on a Model 4 with the FreHD auto boot ROM:
+
+| Where            | Contents                                            |
+|------------------|-----------------------------------------------------|
+| cylinder 0, sector 1 | boot sector (`hdload.s`), partition label at bytes 128-191 |
+| cylinder 0, sector 2 onwards | the kernel                              |
+| cylinders 1-169  | hda2: root file system                              |
+| cylinders 170-201 | hda3: swap                                         |
+
+The ROM (or the FreHD menu) loads sector 1 to 0x4300. The boot sector
+loads the kernel from the rest of cylinder 0 and leaves `hda2` in the
+kernel's command line slot at 0x0102, so the system comes up without
+asking for the root device. Header byte 8 = 0x01 and byte 11 = 0x02 tell
+FreHD the image boots natively, so it does not try to patch a DOS.
+
+Copy `hard4p-0.hdv` to the FreHD SD card as hard disk 0. For a Model 4
+with the FreHD auto boot ROM, `frehd.rom` must be on the card as well.
+A machine that cannot boot from hard disk can use `hdboot.jv3`: a floppy
+with the same boot sector, which loads the kernel from the hard disk.
+`boot.jv3` loads the kernel from floppy and asks for the root device
+(answer `hda2`).
+
+`Tools/m2web/m4boot.mjs` runs the boot sector against the image the way
+the ROM does and checks the kernel arrives intact.
+
 ## Installation
 
-make diskimage
-Set up hard1-0 as a hard disk image on a FreHD
-Put the relevant boot.jv3 disk on the FreHD and use the FredHD apps to make
-a floppy disk of it.
-
-## Emulator Notes
-
-Copy boot.jv3 to disk4p-0 or disk4-0 and use hard4p-0 from the emulator with xtrs or a
-FredHD.
-
-You will still need a boot floppy but you can make those using a FreHD or
-other tools from the JV3
+`make TARGET=trs80 diskimage` puts `hard4p-0.hdv`, `boot.jv3` and
+`hdboot.jv3` in `Images/trs80`.

@@ -57,7 +57,7 @@
                           /* In this case, the default is the first TTY device */
 
 /* We need a tidier way to do this from the loader */
-#define CMDLINE	NULL	  /* Location of root dev name */
+#define CMDLINE	((char *)0x0102)  /* Root device from the hard disk boot (crt0.s) */
 
 /* Device parameters */
 #define NUM_DEV_TTY 3

@@ -1,168 +1,121 @@
 ;
-;	Initial test loader for TRS80 hard disk booting. This assumes
-;	- 32 sectors per track (8K) and at least 8 heads. More spt is easy
-;	  to do, but if you can't get 64K into track 0 then the code will
-;	need testing further
+;	TRS-80 Model 4 / 4P hard disk boot sector
+;
+;	The Model 4P boot ROM, and the FreHD auto boot ROM on a Model 4,
+;	read the second sector of the hard disk (cylinder 0, head 0, sector
+;	1) into 0x4300 and jump to it. This sector:
+;
+;	- moves itself to 0x0000
+;	- loads the kernel from the rest of cylinder 0 (sectors 2 onwards,
+;	  head by head) into 0x0100-0xEDFF
+;	- leaves "hda2" in the kernel's command line slot at 0x0102 so the
+;	  kernel mounts the root file system without asking
+;	- jumps to the kernel at 0x0100
+;
+;	Bytes 0x80-0xBF of this sector hold the partition label (written by
+;	trslabel), so the code is in two parts around it. The same sector
+;	also boots from a floppy (hdboot.jv3), as the floppy boot ROM loads
+;	the first floppy sector to 0x4300 too.
+;
+;	There are no CALLs: on a 4P a call in page 0 can bring the boot ROM
+;	back in.
+;
+;	Disk layout (256 byte sectors, 32 per track, 8 heads):
+;	cylinder 0	sector 0: unused, sector 1: this, then the kernel
+;	cylinder 1-	hda2: the root file system, then hda3: swap
 ;
 
 		.z80
 
-SDH = 0x80		; SDH upper bit settings (drive 1)
-HEADS = 8		; Heads on drive
-SPT = 32		; Sectors per track
+SDH		.equ	0x80		; CRC, 256 byte sectors, drive 0
+SPT		.equ	32		; sectors per track
+CMDLINE		.equ	0x0102		; see crt0.s
+VIDEO		.equ	0xF800
 
-
-		.area BOOT(ABS)
+		.area BOOT (ABS)
 		.org 0x0000
 
 start:
-	ld a,#0x18
-	out (0xC1),a		; soft reset the HDC (takes time so start now)
-	ld a, #0x86			; kernel map, 80 column, no remap
-	out (0x84), a		; video page 1
-	ld a, #0x50			; 80 column, sound, altchars off,
-					; ext I/O on , 4MHz
-	out (0xEC), a
-	ld hl, #0x4300
-	ld de, #0x0
-	ld bc, #256
-	ldir
-	jp go
+		di			; needed on a Model 4 with FreHD
+		ld a, #0x18
+		out (0xC1), a		; reset the hard disk controller
+		ld a, #0x86		; 80x24, memory map 2 (all RAM low)
+		out (0x84), a
+		ld a, #0x50		; fast, external I/O on
+		out (0xEC), a
+		ld hl, #0x4300
+		ld de, #0x0000
+		ld bc, #256
+		ldir
+		jp part2
 
-go:
-	ld sp,#0xEE00
+;	Read the kernel: D = SDH and head, E = sector, HL = where
+load:
+		ld hl, #0x0100
+		ld de, #(SDH << 8) + 2
+		xor a
+		out (0xCC), a		; cylinder 0
+		out (0xCD), a
+next:
+		ld a, h
+		cp #0xEE		; 0x0100-0xEDFF loaded ?
+		jp z, done
+		ld a, d
+		out (0xCE), a
+		ld a, e
+		out (0xCB), a
+		ld a, #1
+		out (0xCA), a
+		ld a, #0x20		; read sector
+		out (0xCF), a
+wait:
+		in a, (0xCF)
+		rlca			; busy ?
+		jr c, wait
+		in a, (0xCF)
+		and #0x09		; DRQ and ERR
+		cp #0x08
+		jp nz, fail
+		ld bc, #0x00C8		; 256 bytes from the data port
+		inir
+		inc e
+		ld a, e
+		cp #SPT
+		jr nz, next
+		ld e, #0
+		inc d			; next head
+		jr next
 
-        ; load the 6845 parameters
-	ld hl, #_ctc6845		; reverse order
-	ld bc, #0x0F88
-ctcloop:
-	out (c), b			; select register
-	ld a, (hl)
-	out (0x89), a			; output data
-	dec hl
-	djnz ctcloop
+		.org 0x0080
+;	The partition label goes here (64 bytes, see trslabel)
+		.ds 64
 
-	; clear screen
-	ld hl, #0xF800
-	ld de, #0xF801
-	ld bc, #0x07FF
-	ld (hl), #' '
-	ldir
-	ld ix, #0xF800
-	ld (ix), #'H'
+		.org 0x00C0
+done:
+		ld hl, #root
+		ld de, #CMDLINE
+		ld bc, #5
+		ldir
+		jp 0x0100
 
-	; Finish set up
-	ld a,#0x0C
-	out (0xC0),a
-	ex (sp),hl
-	ex (sp),hl
-	; Should now go ready on all controller types
+fail:
+		ld a, #'E'
+		ld (VIDEO + 79), a
+stop:
+		jr stop
 
-	; Issue a restore 4ms command
-waitrdy:
-	in a,(0xCF)
-	and #0x82
-	jr nz, waitrdy
+part2:
+		ld sp, #0xEE00
+		ld a, #'F'		; sign of life, top left (the kernel
+		ld (VIDEO), a		; sets up the 6845 and the screen)
+		ld a, #0x0C
+		out (0xC1), a		; enable the controller, wait states
+hdready:
+		in a, (0xCF)
+		and #0xC0		; not busy and ready
+		cp #0x40
+		jr nz, hdready
+		jp load
 
-	ld 1(ix), #'D'
-
-	ld hl, #0x0100
-
-
-	; Load cylinder 0 head 0 except sector 1-2 onwards
-
-	; Set the drive and sector
-	; drive bits are:
-	; no ECC bytes, 256 bytes per sector, (need to check ECC one)
-	ld d,#SDH
-	ld e,#0x02
-
-	; Don't set the registers until the restore is done
-waitrdyc:
-	in a,(0xCF);
-	and #0x80
-	jr nz, waitrdyc
-
-	ld 2(ix), #':'
-	; Set the cylinder number
-	xor a
-	out (0xCC),a	; cylinder 0
-	out (0xCD),a
-
-nexttrack:
-	ld b,a
-	ld c,a
-	push bc
-	ld bc,#0x00C8	; data port, 256
-
-nexthead:
-nextsec:
-	; Everything loaded ?
-	ld a,#0xEE
-	cp h
-	jp z,0x0100
-	ld 3(ix),#0x91
-	; Set up the request (cylinder is already 0)
-	ld a,d		; SDH
-	out (0xCE),a
-	ld a,e		; Sector
-	out (0xCB),a
-	ld a,#1
-	out (0xCA),a	; Count
-rwait:
-	in a,(0xCF)
-	and #0x80
-	jr nz,rwait
-	ld 3(ix),#0x95
-	ld a,#0x20	; Read sector
-	out (0xCF),a
-	; Read now running
-dwait:
-	in a,(0xCF)
-	and #0x08
-	jr z, dwait
-
-	ld 3(ix),#0xB7
-
-	; We have data
-	inir
-
-	ld 3(ix),#0xBF
-
-	inc ix
-
-	inc e
-	ld a,#SPT
-	cp e
-	jr nz, nextsec
-	ld e,#0
-	inc d
-	ld a,#HEADS|SDH
-	cp d
-	jr nz, nexthead
-	pop bc
-	inc bc
-	ld a,c
-	out (0xCC),a
-	ld a,b
-	out (0xCD),a
-	ld d,#SDH
-	jr nexttrack
-
-				; ctc6845 registers in reverse order
-	    .db 99
-	    .db 80
-	    .db 85
-	    .db 10
-	    .db 25
-	    .db 4
-	    .db 24
-	    .db 24
-	    .db 0
-	    .db 9
-	    .db 101
-	    .db 9
-	    .db 0
-	    .db 0
-	    .db 0
-_ctc6845:   .db 0
+root:
+		.asciz "hda2"
