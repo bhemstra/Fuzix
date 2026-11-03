@@ -1,0 +1,373 @@
+<title>Fuzix op de Model II</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans+Condensed:wght@400;600&family=VT323&display=swap">
+<style>
+/* Layout: one column, the Model II screen in its bezel first, the controls
+   under it like the keyboard sits under the display. */
+:root {
+  --bg: #e9ebe9;
+  --panel: #f6f7f5;
+  --fg: #1c201e;
+  --muted: #5d6661;
+  --line: #cdd2ce;
+  --accent: #a6232b;          /* the red of the Radio Shack badge */
+  --bezel: #d8d4c8;           /* the Model II case */
+  --bezel-edge: #b9b3a4;
+  --screen: #070908;
+  --phosphor: #e4efe6;
+  --glow: rgba(200, 240, 210, 0.35);
+  --font-ui: "IBM Plex Sans Condensed", "Arial Narrow", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  --font-screen: "VT323", "IBM Plex Mono", ui-monospace, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #131615; --panel: #1b1f1d; --fg: #e3e8e4; --muted: #9aa49e; --line: #2d332f;
+    --accent: #e0636a; --bezel: #3a3833; --bezel-edge: #2a2925; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #131615; --panel: #1b1f1d; --fg: #e3e8e4; --muted: #9aa49e; --line: #2d332f;
+  --accent: #e0636a; --bezel: #3a3833; --bezel-edge: #2a2925; color-scheme: dark;
+}
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-ui);
+  font-size: 16px;
+  line-height: 1.5;
+}
+.wrap {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 20px 40px;
+  display: grid;
+  gap: 18px;
+}
+header { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 14px; }
+h1 {
+  font-family: var(--font-ui);
+  font-weight: 600;
+  font-size: 1.6rem;
+  letter-spacing: 0.01em;
+  margin: 0;
+  text-wrap: balance;
+}
+.badge {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+.bezel {
+  background: linear-gradient(180deg, var(--bezel), var(--bezel-edge));
+  border-radius: 14px;
+  padding: clamp(10px, 3vw, 28px);
+  box-shadow: 0 1px 0 rgba(255,255,255,0.4) inset, 0 8px 24px rgba(0,0,0,0.18);
+}
+.tube {
+  background: var(--screen);
+  border-radius: 10px;
+  padding: clamp(8px, 2.2vw, 22px) clamp(8px, 2.6vw, 26px);
+  box-shadow: 0 0 0 2px #000 inset, 0 0 40px rgba(0,0,0,0.6) inset;
+  position: relative;
+}
+canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-width: 100%;
+  outline: none;
+  cursor: text;
+  filter: drop-shadow(0 0 3px var(--glow));
+}
+.tube:focus-within { box-shadow: 0 0 0 2px #000 inset, 0 0 40px rgba(0,0,0,0.6) inset, 0 0 0 3px var(--accent); }
+.hint {
+  position: absolute;
+  inset: auto 0 10px 0;
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: #8fa395;
+  pointer-events: none;
+}
+.controls { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+button, select {
+  font-family: var(--font-ui);
+  font-size: 0.95rem;
+  color: var(--fg);
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 6px 12px;
+  cursor: pointer;
+}
+button:hover { border-color: var(--muted); }
+button:focus-visible, select:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+button.primary { border-color: var(--accent); color: var(--accent); font-weight: 600; }
+label { display: inline-flex; gap: 6px; align-items: center; color: var(--muted); font-size: 0.95rem; }
+.status {
+  margin-left: auto;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+  display: inline-flex; gap: 8px; align-items: center;
+}
+.dot { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); }
+.dot.run { background: #3b9b5a; }
+.dot.load { background: #c9922b; }
+.dot.err { background: var(--accent); }
+.try { display: grid; gap: 8px; }
+.try h2, .about h2 {
+  font-size: 0.8rem;
+  font-family: var(--font-mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 0;
+  font-weight: 600;
+}
+.try .row { display: flex; flex-wrap: wrap; gap: 8px; }
+.try button { font-family: var(--font-mono); font-size: 0.85rem; }
+.typein { display: flex; gap: 8px; }
+.typein input {
+  flex: 1;
+  min-width: 0;
+  font-family: var(--font-mono);
+  font-size: 1rem;
+  padding: 6px 10px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--panel);
+  color: var(--fg);
+}
+.about { display: grid; gap: 8px; max-width: 68ch; color: var(--fg); }
+.about p { margin: 0; }
+.about code { font-family: var(--font-mono); font-size: 0.9em; }
+.about .small { color: var(--muted); font-size: 0.9rem; }
+@media (prefers-reduced-motion: reduce) { canvas { filter: none; } }
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>Fuzix op de TRS-80 Model II</h1>
+    <span class="badge">Z80 &middot; 4 MHz &middot; 512K &middot; 8 MB harde schijf</span>
+  </header>
+
+  <div class="bezel">
+    <div class="tube">
+      <canvas id="screen" width="960" height="576" tabindex="0" aria-label="Scherm van de Model II. Klik om te typen."></canvas>
+      <div class="hint" id="hint">De harde schijf wordt geladen…</div>
+    </div>
+  </div>
+
+  <div class="controls">
+    <button id="reset" type="button">Opnieuw opstarten</button>
+    <label for="speed">Snelheid
+      <select id="speed">
+        <option value="1">4 MHz, zoals de echte</option>
+        <option value="4">4× zo snel</option>
+        <option value="0">Zo snel als kan</option>
+      </select>
+    </label>
+    <label for="turbo"><input id="turbo" type="checkbox" checked> Snel opstarten</label>
+    <span class="status"><span class="dot load" id="dot"></span><span id="state">Laden</span><span id="mhz"></span></span>
+  </div>
+
+  <div class="try">
+    <h2>Probeer</h2>
+    <div class="row" id="macros">
+      <button type="button" data-keys="\r">Enter</button>
+      <button type="button" data-keys="root\r">root</button>
+      <button type="button" data-keys="ls /bin\r">ls /bin</button>
+      <button type="button" data-keys="tbasic\r">tbasic</button>
+      <button type="button" data-keys="10 FOR I=1 TO 10; PRINT I, I*I; NEXT I\rRUN\r">Tiny BASIC-programma</button>
+      <button type="button" data-keys="BYE\r">BYE</button>
+      <button type="button" data-fast="1" data-keys="echo 'main(){printf(&quot;Hallo van de Model II\n&quot;);}' &gt; t.c\rcc -o t t.c\r./t\r">C compileren</button>
+      <button type="button" data-keys="basic\r">basic</button>
+      <button type="button" data-keys="shutdown\r">shutdown</button>
+    </div>
+    <div class="typein">
+      <input id="typein" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Of typ hier een regel en druk op Enter (handig op een telefoon)">
+      <button id="send" type="button">Stuur</button>
+    </div>
+  </div>
+
+  <div class="about">
+    <h2>Wat je ziet</h2>
+    <p>Een Model II wordt hier in je browser nagebootst: de Z80, het geheugen in banken van 32K, het scherm, het toetsenbord, de klokinterrupt van 30 keer per seconde en de WD1010-schijfcontroller. Hij start vanaf dezelfde <code>hard2-0.hdv</code> die je in trs80gp gebruikt.</p>
+    <p>Druk bij de vragen om datum en tijd op Enter en log in als <code>root</code>. Klik op het scherm om met je eigen toetsenbord te typen; Ctrl-C onderbreekt een programma. Met <code>tbasic</code>, <code>basic</code> en <code>cc</code> kun je programmeren. Compileren duurt op de echte snelheid van 4 MHz ruim drie minuten; de knop C compileren zet de emulator daarom op zo snel als kan.</p>
+    <p class="small">Wat je op de schijf verandert, blijft tot je de pagina herlaadt of opnieuw opstart. Z80-emulatie: z80-emulator van Lawrence Kesteloot (MIT).</p>
+  </div>
+</div>
+
+<script type="module">
+import { Z80 } from './z80.js';
+import { Model2, CPU_HZ } from './m2.js';
+
+const canvas = document.getElementById('screen');
+const ctx = canvas.getContext('2d');
+const hint = document.getElementById('hint');
+const dot = document.getElementById('dot');
+const stateEl = document.getElementById('state');
+const mhzEl = document.getElementById('mhz');
+const speedEl = document.getElementById('speed');
+const turboEl = document.getElementById('turbo');
+
+const COLS = 80, ROWS = 24, CW = 12, CH = 24;
+const PHOSPHOR = getComputedStyle(document.documentElement).getPropertyValue('--phosphor').trim() || '#e4efe6';
+const SCREEN = getComputedStyle(document.documentElement).getPropertyValue('--screen').trim() || '#070908';
+
+let pristine = null, m = null, pending = [], booting = true;
+
+function setState(text, kind) {
+  stateEl.textContent = text;
+  dot.className = 'dot ' + kind;
+}
+
+async function loadDisk() {
+  // The disk image is gzip compressed and stored as base64 text
+  const res = await fetch('hard2-0.hdv.gz.b64.txt');
+  if (!res.ok) throw new Error('De schijf kon niet worden geladen (' + res.status + ').');
+  const bin = atob((await res.text()).trim());
+  const gz = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) gz[i] = bin.charCodeAt(i);
+  const stream = new Blob([gz]).stream().pipeThrough(new DecompressionStream('gzip'));
+  return new Uint8Array(await new Response(stream).arrayBuffer());
+}
+
+function start() {
+  m = new Model2(Z80, pristine.slice());
+  if (!m.bootHd()) throw new Error('Geen opstartcode op de schijf.');
+  pending = [];
+  booting = turboEl.checked;
+  setState(booting ? 'Opstarten' : 'Draait', 'run');
+  hint.hidden = true;
+}
+
+function draw() {
+  ctx.fillStyle = SCREEN;
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.font = (CH) + 'px VT323, "IBM Plex Mono", monospace';
+  ctx.textBaseline = 'top';
+  const v = m.video;
+  const cur = m.cursor();
+  const blink = (performance.now() % 1000) < 600;
+  for (let y = 0; y < ROWS; y++) {
+    for (let x = 0; x < COLS; x++) {
+      const i = y * COLS + x;
+      const b = v[i];
+      let rev = (b & 0x80) !== 0;
+      if (i === cur && blink) rev = !rev;
+      const c = b & 0x7F;
+      if (rev) {
+        ctx.fillStyle = PHOSPHOR;
+        ctx.fillRect(x * CW, y * CH, CW, CH);
+      }
+      if (c > 32 && c < 127) {
+        ctx.fillStyle = rev ? SCREEN : PHOSPHOR;
+        ctx.fillText(String.fromCharCode(c), x * CW, y * CH + 1);
+      }
+    }
+  }
+}
+
+let last = performance.now(), cycAcc = 0, cycT = last;
+function frame(now) {
+  if (m) {
+    // keys from paste and the buttons go in a few at a time
+    while (pending.length && m.keyq.length < 2) m.key(pending.shift());
+    let dt = Math.min(now - last, 50);
+    const speed = Number(speedEl.value);
+    const before = m.hal.tStateCount;
+    if (booting || speed === 0) {
+      const tEnd = performance.now() + 14;
+      while (performance.now() < tEnd) m.run(40000);
+    } else {
+      m.run(Math.round(dt / 1000 * CPU_HZ * speed));
+    }
+    cycAcc += m.hal.tStateCount - before;
+    if (now - cycT > 1000) {
+      mhzEl.textContent = (cycAcc / (now - cycT) / 1000).toFixed(1) + ' MHz';
+      cycAcc = 0; cycT = now;
+    }
+    if (booting) {
+      const t = m.text();
+      if (t.includes('login:') || t.includes('Enter new date')) {
+        booting = false;
+        setState('Draait', 'run');
+      }
+    }
+    draw();
+  }
+  last = now;
+  requestAnimationFrame(frame);
+}
+
+function typeText(s) {
+  for (const ch of s) pending.push(ch === '\n' ? 13 : ch.charCodeAt(0));
+}
+
+canvas.addEventListener('keydown', e => {
+  if (!m) return;
+  let c = -1;
+  const k = e.key;
+  if (k === 'Enter') c = 13;
+  else if (k === 'Backspace') c = 8;
+  else if (k === 'Tab') c = 9;
+  else if (k === 'Escape') c = 27;
+  else if (k === 'ArrowLeft') c = 0x1C;
+  else if (k === 'ArrowRight') c = 0x1D;
+  else if (k === 'ArrowUp') c = 0x1E;
+  else if (k === 'ArrowDown') c = 0x1F;
+  else if (e.ctrlKey && k.length === 1 && /[a-z@\[\\\]^_]/i.test(k)) c = k.toUpperCase().charCodeAt(0) & 0x1F;
+  else if (k.length === 1 && !e.metaKey && !e.altKey) c = k.charCodeAt(0);
+  if (c >= 0 && c < 128) {
+    pending.push(c);
+    e.preventDefault();
+  }
+});
+canvas.addEventListener('paste', e => {
+  const t = e.clipboardData && e.clipboardData.getData('text');
+  if (t) { typeText(t.replace(/\r\n/g, '\n')); e.preventDefault(); }
+});
+canvas.addEventListener('click', () => canvas.focus());
+
+document.getElementById('macros').addEventListener('click', e => {
+  const b = e.target.closest('button');
+  if (!b || !m) return;
+  typeText(b.dataset.keys.replace(/\\r/g, '\r'));
+  if (b.dataset.fast) speedEl.value = '0';	/* compiling takes minutes at 4 MHz */
+  canvas.focus();
+});
+const typein = document.getElementById('typein');
+function sendLine() {
+  if (!m) return;
+  typeText(typein.value + '\r');
+  typein.value = '';
+}
+document.getElementById('send').addEventListener('click', sendLine);
+typein.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); sendLine(); } });
+document.getElementById('reset').addEventListener('click', () => { if (pristine) { start(); canvas.focus(); } });
+
+(async () => {
+  try {
+    await document.fonts.load(CH + 'px VT323');
+  } catch (e) { /* the fallback font is fine */ }
+  try {
+    setState('Schijf laden', 'load');
+    pristine = await loadDisk();
+    start();
+    requestAnimationFrame(frame);
+  } catch (e) {
+    setState('Fout', 'err');
+    hint.textContent = e.message;
+  }
+})();
+</script>
