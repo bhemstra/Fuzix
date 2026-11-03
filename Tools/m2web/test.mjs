@@ -1,7 +1,7 @@
 import { readFileSync } from 'fs';
 import { Z80 } from './z80.js';
 import { Model2, CPU_HZ } from './m2.js';
-const img = new Uint8Array(readFileSync(process.argv[2] || "../../Images/trs80m2/hard2-0.hdv"));
+const img = new Uint8Array(readFileSync(process.argv[2] || new URL("../../Images/trs80m2/hard2-0.hdv", import.meta.url)));
 const m = new Model2(Z80, img);
 if (!m.bootHd()) throw new Error('no boot');
 const steps = [['new date:', ''], ['new time:', ''], ['login:', 'root'], ['Welcome to FUZIX', 'ls /bin | wc -l'], ['    1', 'tbasic'], ['TINY BASIC', 'PRINT SIZE']];
