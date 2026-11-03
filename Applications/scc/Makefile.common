@@ -1,0 +1,48 @@
+include $(FUZIX_ROOT)/Target/rules.$(USERCPU)
+
+#
+#	scc: a small C compiler that runs on Fuzix itself
+#
+#	cc	driver
+#	scc0	tokenizer
+#	scc1	front end
+#	scc2	code generator
+#	sld	linker
+#
+APPS = cc scc0 scc1 scc2 sld
+
+FRONT = lex.o type.o expr.o stmt.o ir.o main.o
+
+all: $(APPS) sccrt.o libz80.a
+
+.c.o:
+	$(CC) $(CFLAGS) $(CCOPTS) -c $<
+
+$(FRONT) tok.o: scc.h ir.h
+scc2.o cg.o: scc2.h ir.h
+
+cc: cc.o
+	$(LINKER) $(CRT0NS) $^ -o $@ $(LINKER_OPT) $(LINKER_TAIL)
+
+scc0: tok.o
+	$(LINKER) $(CRT0NS) $^ -o $@ $(LINKER_OPT) $(LINKER_TAIL)
+
+scc1: $(FRONT)
+	$(LINKER) $(CRT0NS) $^ -o $@ $(LINKER_OPT) $(LINKER_TAIL)
+
+scc2: scc2.o cg.o
+	$(LINKER) $(CRT0NS) $^ -o $@ $(LINKER_OPT) $(LINKER_TAIL)
+
+sld: sld.o
+	$(LINKER) $(CRT0NS) $^ -o $@ $(LINKER_OPT) $(LINKER_TAIL)
+
+sccrt.o: sccrt.s
+	$(AS) -c sccrt.s
+
+# The compiler support library the C library needs, from the Fuzix C
+# compiler installation
+libz80.a: /opt/fcc/lib/z80/libz80.a
+	cp $< $@
+
+clean:
+	rm -f *.o $(APPS) libz80.a *~ *.asm *.lst *.sym *.map *.noi *.lk *.ihx *.tmp *.bin

@@ -1,0 +1,10 @@
+package  scc
+if-file  cc
+
+f 0755 /usr/bin/cc       cc
+f 0755 /usr/bin/sld      sld
+f 0755 /usr/lib/scc0     scc0
+f 0755 /usr/lib/scc1     scc1
+f 0755 /usr/lib/scc2     scc2
+f 0644 /usr/lib/sccrt.o  sccrt.o
+f 0644 /usr/lib/libz80.a libz80.a
