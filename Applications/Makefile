@@ -1,6 +1,6 @@
 #
 APPS = util cmd sh games cave v7games cursesgames \
-       netd MWC ue plato dw assembler cpp ar 2048 scc
+       netd MWC ue plato dw assembler cpp ar 2048 scc basic
 
 .PHONY: $(APPS)
 
@@ -57,6 +57,9 @@ ar:
 scc:
 	+(cd scc; $(MAKE) -f Makefile.$(USERCPU))
 
+basic:
+	+(cd basic; $(MAKE) -f Makefile.$(USERCPU))
+
 clean:
 	(cd util; $(MAKE) -f Makefile.$(USERCPU) clean)
 	(cd V7/cmd; $(MAKE) -f Makefile.$(USERCPU) clean)
@@ -75,3 +78,4 @@ clean:
 	(cd dw; $(MAKE) -f Makefile.$(USERCPU) clean)
 	(cd ar; $(MAKE) -f Makefile.$(USERCPU) clean)
 	(cd scc; $(MAKE) -f Makefile.$(USERCPU) clean)
+	(cd basic; $(MAKE) -f Makefile.$(USERCPU) clean)

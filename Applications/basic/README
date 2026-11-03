@@ -1,0 +1,44 @@
+Fuzix BASIC
+===========
+
+An integer BASIC in the spirit of ECMA-55 and TRS-80 Level II BASIC.
+
+    basic            interactive
+    basic prog.bas   load and run a program
+
+Numbers are 16 bit integers (-32768 to 32767), strings up to 255
+characters. Variable names start with a letter; the first two characters
+count, as on the TRS-80. A$ is a string. Arrays come from DIM, or get
+11 elements (0-10) when first used; one or two dimensions. True is -1.
+
+Keywords must be separate words: FOR I=1 TO 10 (not FORI=1TO10). They may
+be typed in lower case.
+
+Commands:   RUN [line]  LIST [from][-to]  NEW  CLEAR  CONT
+            SAVE "name"  LOAD "name"  (".bas" is added)  BYE / SYSTEM
+            TRON / TROFF (trace line numbers)
+
+Statements: LET  PRINT (or ?)  INPUT ["prompt";] var, ...
+            IF expr THEN statements | line [ELSE statements | line]
+            IF expr GOTO line
+            FOR var = a TO b [STEP c] ... NEXT [var[, var]]
+            GOTO  GOSUB  RETURN  ON expr GOTO|GOSUB line, ...
+            DIM  READ  DATA  RESTORE  REM (or ')  END  STOP
+            RANDOMIZE [seed]  CLS
+            Several statements on a line are separated by ":".
+
+PRINT:      ; joins, , goes to the next 16 column zone,
+            TAB(n) and SPC(n) position.
+
+Operators:  + - * / MOD  = <> < > <= >=  AND OR NOT (bitwise)
+            + joins strings. &H1F is a hexadecimal constant.
+
+Functions:  ABS SGN INT RND(n) (1 to n, RND(0) any)  LEN VAL ASC CHR$
+            STR$ LEFT$ RIGHT$ MID$(s, start[, length]) INSTR(s, find)
+            STRING$(n, char) POS(0) FRE(0)
+
+Ctrl-C stops a running program; CONT goes on.
+
+Memory: on the TRS-80 a program can use about 4K, the rest of the 32K
+process holds the interpreter, the variables and the strings. FRE(0)
+tells how much is left.

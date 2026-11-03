@@ -1,0 +1,14 @@
+include $(FUZIX_ROOT)/Target/rules.$(USERCPU)
+
+all: basic
+
+.c.o:
+	$(CC) $(CFLAGS) $(CCOPTS) -c $<
+
+basic.o: basic.h
+
+basic: basic.o
+	$(LINKER) $(CRT0) $^ -o $@ $(LINKER_OPT) $(LINKER_TAIL)
+
+clean:
+	rm -f *.o basic *~ *.asm *.lst *.sym *.map *.noi *.lk *.ihx *.tmp *.bin

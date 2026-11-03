@@ -1,0 +1,4 @@
+package  basic
+if-file  basic
+
+f 0755 /usr/bin/basic    basic
