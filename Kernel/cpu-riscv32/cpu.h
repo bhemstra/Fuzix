@@ -24,6 +24,7 @@ extern void __hard_irqrestore(irqflags_t mie);
 #define STACKALIGN(v) aligndown((v), 16U)
 
 #define uputp    uputl          /* Copy user pointer type */
+#define _uputp   _uputl          /* Copy user pointer type */
 #define ugetp(x) ugetl(x)	/* between user and kernel */
 #define uputi    uputl          /* Copy user int type */
 #define ugeti(x) ugetl(x)	/* between user and kernel */
