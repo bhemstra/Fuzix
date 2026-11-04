@@ -6,7 +6,7 @@
 
 #ifdef USE_FANCY_MONITOR
 
-#include "../../lib/monitor-z80u.S"
+#include "../../lib/monitor-z80.S"
 
 	.common
 _plt_monitor:
