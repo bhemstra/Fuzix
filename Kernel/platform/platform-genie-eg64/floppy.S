@@ -19,6 +19,12 @@
 	.export _fd_tab
 	.export _fd_cmd
 
+
+#ifdef BANKED_Z80
+#define ARGBASE	6
+#else
+#define ARGBASE 4
+#endif
 ;
 ;	The 1791 is memory mapped
 ;
@@ -288,7 +294,7 @@ fdio_xfer_out:
 ;
 _fd_restore:
 	push	bc
-	ld	hl,6
+	ld	hl,ARGBASE
 	add	hl,sp
 	ld	e,(hl)
 	inc	hl
@@ -324,7 +330,7 @@ _fd_restore:
 ;
 _fd_operation:
 	push	bc
-	ld	hl,6
+	ld	hl,ARGBASE
 	add	hl,sp
 	ld	e,(hl)
 	inc	hl
@@ -386,7 +392,7 @@ waitdiskl:
 
 _fd_motor_on:
 	push	bc
-	ld	hl,6
+	ld	hl,ARGBASE
 	add	hl,sp
 	ld	c,(hl)
 	;
