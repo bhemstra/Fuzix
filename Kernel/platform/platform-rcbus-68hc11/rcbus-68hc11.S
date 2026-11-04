@@ -523,13 +523,13 @@ hd_swap:
 ;	SD card
 ;
 
-	.globl sd_spi_transmit_byte
-	.globl sd_spi_receive_byte
+	.globl sd_spi_tx_byte
+	.globl sd_spi_rx_byte
 	.globl sd_spi_raise_cs
 	.globl sd_spi_lower_cs
 	.globl sd_spi_clock
-	.globl sd_spi_transmit_sector
-	.globl sd_spi_receive_sector
+	.globl sd_spi_tx_sector
+	.globl sd_spi_rx_sector
 
 ;
 ;	Select the SD card
@@ -547,12 +547,12 @@ sd_spi_raise_cs:
 ;
 ;	Send 0xFF and receive a byte
 ;
-sd_spi_receive_byte:
+sd_spi_rx_byte:
 	ldab #0xFF
 ;
 ;	Send a byte and return the resulting reply
 ;
-sd_spi_transmit_byte:
+sd_spi_tx_byte:
 	ldx #0xF000
 	stab 0x2A,x		; Write to data starts the transfer
 sendwt:
@@ -577,7 +577,7 @@ clkfast:
 ;
 ;	Sector transfers (for speed)
 ;
-sd_spi_transmit_sector:
+sd_spi_tx_sector:
 	ldx #blk_op
 	ldy ,x
 	ldaa 2,x
@@ -610,7 +610,7 @@ txw2:
 	bne txloop
 	bra map_kernel
 
-sd_spi_receive_sector:
+sd_spi_rx_sector:
 	ldx #blk_op
 	ldy ,x
 	ldaa 2,x

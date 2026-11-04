@@ -15,13 +15,13 @@ void sd_spi_raise_cs(void)
     evo_cs = 0xFF;		/* Active low */
 }
 
-void sd_spi_transmit_byte(uint8_t b)
+void sd_spi_tx_byte(uint8_t b)
 {
     evo_data = b;
     evo_data;		/* and discard the read pair ? CHECK */
 }
 
-uint8_t sd_spi_receive_byte(void)
+uint8_t sd_spi_rx_byte(void)
 {
     return evo_data;
 }
@@ -43,7 +43,7 @@ COMMON_MEMORY
  * Could also unroll these a bit for speed
  */
 
-bool sd_spi_receive_sector(void) __naked
+bool sd_spi_rx_sector(void) __naked
 {
   __asm
     ld a, (_blk_op+BLKPARAM_IS_USER_OFFSET)
@@ -76,7 +76,7 @@ doread:
   __endasm;
 }
 
-bool sd_spi_transmit_sector(void) __naked
+bool sd_spi_tx_sector(void) __naked
 {
   __asm
     ld a, (_blk_op+BLKPARAM_IS_USER_OFFSET)

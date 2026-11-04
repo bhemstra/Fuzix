@@ -102,7 +102,7 @@ void sd_spi_lower_cs(void)
     /* happens automatically when sending */
 }
 
-void sd_spi_transmit_byte(unsigned char byte)
+void sd_spi_tx_byte(unsigned char byte)
 {
     irqflags_t irq = sd_spi_map_interface();
 
@@ -111,7 +111,7 @@ void sd_spi_transmit_byte(unsigned char byte)
     sd_spi_unmap_interface(irq);
 }
 
-uint8_t sd_spi_receive_byte(void)
+uint8_t sd_spi_rx_byte(void)
 {
     unsigned char c;
     irqflags_t irq = sd_spi_map_interface();
@@ -170,13 +170,13 @@ static void sd_spi_txrx_sector(bool is_read)
     sd_spi_unmap_interface(irq);
 }
 
-bool sd_spi_receive_sector(void)
+bool sd_spi_rx_sector(void)
 {
     sd_spi_txrx_sector(true);
     return true;
 }
 
-bool sd_spi_transmit_sector(void)
+bool sd_spi_tx_sector(void)
 {
     sd_spi_txrx_sector(false);
     return true;

@@ -141,10 +141,10 @@ assembly functions to bit-bang the SD card using the DUART:
                 .globl sd_spi_clock
                 .globl sd_spi_raise_cs
                 .globl sd_spi_lower_cs
-                .globl sd_spi_transmit_byte
-                .globl sd_spi_receive_byte
-                .globl sd_spi_transmit_sector
-                .globl sd_spi_receive_sector
+                .globl sd_spi_tx_byte
+                .globl sd_spi_rx_byte
+                .globl sd_spi_tx_sector
+                .globl sd_spi_rx_sector
 ```
 
 and the high-level SD card code is in `Kernel/dev/devsd.c` and

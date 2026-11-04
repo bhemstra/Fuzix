@@ -38,7 +38,7 @@ void sd_spi_lower_cs(void)
   __hard_irqrestore(fl);
 }
 
-void sd_spi_transmit_byte(uint_fast8_t byte)
+void sd_spi_tx_byte(uint_fast8_t byte)
 {
   irqflags_t fl = __hard_di();
 
@@ -46,7 +46,7 @@ void sd_spi_transmit_byte(uint_fast8_t byte)
   __hard_irqrestore(fl);
 }
 
-uint_fast8_t sd_spi_receive_byte(void)
+uint_fast8_t sd_spi_rx_byte(void)
 {
   uint8_t byte = 0U;
   irqflags_t fl = __hard_di();
@@ -56,7 +56,7 @@ uint_fast8_t sd_spi_receive_byte(void)
   return byte;
 }
 
-bool sd_spi_receive_sector(void)
+bool sd_spi_rx_sector(void)
 {
   irqflags_t fl = __hard_di();
 
@@ -65,7 +65,7 @@ bool sd_spi_receive_sector(void)
   return true;
 }
 
-bool sd_spi_transmit_sector(void)
+bool sd_spi_tx_sector(void)
 {
   irqflags_t fl = __hard_di();
 

@@ -25,12 +25,12 @@ void sd_spi_lower_cs(void)
     /* TODO pick a line */
 }
 
-void sd_spi_transmit_byte(uint8_t byte)
+void sd_spi_tx_byte(uint8_t byte)
 {
     rabbit_spi_tx(reverse[byte]);
 }
 
-uint8_t sd_spi_receive_byte(void)
+uint8_t sd_spi_rx_byte(void)
 {
     return reverse[rabbit_spi_rx()];
 }
@@ -41,7 +41,7 @@ COMMON_MEMORY
  * Could also unroll these a bit for speed
  */
 
-bool sd_spi_receive_sector(void) __naked
+bool sd_spi_rx_sector(void) __naked
 {
   __asm
     ld a, (_blk_op+BLKPARAM_IS_USER_OFFSET)
@@ -63,7 +63,7 @@ doread:
   __endasm;
 }
 
-bool sd_spi_transmit_sector(void) __naked
+bool sd_spi_tx_sector(void) __naked
 {
   __asm
     ld a, (_blk_op+BLKPARAM_IS_USER_OFFSET)
