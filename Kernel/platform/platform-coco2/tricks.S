@@ -56,23 +56,22 @@ _switchin:
 	lda	P_TAB__P_PAGE_OFFSET+1,x	; LSB of 16-bit page no
 	bne	not_swapped
 
-	lds	#0x0200		;	$1xx is vectors and swap stack
+	lds	#istack_top			;	$1xx is vectors and swap stack
 
+	; We can't do the swap stack and interrupts on trick as we don't
+	; have enough RAM!
 	ldx	_udata + U_DATA__U_PTAB
 	ldb	P_TAB__P_PAGE_OFFSET+1, x
 	beq	not_swapout		;	it's dead don't swap it out
 	ldd	_udata + U_DATA__U_PTAB
-	andcc	#0xef
 	jsr	_swapout		;	swapout(pptr)
 not_swapout:
 	ldd	newpp
-	andcc	#0xef
 	jsr	_swapper		; 	fetch our process
 	ldx	newpp
 	lda	#1
 	sta	P_TAB__P_PAGE_OFFSET+1,x	; marked paged in
 not_swapped:
-	orcc	#0x10
 	dec	_inswap
 	; we have now new stacks so get new stack pointer before any jsr
 	lds	_udata + U_DATA__U_SP
