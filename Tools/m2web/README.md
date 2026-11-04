@@ -10,6 +10,7 @@ the 30Hz real time clock NMI and the WD1010 hard disk.
 | `index.html`  | the page: screen, keyboard, speed and example commands  |
 | `m2.js`       | the Model II hardware                                   |
 | `z80.js`      | z80-emulator 2.3.0 and z80-base 2.0.1 by Lawrence Kesteloot (MIT), bundled with esbuild |
+| `package.sh`  | makes `m2web.zip`: the page, both disks, LEESMIJ.txt and licences, ready for a web site |
 | `mkdisk.sh`   | makes a disk file (`.hdv.gz`, or `.hdv.gz.b64.txt` with `-b`) from an image |
 | `disks.json`  | the disks the page offers                                |
 | `test.mjs`    | boots the image under Node and logs in, as a quick check |
@@ -38,6 +39,9 @@ node Tools/m2web/test.mjs          # boots, logs in, runs ls and tbasic
 ```
 
 ## On a web site
+
+`Tools/m2web/package.sh` puts everything below in `m2web.zip`, with
+instructions in Dutch (LEESMIJ.txt) and the licence notes.
 
 The page needs nothing but a static web server. Copy these files into one
 folder on the site, for example `/m2/`:
