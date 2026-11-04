@@ -2,8 +2,6 @@
 ; low-level routines for VC handling
 ;
 
-	.module	vc_asm
-
 	.export _set_vid_mode
 	.export _set_vc_mode
 	.export _vc_clear
@@ -16,7 +14,7 @@
 #include "kernel.def"
 
 	; FIXME - where does video need to land ?
-	.video
+	.code
 
 _set_vc_mode:
 	ldx #$ffc6
@@ -50,7 +48,7 @@ _vc_clear:
 	leax -512,x
 	jsr _map_video
 	ldd #$2020
-cllp	std ,x++
+cllp:	std ,x++
 	cmpx ,s
 	blo cllp
 	leas 2,s
@@ -86,7 +84,7 @@ _vc_scroll_up:
 	sty	,s
 	leay	32,x
 	jsr	_map_video
-scup	ldd	,y++
+scup:	ldd	,y++
 	std	,x++
 	cmpx	,s
 	blo	scup
@@ -99,7 +97,7 @@ _vc_scroll_down:
 	stx	,s
 	leax	-32,y
 	jsr	map_video
-scdn	ldd	,--x
+scdn:	ldd	,--x
 	std	,--y
 	cmpx	,s
 	bhi	scdn
@@ -111,7 +109,7 @@ _vc_memset:
 	ldb	2,s
 	ldy	3,s
 	jsr	_map_video
-vcms	stb	,x+
+vcms:	stb	,x+
 	leay	-1,y
 	bne	vcms
 	jsr	_unmap_video

@@ -1,5 +1,5 @@
 # steal what we can from nx32 port
-vpath %.s ../platform-dragon-nx32
+vpath %.S ../platform-dragon-nx32
 vpath %.c ../platform-dragon-nx32
 
 CSRCS = devlpr.c devtty.c devfd.c ttydw.c devinput.c
@@ -16,23 +16,23 @@ DSRCS = ../../dev/devdw.c ../../dev/blkdev.c ../../dev/devide.c \
 DDSRCS = ../../dev/devide_discard.c ../../dev/mbr.c \
          ../../dev/gpt.c ../../dev/devsd_discard.c
 
-ASRCS = crt0.s dragon.s mem-mooh.s video.s ide.s spi.s
-ASRCS += tricks.s commonmem.s usermem_sam.s floppy.s ../../dev/drivewire/drivewire.s
-ASRCS += multihead.s vc_asm.s
+ASRCS = crt0.S dragon.S mem-mooh.S video.S ide.S spi.S
+ASRCS += tricks.S commonmem.S usermem_sam.S floppy.S ../../dev/drivewire/drivewire.S
+ASRCS += multihead.S vc_asm.S
 
 COBJS = $(CSRCS:.c=$(BINEXT))
 VOBJS = $(VSRCS:.c=$(BINEXT))
 CDOBJS = $(CDSRCS:.c=$(BINEXT))
-AOBJS = $(ASRCS:.s=$(BINEXT))
+AOBJS = $(ASRCS:.S=$(BINEXT))
 DOBJS = $(patsubst ../../dev/%.c,%.o, $(DSRCS))
 DDOBJS = $(patsubst ../../dev/%.c,%.o, $(DDSRCS))
 OBJS  = $(COBJS) $(VOBJS) $(CDOBJS) $(AOBJS) $(DOBJS) $(DDOBJS)
 
 CROSS_CCOPTS += -I../../dev/ -I../platform-dragon-nx32/
 
-../../dev/drivewire/drivewire.o: ASOPTS += --defsym BECKER=$(BECKER)
+../../dev/drivewire/drivewire.o: ASOPTS += -DBECKER=$(BECKER)
 
-JUNK = $(CSRCS:.c=.o) $(ASRCS:.s=.o) *~ 
+JUNK = $(CSRCS:.c=.o) $(ASRCS:.S=.o) *~ 
 
 all: $(OBJS)
 
@@ -46,12 +46,12 @@ $(CDOBJS): %$(BINEXT): %.c
 	$(CROSS_CC) $(CROSS_CCOPTS) $(CROSS_CC_SEGDISC) -c $<
 
 $(DOBJS): %$(BINEXT): ../../dev/%.c
-	$(CROSS_CC) $(CROSS_CCOPTS) $(CROSS_CC_SEG2) -c $<
+	$(CROSS_CC) $(CROSS_CCOPTS) $(CROSS_CC_SEG2) -c $< -o $@
 
 $(DDOBJS): %$(BINEXT): ../../dev/%.c
-	$(CROSS_CC) $(CROSS_CCOPTS) $(CROSS_CC_SEGDISC) -c $<
+	$(CROSS_CC) $(CROSS_CCOPTS) $(CROSS_CC_SEGDISC) -c $< -o $@
 
-$(AOBJS): %$(BINEXT): %.s
+$(AOBJS): %$(BINEXT): %.S
 	$(CROSS_AS) $(ASOPTS) $< -o $*.o
 
 clean:

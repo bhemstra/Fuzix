@@ -68,7 +68,7 @@ map_proc:
 	jsr map_proc_a
 	pshs cc,pc
 
-* called directly by switchin
+; called directly by switchin
 map_proc_a:
 	jsr mmu_remap_x
 	lda #1
@@ -79,7 +79,7 @@ map_proc_a:
 mmu_remap_x:
 	ldy #0xFFA9
 	ldb #7
-maplp	lda ,x+
+maplp:	lda ,x+
 	sta ,y+
 	decb
 	bne maplp

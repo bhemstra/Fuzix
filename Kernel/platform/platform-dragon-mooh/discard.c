@@ -96,7 +96,7 @@ static struct cart_rom_id *cart_lookup(uint16_t hash)
 	do {
 		if (cart->hash == hash)
 			return cart;
-	} while(cart++->hash);
+	} while((cart++)->hash);
 	return NULL;
 }
 
@@ -111,7 +111,7 @@ static struct hdb_rom_id *hdb_lookup(uint16_t key)
 	do {
 		if (keycmp(&key, (uint16_t *)id->key))
 			return id;
-	} while(id++->id);
+	} while((id++)->id);
 	return NULL;
 }
 

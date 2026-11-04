@@ -88,7 +88,7 @@ not_swapped:
 	; fetch uarea from process memory
 	ldx	#U_DATA_STASH
 	ldu	#_udata
-stashb	ldd	,x++
+stashb:	ldd	,x++
 	std	,u++
 	cmpx	#U_DATA_STASH+U_DATA__TOTALSIZE
 	bne	stashb
@@ -100,7 +100,7 @@ stashb	ldd	,x++
 	jsr	map_kernel
 
 nostash:
-	ldxd	 newpp
+	ldx	 newpp
         ; check u_data->u_ptab matches what we wanted
 	cmpx	_udata + U_DATA__U_PTAB
         bne	switchinfail
@@ -204,11 +204,11 @@ fork_copy:
 	ldx	fork_proc_ptr
 	ldx	P_TAB__P_PAGE_OFFSET,x	; new bank map
 	ldy	_udata + U_DATA__U_PAGE	; old bank map
-cpbank	lda	,y+			; src
+cpbank:	lda	,y+			; src
 	cmpa 	,y			; repeated bank = last
 	bne	notlst
 	clr	,s
-notlst	ldb	,x+			; dst
+notlst:	ldb	,x+			; dst
 	jsr	 copybank			; clobbers only A,B
 	dec	,s
 	bpl	cpbank
@@ -219,7 +219,7 @@ notlst	ldb	,x+			; dst
 	jsr	map_proc_a
 	ldx	#_udata
 	ldu	#U_DATA_STASH
-stashf	ldd	,x++
+stashf:	ldd	,x++
 	std	,u++
 	cmpx	#_udata+U_DATA__TOTALSIZE
 	bne	stashf

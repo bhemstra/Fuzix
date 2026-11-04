@@ -37,7 +37,8 @@
 
 	; TODO copy into place
 
-	.area .vectors
+	.abs
+	.org 0xFEF0
 	;
 	;	Will be at FFF0 once CRM is enabled
 	;
@@ -60,7 +61,7 @@ _bufpool:
 
 	;	And expose the discard buffer count to C - but in discard
 	;	so we can blow it away and precomputed at link time
-	..discard
+	.discard
 
 init_early:
 	ldx	#null_handler
@@ -69,7 +70,7 @@ init_early:
 	sta	0
 	sta	0x0071		; BASIC cold boot flag
 	ldx	#ramstub	; copy to internal RAM
-cp2ram	ldu	,x
+cp2ram:	ldu	,x
 	stu	,x++
 	cmpx	#stubend
 	blo	cp2ram
@@ -86,7 +87,7 @@ init_hardware:
 	; NTSC or PAL/SECAM ?
 	ldx	#0
 	lda	$ff02
-waitvb0
+waitvb0:
 	lda	$ff03
 	bpl	waitvb0		; wait for vsync
 	lda	$ff02
@@ -212,7 +213,8 @@ nompi:	ldb	#0
 
 ; this can be anywhere below 0xC000
 	; FIXME
-	.area .ncart
+;	.area .ncart
+	.code
 ;
 ;	uint16_t cart_hash(void)
 ;
@@ -298,7 +300,7 @@ no_sign:
 
 ; Need to be here so they can be written with cart paged in
 	; FIXME where ?
-	.area .ncartdata
+	.data
 
 _hdb_port:
 	.word 0
@@ -389,7 +391,7 @@ outchar:
 	sta	0xFF20
 	rts
 
-	..commondata
+	.commondata
 
 _need_resched:
 	.byte 0

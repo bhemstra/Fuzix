@@ -1,4 +1,3 @@
-	.module dragonvideo
 
 	; Methods provided
 	.export _map_video
@@ -22,7 +21,7 @@
 #include "../../cpu-6809/kernel09.def"
 
 	; TODO - where to put
-	.area .video
+	.code
 
 ; These are not used yet.
 ; When we unmap the common page to work on the video below, whatever
@@ -352,7 +351,7 @@ _m6847_vtattr_notify:
 	bra	setmode
 lowchar:
         ldd	#0xC47F
-setmode
+setmode:
 	std	plot_patch
 _m6847_cursor_disable:
 no_lines:
@@ -377,28 +376,28 @@ tfr_cmd:
 	orcc	#$10		; turn off interrupt - int might remap kernel
 	lda	#$3F
 	sta	$FFA0		; unmap kernel above video memory
-	ldd	#$80c0		; this is writing
-	bcc	c@		; if carry clear then keep D write
+	ldd	#0x80c0		; this is writing
+	bcc	c1		; if carry clear then keep D write
 	exg	a,b		; else flip D: now is reading
-c@	sta	b@+1		; !!! self modify inner loop
-	stb	b@+3		; !!!  
+c1:	sta	b1+1		; !!! self modify inner loop
+	stb	b1+3		; !!!  
 	bsr	vidptr		; U = screen addr
 	leay	,x		; Y = ptr to Height, width
 	leax	4,x		; X = pixel data
 	;; outter loop: iterate over pixel rows
-a@	lda	3,y		; count = width
+a1:	lda	3,y		; count = width
 	pshs	u		; save screen ptr
 	;; inner loop: iterate over columns
 	;; modify mod+1 and mod+3 to switch directions
-b@	ldb	,x+		; get a byte from src
+b1:	ldb	,x+		; get a byte from src
 	stb	,u+		; save byte to dest
 	deca			; bump counter
-	bne	b@		; loop
+	bne	b1		; loop
 	;; increment outer loop
 	puls	u		; restore original screen ptr
 	leau	32,u		; add byte span of screen (goto next line)
 	dec	1,y		; bump row counter
-	bne	a@		; loop
+	bne	a1		; loop
 	lda	#KBANKV
 	sta	$FFA0		; remap kernel
 	puls	cc,u,pc	; restore regs, return
@@ -444,7 +443,8 @@ endline:
 	puls	u,pc
 
 	; TODO where to put
-	.area .videodata
+	.data
+;	.area .videodata
 cursor_save:
 	.word	0
 _vtrow:
