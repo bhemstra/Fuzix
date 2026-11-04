@@ -15,6 +15,9 @@ the 30Hz real time clock NMI and the WD1010 hard disk.
 | `test.mjs`    | boots the image under Node and logs in, as a quick check |
 | `m4boot.mjs`  | runs the Model 4 hard disk boot sector against `hard4p-0.hdv` as the 4P ROM would |
 
+The keyboard interrupt (CTC channel 3 in IM 2) is there for LS-DOS (see
+`Tools/lsdos2`); Fuzix polls the keyboard and leaves it off.
+
 The NMI is delivered by `m2.js` itself rather than by the Z80 library,
 because the library clears IFF2 on an NMI while a real Z80 copies IFF1
 into it, and the Fuzix clock handler depends on that.
