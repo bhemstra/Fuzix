@@ -80,8 +80,8 @@ static void sio2_setup(uint8_t minor, uint8_t flags)
 
 	r = 0xC4;
 
-	out(CTC_CH(minor), 0x55);
-	out(CTC_CH(minor), siobaud[baud]) ;
+	out(CTC_CH(minor - 1), 0x55);
+	out(CTC_CH(minor - 1), siobaud[baud]) ;
 
 	if (baud >= B600)	/* Use x16 clock and CTC divider */
 		r = 0x44;
