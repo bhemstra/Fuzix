@@ -4,7 +4,7 @@
 
 _strlen:
 	stx	(-s)
-	ldx	2(s)
+	ldx	4(s)
 	cla
 sl:	ldab	(x+)
 	bz	strlen_done

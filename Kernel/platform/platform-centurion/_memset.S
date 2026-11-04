@@ -8,9 +8,9 @@
 ;
 _memset:
 	stx	(-s)
-	ldx	2(s)
-	ldb	4(s)
-	lda	6(s)
+	ldx	4(s)
+	ldb	6(s)
+	lda	8(s)
 	jz	nowork
 
 setl:
@@ -18,6 +18,6 @@ setl:
 	dca
 	jnz	setl
 nowork:
-	ldb	2(s)
+	ldb	4(s)
 	ldx	(s+)
 	rsr

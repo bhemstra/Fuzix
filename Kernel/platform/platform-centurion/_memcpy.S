@@ -8,18 +8,18 @@ _memcpy:
 	xfr	y,a
 	sta	(-s)
 
-	ldx	6(s)
-	lda	8(s)
+	ldx	8(s)		; from
+	lda	6(s)		; to
 	xay
-	lda	10(s)
+	lda	10(s)		; count
 	bz	nowork
 memcpyl:
-	ldb	(x+)
-	stb	(y+)
+	ldbb	(x+)
+	stbb	(y+)
 	dca
 	bnz	memcpyl
-	ldb	6(s)
 nowork:
+	ldb	6(s)		; memcpy returns the destination
 	lda	(s+)
 	xay
 	ldx	(s+)

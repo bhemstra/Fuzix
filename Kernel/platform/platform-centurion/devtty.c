@@ -78,6 +78,7 @@ void tty_data_consumed(uint_fast8_t minor)
 /* TODO: irqs and other ports */
 void tty_poll(void)
 {
-	if (muxio[0] & 0x01)
-		tty_inproc(1, muxio[1]);
+	/* tty 1 is mux port 1, at F200/F201 (see tty_putc) */
+	if (muxio[2] & 0x01)
+		tty_inproc(1, muxio[3]);
 }

@@ -71,7 +71,7 @@ ___hard_ei:
 ___hard_irqrestore:
 	ldab	2(s)
 	stab	(irqflag)
-	bz	eiret
+	bnz	eiret		; interrupts were on, put them back
 	di
 	rsr
 eiret:
@@ -159,18 +159,18 @@ map_bank_c:
 	; to remove this or shuffle the MMU maps into common space or
 	; use bcp here etc (we've got 512 bytes of maps so it's expensive
 	; in common unless we go to bigger virtual page sizes)
-	lda	(a)
+	; A holds the address of the 32 byte map
 	stx	(-s)
 	stb	(-s)
 	xfr	y,b
 	stb	(-s)
-	ldx	tmpmap
 	xfr	a,y
-	ldab	32
+	ldx	tmpmap
+	lda	32
 memcpl:
-	ldb	(y+)
-	stb	(x+)
-	dcab
+	ldbb	(y+)
+	stbb	(x+)
+	dca
 	bnz	memcpl
 	ldb	(s+)
 	xfr	b,y
