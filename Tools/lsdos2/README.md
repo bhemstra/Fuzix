@@ -38,8 +38,7 @@ Fuzix `hard2-0.hdv`, so it goes wherever that one goes. In the browser:
 Tools/m2web/mkdisk.sh Images/trs80m2/lsdos2-0.hdv lsdos2-0
 ```
 
-and add `{ "name": "LS-DOS 6.3.1", "file": "lsdos2-0.hdv.gz" }` to
-`Tools/m2web/disks.json`.
+`Tools/m2web/disks.json` already lists it as "LS-DOS 6.3.1".
 
 LS-DOS asks for the date and time at every boot (the Model II has no
 clock that keeps time).

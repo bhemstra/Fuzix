@@ -1,3 +1,4 @@
 [
-  { "name": "Fuzix (Model II)", "file": "hard2-0.hdv.gz" }
+  { "name": "Fuzix (Model II)", "file": "hard2-0.hdv.gz" },
+  { "name": "LS-DOS 6.3.1", "file": "lsdos2-0.hdv.gz" }
 ]

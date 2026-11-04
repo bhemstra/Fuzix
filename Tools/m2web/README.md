@@ -43,7 +43,7 @@ The page needs nothing but a static web server. Copy these files into one
 folder on the site, for example `/m2/`:
 
 ```
-index.html  m2.js  z80.js  disks.json  hard2-0.hdv.gz  (and the other disks)
+index.html  m2.js  z80.js  disks.json  hard2-0.hdv.gz  lsdos2-0.hdv.gz
 ```
 
 It must be opened over http(s), not as a file. `.js` files must be served
@@ -53,7 +53,15 @@ the plain image just as well.
 
 ### More than one hard disk
 
-Make a disk file for each image and list it in `disks.json`; the page shows
+`disks.json` offers Fuzix and LS-DOS 6.3.1 (`Tools/lsdos2`); make their disk
+files with:
+
+```
+Tools/m2web/mkdisk.sh                                       # hard2-0.hdv.gz
+Tools/m2web/mkdisk.sh Images/trs80m2/lsdos2-0.hdv lsdos2-0  # lsdos2-0.hdv.gz
+```
+
+For other images, make a disk file for each and list it in `disks.json`; the page shows
 them in the "Harde schijf" menu and remembers the last choice:
 
 ```
