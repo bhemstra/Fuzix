@@ -75,15 +75,14 @@ name), `?embed=1` leaves out the title and the explanation.
 
 ### RapidWeaver
 
-RapidWeaver cannot host the files itself in a useful way (it renames and
-moves resources), so put the folder on the server next to the site (FTP,
-or in RapidWeaver as a folder of resources published to `/m2/`) and show it
-in a page with an HTML code element, a Stacks HTML stack or an
-"HTML Code" page:
+The simplest way is to keep the emulator as its own folder on the server,
+next to the site (upload it by FTP, so RapidWeaver does not touch the
+files), and show it in a RapidWeaver page with an iframe in an HTML code
+element, an HTML stack or an "HTML Code" page:
 
 ```html
 <iframe src="/m2/index.html?embed=1" title="TRS-80 Model II"
-        style="width:100%; height:900px; border:0" allow="clipboard-read"></iframe>
+        style="width:100%; height:900px; border:0"></iframe>
 ```
 
 Different RapidWeaver pages can each start a different disk with
