@@ -34,7 +34,9 @@ _blen:
 _do_blkzero:
 	call map_buffers
 	push bc
-	ld de,(_bsrc)
+	ld hl,(_bsrc)
+	ld d,h
+	ld e,l
 	inc de
 	ld (hl),#0
 	ld bc,#511

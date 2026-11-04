@@ -29,4 +29,5 @@ void plt_interrupt(void)
 {
 	tty_drain_sio();
 	timer_interrupt();
+	poll_input();
 }
