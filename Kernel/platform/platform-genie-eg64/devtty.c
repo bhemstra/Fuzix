@@ -179,10 +179,10 @@ void tty_setup(uint_fast8_t minor, uint_fast8_t flags)
 		return;
 
 	if (sertype == 1 || trs80_model == LNW80) {
-		baud = ttydata[3].termios.c_cflag & CBAUD;
+		baud = ttydata[2].termios.c_cflag & CBAUD;
 		if (baud > B19200) {
-			ttydata[3].termios.c_cflag &= ~CBAUD;
-			ttydata[3].termios.c_cflag |= B19200;
+			ttydata[2].termios.c_cflag &= ~CBAUD;
+			ttydata[2].termios.c_cflag |= B19200;
 			baud = B19200;
 		} else
 			baud = trsbaud[baud];
