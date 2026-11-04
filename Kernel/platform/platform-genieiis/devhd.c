@@ -137,7 +137,7 @@ int hd_transfer(uint8_t minor, bool is_read, uint8_t rawflag)
 			}
 		}
 		/* FIXME: should we try the other half and then bale out ? */
-		if (tries == 3)
+		if (tries == 4)
 			goto bad;
 		ct++;
 		dptr += 256;
