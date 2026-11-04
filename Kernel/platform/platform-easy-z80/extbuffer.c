@@ -43,7 +43,7 @@ void blktou(void *uaddr, struct blkbuf *buf, uint16_t off, uint16_t len)
         return;
     }
     /* If it's all below 0x8000 then use the 0x8000 window */
-    if ((uint16_t)uaddr + len < 0x8000) {
+    if ((uint16_t)uaddr + len <= 0x8000) {
         bsrc = buf->__bf_data + off + 0x4000;
         do_blkcopyuh();
         return;
@@ -66,12 +66,12 @@ void blkfromu(void *uaddr, struct blkbuf *buf, uint16_t off, uint16_t len)
     bdest = buf->__bf_data + off;
     blen = len;
     /* If it's all below 16K or all over 32K then use the 0x4000 window */
-    if ((uint16_t)uaddr + len < 0x4000 || (uint16_t)uaddr > 0x8000) {
+    if ((uint16_t)uaddr + len < 0x4000 || (uint16_t)uaddr >= 0x8000) {
         do_blkcopyul();
         return;
     }
     /* If it's all below 0x8000 then use the 0x8000 window */
-    if ((uint16_t)uaddr + len < 0x8000) {
+    if ((uint16_t)uaddr + len <= 0x8000) {
         bdest += 0x4000;
         do_blkcopyuh();
         return;
