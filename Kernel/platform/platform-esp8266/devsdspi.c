@@ -207,12 +207,12 @@ static uint_fast8_t send_recv(uint_fast8_t data)
 	return SPI1W0 & 0xff;
 }
 
-void sd_spi_transmit_byte(uint_fast8_t b)
+void sd_spi_tx_byte(uint_fast8_t b)
 {
 	send_recv(b);
 }
 
-uint_fast8_t sd_spi_receive_byte(void)
+uint_fast8_t sd_spi_rx_byte(void)
 {
 	return send_recv(0xff);
 }
@@ -228,7 +228,7 @@ static void memcpy4_aligned(uint32_t *p1, const uint32_t *p2, uint32_t dwords)
 		*p1++ = *p2++;
 }
 
-bool sd_spi_receive_sector(void)
+bool sd_spi_rx_sector(void)
 {
 	uint8_t *dptr = (uint8_t *) blk_op.addr;
 	if ((uint32_t) dptr & 3)
@@ -249,7 +249,7 @@ bool sd_spi_receive_sector(void)
 	return 0;
 }
 
-bool sd_spi_transmit_sector(void)
+bool sd_spi_tx_sector(void)
 {
 	uint8_t *sptr = (uint8_t *) blk_op.addr;
 	if ((uint32_t) sptr & 3)
