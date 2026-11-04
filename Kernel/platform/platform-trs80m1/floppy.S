@@ -408,6 +408,7 @@ _fd_motor_on:
 	;
 	ld	(LATCHD0),a
 	pop	bc
+	ld	hl,0
 	ret
 
 must_config:
@@ -443,6 +444,7 @@ motor_running:
 	ld	(hl),d
 	call	wait45		; Wait 45ms for the head to load
 	ld	(hl),d		; Reset timer
+	ld	hl,0
 	ret
 
 ;
