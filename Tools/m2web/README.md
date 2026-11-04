@@ -79,6 +79,10 @@ Tools/m2web/mkdisk.sh ~/images/games.hdv games   # writes games.hdv.gz
 ]
 ```
 
+The buttons and the explanation follow the system on the chosen disk:
+add `"os": "fuzix"` or `"os": "lsdos"` to an entry, or the page guesses
+from the file name (and shows only the general part for others).
+
 A disk must be a Model II `.hdv` (header byte 8 has the Model II flag 0x02,
 32 sectors of 512 bytes per track) whose cylinder 0 holds a boot program
 the hard disk boot ROM accepts (a sector starting with `/* END BOOT */`).

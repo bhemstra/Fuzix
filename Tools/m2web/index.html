@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Fuzix op de Model II</title>
+<title>TRS-80 Model II</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -146,6 +146,9 @@ label.file input { max-width: 14em; font-size: 0.85rem; }
   font-weight: 600;
 }
 .try .row { display: flex; flex-wrap: wrap; gap: 8px; }
+/* Buttons and text for one system show only when its disk runs */
+[data-os] { display: none; }
+html[data-sys="fuzix"] [data-os="fuzix"], html[data-sys="lsdos"] [data-os="lsdos"] { display: revert; }
 .try button { font-family: var(--font-mono); font-size: 0.85rem; }
 .typein { display: flex; gap: 8px; }
 .typein input {
@@ -170,8 +173,8 @@ label.file input { max-width: 14em; font-size: 0.85rem; }
 
 <div class="wrap">
   <header>
-    <h1>Fuzix op de TRS-80 Model II</h1>
-    <span class="badge">Z80 &middot; 4 MHz &middot; 512K &middot; 8 MB harde schijf</span>
+    <h1>De TRS-80 Model II in je browser</h1>
+    <span class="badge">Z80 &middot; 4 MHz &middot; 512K &middot; harde schijf</span>
   </header>
 
   <div class="bezel">
@@ -204,14 +207,23 @@ label.file input { max-width: 14em; font-size: 0.85rem; }
     <h2>Probeer</h2>
     <div class="row" id="macros">
       <button type="button" data-keys="\r">Enter</button>
-      <button type="button" data-keys="root\r">root</button>
-      <button type="button" data-keys="ls /bin\r">ls /bin</button>
-      <button type="button" data-keys="tbasic\r">tbasic</button>
-      <button type="button" data-keys="10 FOR I=1 TO 10; PRINT I, I*I; NEXT I\rRUN\r">Tiny BASIC-programma</button>
-      <button type="button" data-keys="BYE\r">BYE</button>
-      <button type="button" data-fast="1" data-keys="echo 'main(){printf(&quot;Hallo van de Model II\n&quot;);}' &gt; t.c\rcc -o t t.c\r./t\r">C compileren</button>
-      <button type="button" data-keys="basic\r">basic</button>
-      <button type="button" data-keys="shutdown\r">shutdown</button>
+      <button type="button" data-os="fuzix" data-keys="root\r">root</button>
+      <button type="button" data-os="fuzix" data-keys="ls /bin\r">ls /bin</button>
+      <button type="button" data-os="fuzix" data-keys="tbasic\r">tbasic</button>
+      <button type="button" data-os="fuzix" data-keys="10 FOR I=1 TO 10; PRINT I, I*I; NEXT I\rRUN\r">Tiny BASIC-programma</button>
+      <button type="button" data-os="fuzix" data-keys="BYE\r">BYE</button>
+      <button type="button" data-os="fuzix" data-fast="1" data-keys="echo 'main(){printf(&quot;Hallo van de Model II\n&quot;);}' &gt; t.c\rcc -o t t.c\r./t\r">C compileren</button>
+      <button type="button" data-os="fuzix" data-keys="basic\r">basic</button>
+      <button type="button" data-os="fuzix" data-keys="shutdown\r">shutdown</button>
+      <button type="button" data-os="lsdos" data-now="date">Datum van vandaag</button>
+      <button type="button" data-os="lsdos" data-now="time">Tijd van nu</button>
+      <button type="button" data-os="lsdos" data-keys="DIR\r">DIR</button>
+      <button type="button" data-os="lsdos" data-keys="DIR :0 (S,I)\r">DIR (S,I)</button>
+      <button type="button" data-os="lsdos" data-keys="FREE\r">FREE</button>
+      <button type="button" data-os="lsdos" data-keys="DEVICE\r">DEVICE</button>
+      <button type="button" data-os="lsdos" data-keys="LIB\r">LIB</button>
+      <button type="button" data-os="lsdos" data-keys="LIST NOTICE/TXT\r">LIST NOTICE/TXT</button>
+      <button type="button" data-os="lsdos" data-keys="MEMORY\r">MEMORY</button>
     </div>
     <div class="typein">
       <input id="typein" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Of typ hier een regel en druk op Enter (handig op een telefoon)">
@@ -221,9 +233,11 @@ label.file input { max-width: 14em; font-size: 0.85rem; }
 
   <div class="about">
     <h2>Wat je ziet</h2>
-    <p>Een Model II wordt hier in je browser nagebootst: de Z80, het geheugen in banken van 32K, het scherm, het toetsenbord, de klokinterrupt van 30 keer per seconde en de WD1010-schijfcontroller. Hij start vanaf dezelfde <code>hard2-0.hdv</code> die je in trs80gp gebruikt.</p>
-    <p>Druk bij de vragen om datum en tijd op Enter en log in als <code>root</code>. Klik op het scherm om met je eigen toetsenbord te typen; Ctrl-C onderbreekt een programma. Met <code>tbasic</code>, <code>basic</code> en <code>cc</code> kun je programmeren. Compileren duurt op de echte snelheid van 4 MHz ruim drie minuten; de knop C compileren zet de emulator daarom op zo snel als kan.</p>
-    <p class="small">Wat je op de schijf verandert, blijft tot je de pagina herlaadt of opnieuw opstart. Z80-emulatie: z80-emulator van Lawrence Kesteloot (MIT).</p>
+    <p>Een TRS-80 Model II wordt hier in je browser nagebootst: de Z80, het geheugen in banken van 32K, het scherm, het toetsenbord met zijn interrupt, de klokinterrupt van 30 keer per seconde en de WD1010-controller van de harde schijf. Hij start, net als de echte, met de opstart-ROM vanaf de harde schijf. Kies bij Harde schijf welk systeem; de images zijn <code>.hdv</code>-bestanden zoals trs80gp die gebruikt. Een floppystation is er niet.</p>
+    <p>Klik op het scherm om met je eigen toetsenbord te typen, of gebruik de knoppen en de regel hierboven (handig op een telefoon).</p>
+    <p data-os="fuzix"><strong>Fuzix</strong> is een klein Unix-achtig systeem. Druk bij de vragen om datum en tijd op Enter en log in als <code>root</code>; Ctrl-C onderbreekt een programma. Met <code>tbasic</code> (Tiny BASIC), <code>basic</code> en <code>cc</code> (een kleine C-compiler) kun je programmeren. Compileren duurt op de echte snelheid van 4 MHz ruim drie minuten; de knop C compileren zet de emulator daarom op zo snel als kan. Stop met <code>shutdown</code>.</p>
+    <p data-os="lsdos"><strong>LS-DOS 6.3.1</strong> is het besturingssysteem van Logical Systems en MISOSYS, hier zo aangepast dat het van de harde schijf start (drive :0). Het vraagt bij elke start om datum en tijd (MM/DD/YY en HH:MM:SS); de knoppen vullen die van nu in. Daarna kun je commando's als <code>DIR</code>, <code>FREE</code>, <code>COPY</code>, <code>LIST</code> en <code>LIB</code> (alle ingebouwde commando's) geven. Ctrl-C is de BREAK-toets.
+    <p class="small">Wat je op de schijf verandert, blijft tot je de pagina herlaadt of opnieuw opstart. Z80-emulatie: z80-emulator van Lawrence Kesteloot (MIT). LS-DOS: &copy; MISOSYS, vrij te verspreiden met toestemming van Roy Soltoff (zie NOTICE/TXT op de schijf).</p>
   </div>
 </div>
 
@@ -233,6 +247,8 @@ label.file input { max-width: 14em; font-size: 0.85rem; }
  *	[ { "name": "Fuzix", "file": "hard2-0.hdv.gz" }, ... ]
  *	A file may be a plain .hdv, gzip compressed (.gz) or gzip and base64
  *	(.b64.txt). Without disks.json the page uses DEFAULT_DISKS.
+ *	An entry may say "os": "fuzix" or "lsdos" to pick the buttons and
+ *	text shown; without it the page guesses from the name.
  *	?disk=<file> in the address starts with that disk, ?embed=1 leaves out
  *	the title and the explanation (for an iframe).
  */
@@ -311,6 +327,13 @@ async function loadList() {
   diskEl.value = saved < disks.length ? saved : 0;
 }
 
+// Which system a disk holds: "os" in disks.json, else guessed from its name
+function setSystem(d) {
+  const t = d ? (d.os || ((d.file || '') + ' ' + (d.name || ''))) : '';
+  document.documentElement.dataset.sys =
+    /lsdos|ls-dos/i.test(t) ? 'lsdos' : /fuzix|hard2-0/i.test(t) ? 'fuzix' : '';
+}
+
 async function boot(promise, label) {
   setState('Schijf laden', 'load');
   hint.hidden = false;
@@ -344,12 +367,14 @@ function start() {
 diskEl.addEventListener('change', () => {
   const d = disks[Number(diskEl.value)];
   try { localStorage.setItem('m2web-disk', diskEl.value); } catch (e) { }
+  setSystem(d);
   boot(fetchDisk(d), d.name || d.file);
 });
 
 document.getElementById('diskfile').addEventListener('change', e => {
   const f = e.target.files[0];
   if (!f) return;
+  setSystem({ file: f.name });
   boot(f.arrayBuffer().then(b => decode(new Uint8Array(b), f.name)), f.name);
 });
 
@@ -444,7 +469,12 @@ canvas.addEventListener('click', () => canvas.focus());
 document.getElementById('macros').addEventListener('click', e => {
   const b = e.target.closest('button');
   if (!b || !m) return;
-  typeText(b.dataset.keys.replace(/\\r/g, '\r'));
+  if (b.dataset.now) {			// LS-DOS wants MM/DD/YY and HH:MM:SS
+    const n = new Date(), p = x => String(x).padStart(2, '0');
+    typeText((b.dataset.now === 'date'
+      ? p(n.getMonth() + 1) + '/' + p(n.getDate()) + '/' + p(n.getFullYear() % 100)
+      : p(n.getHours()) + ':' + p(n.getMinutes()) + ':' + p(n.getSeconds())) + '\r');
+  } else typeText(b.dataset.keys.replace(/\\r/g, '\r'));
   if (b.dataset.fast) speedEl.value = '0';	/* compiling takes minutes at 4 MHz */
   canvas.focus();
 });
@@ -464,6 +494,7 @@ document.getElementById('reset').addEventListener('click', () => { if (pristine)
   } catch (e) { /* the fallback font is fine */ }
   await loadList();
   const d = disks[Number(diskEl.value)];
+  setSystem(d);
   requestAnimationFrame(frame);
   boot(fetchDisk(d), d.name || d.file);
 })();
