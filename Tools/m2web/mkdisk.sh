@@ -1,12 +1,24 @@
 #!/bin/sh
 #
-#	Make the disk file the page loads from the Model II hard disk image:
-#	gzip compressed and base64 encoded (artifact hosts only serve text).
+#	Make a disk file the page can load from a Model II hard disk image.
 #
-#	mkdisk.sh [image]	default ../../Images/trs80m2/hard2-0.hdv
+#	mkdisk.sh [image [name]]	writes <name>.hdv.gz (for a web site)
+#	mkdisk.sh -b [image [name]]	writes <name>.hdv.gz.b64.txt (for hosts
+#					that only serve text, like artifacts)
+#
+#	Default image ../../Images/trs80m2/hard2-0.hdv, default name the
+#	image name. Add the file to disks.json to make it selectable.
 #
 set -e
-cd "$(dirname "$0")"
-IMG=${1:-../../Images/trs80m2/hard2-0.hdv}
-gzip -9 -c "$IMG" | base64 -w0 > hard2-0.hdv.gz.b64.txt
-ls -l hard2-0.hdv.gz.b64.txt
+B64=
+if [ "$1" = "-b" ]; then B64=1; shift; fi
+IMG=${1:-$(dirname "$0")/../../Images/trs80m2/hard2-0.hdv}
+NAME=${2:-$(basename "$IMG" .hdv)}
+OUT=$(dirname "$0")/$NAME.hdv.gz
+if [ -n "$B64" ]; then
+	gzip -9 -c "$IMG" | base64 -w0 > "$OUT.b64.txt"
+	ls -l "$OUT.b64.txt"
+else
+	gzip -9 -c "$IMG" > "$OUT"
+	ls -l "$OUT"
+fi

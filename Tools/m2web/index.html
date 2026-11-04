@@ -1,9 +1,20 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Fuzix op de Model II</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans+Condensed:wght@400;600&family=VT323&display=swap">
+<script>
+  // ?embed=1: only the emulator, for an iframe in another site
+  if (/[?&]embed=1/.test(location.search)) document.documentElement.classList.add('embed');
+</script>
 <style>
+html.embed header, html.embed .about { display: none; }
+html.embed .wrap { padding-top: 8px; padding-bottom: 8px; }
 /* Layout: one column, the Model II screen in its bezel first, the controls
    under it like the keyboard sits under the display. */
 :root {
@@ -111,6 +122,7 @@ button:hover { border-color: var(--muted); }
 button:focus-visible, select:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 button.primary { border-color: var(--accent); color: var(--accent); font-weight: 600; }
 label { display: inline-flex; gap: 6px; align-items: center; color: var(--muted); font-size: 0.95rem; }
+label.file input { max-width: 14em; font-size: 0.85rem; }
 .status {
   margin-left: auto;
   font-family: var(--font-mono);
@@ -153,6 +165,8 @@ label { display: inline-flex; gap: 6px; align-items: center; color: var(--muted)
 .about .small { color: var(--muted); font-size: 0.9rem; }
 @media (prefers-reduced-motion: reduce) { canvas { filter: none; } }
 </style>
+</head>
+<body>
 
 <div class="wrap">
   <header>
@@ -177,6 +191,12 @@ label { display: inline-flex; gap: 6px; align-items: center; color: var(--muted)
       </select>
     </label>
     <label for="turbo"><input id="turbo" type="checkbox" checked> Snel opstarten</label>
+    <label for="disk">Harde schijf
+      <select id="disk"></select>
+    </label>
+    <label class="file" for="diskfile">Eigen image
+      <input id="diskfile" type="file" accept=".hdv,.gz,.txt">
+    </label>
     <span class="status"><span class="dot load" id="dot"></span><span id="state">Laden</span><span id="mhz"></span></span>
   </div>
 
@@ -208,6 +228,14 @@ label { display: inline-flex; gap: 6px; align-items: center; color: var(--muted)
 </div>
 
 <script type="module">
+/*
+ *	The disks to choose from come from disks.json next to this page:
+ *	[ { "name": "Fuzix", "file": "hard2-0.hdv.gz" }, ... ]
+ *	A file may be a plain .hdv, gzip compressed (.gz) or gzip and base64
+ *	(.b64.txt). Without disks.json the page uses DEFAULT_DISKS.
+ *	?disk=<file> in the address starts with that disk, ?embed=1 leaves out
+ *	the title and the explanation (for an iframe).
+ */
 import { Z80 } from './z80.js';
 import { Model2, CPU_HZ } from './m2.js';
 
@@ -231,25 +259,99 @@ function setState(text, kind) {
   dot.className = 'dot ' + kind;
 }
 
-async function loadDisk() {
-  // The disk image is gzip compressed and stored as base64 text
-  const res = await fetch('hard2-0.hdv.gz.b64.txt');
-  if (!res.ok) throw new Error('De schijf kon niet worden geladen (' + res.status + ').');
-  const bin = atob((await res.text()).trim());
-  const gz = new Uint8Array(bin.length);
-  for (let i = 0; i < bin.length; i++) gz[i] = bin.charCodeAt(i);
-  const stream = new Blob([gz]).stream().pipeThrough(new DecompressionStream('gzip'));
-  return new Uint8Array(await new Response(stream).arrayBuffer());
+const DEFAULT_DISKS = [{ name: 'Fuzix', file: 'hard2-0.hdv.gz.b64.txt' }];
+const diskEl = document.getElementById('disk');
+let disks = DEFAULT_DISKS;
+
+// Turn the bytes of a disk file into the raw .hdv image
+async function decode(bytes, name) {
+  if (/\.b64\.txt$/i.test(name)) {
+    const bin = atob(new TextDecoder().decode(bytes).trim());
+    bytes = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+  }
+  // gzip, unless the web server already unpacked it
+  if (bytes[0] === 0x1F && bytes[1] === 0x8B) {
+    const stream = new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'));
+    bytes = new Uint8Array(await new Response(stream).arrayBuffer());
+  }
+  if (bytes[0] !== 0x56 || bytes[1] !== 0xCB)
+    throw new Error(name + ' is geen harde-schijf-image (.hdv).');
+  if (!(bytes[8] & 0x02))
+    throw new Error(name + ' is geen Model II-schijf (byte 8 van de kop mist de Model II-vlag).');
+  return bytes;
+}
+
+async function fetchDisk(d) {
+  const res = await fetch(d.file);
+  if (!res.ok) throw new Error(d.file + ' kon niet worden geladen (' + res.status + ').');
+  return decode(new Uint8Array(await res.arrayBuffer()), d.file);
+}
+
+async function loadList() {
+  try {
+    const res = await fetch('disks.json');
+    if (res.ok) {
+      const list = await res.json();
+      if (Array.isArray(list) && list.length) disks = list;
+    }
+  } catch (e) { /* no list: the default disk */ }
+  diskEl.innerHTML = '';
+  disks.forEach((d, i) => {
+    const o = document.createElement('option');
+    o.value = i;
+    o.textContent = d.name || d.file;
+    diskEl.appendChild(o);
+  });
+  let saved = 0;
+  try { saved = Number(localStorage.getItem('m2web-disk')) || 0; } catch (e) { }
+  const want = new URLSearchParams(location.search).get('disk');
+  const wi = want ? disks.findIndex(d => d.file === want || d.name === want) : -1;
+  if (wi >= 0) saved = wi;
+  diskEl.value = saved < disks.length ? saved : 0;
+}
+
+async function boot(promise, label) {
+  setState('Schijf laden', 'load');
+  hint.hidden = false;
+  hint.textContent = label + ' wordt geladen…';
+  try {
+    pristine = await promise;
+    start();
+  } catch (e) {
+    m = null;
+    setState('Fout', 'err');
+    hint.textContent = e.message;
+  }
 }
 
 function start() {
+  if (!pristine) return;
   m = new Model2(Z80, pristine.slice());
-  if (!m.bootHd()) throw new Error('Geen opstartcode op de schijf.');
+  if (!m.bootHd()) {
+    m = null;
+    setState('Fout', 'err');
+    hint.hidden = false;
+    hint.textContent = 'Op deze schijf staat geen opstartcode (/* END BOOT */).';
+    return;
+  }
   pending = [];
   booting = turboEl.checked;
   setState(booting ? 'Opstarten' : 'Draait', 'run');
   hint.hidden = true;
 }
+
+diskEl.addEventListener('change', () => {
+  const d = disks[Number(diskEl.value)];
+  try { localStorage.setItem('m2web-disk', diskEl.value); } catch (e) { }
+  boot(fetchDisk(d), d.name || d.file);
+});
+
+document.getElementById('diskfile').addEventListener('change', e => {
+  const f = e.target.files[0];
+  if (!f) return;
+  boot(f.arrayBuffer().then(b => decode(new Uint8Array(b), f.name)), f.name);
+});
 
 function draw() {
   ctx.fillStyle = SCREEN;
@@ -360,14 +462,11 @@ document.getElementById('reset').addEventListener('click', () => { if (pristine)
   try {
     await document.fonts.load(CH + 'px VT323');
   } catch (e) { /* the fallback font is fine */ }
-  try {
-    setState('Schijf laden', 'load');
-    pristine = await loadDisk();
-    start();
-    requestAnimationFrame(frame);
-  } catch (e) {
-    setState('Fout', 'err');
-    hint.textContent = e.message;
-  }
+  await loadList();
+  const d = disks[Number(diskEl.value)];
+  requestAnimationFrame(frame);
+  boot(fetchDisk(d), d.name || d.file);
 })();
 </script>
+</body>
+</html>
