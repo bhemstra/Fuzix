@@ -101,7 +101,7 @@ int ide_chs_xfer(uint_fast8_t drive, bool is_read, uint32_t lba, uint8_t *dptr)
     while(ide_read(status) & 0x80);	/* Wait !BUSY */
     r = ide_read(status) & 0x01;	/* Error */
     ide_deselect();
-    return !r
+    return !r;
 }
 #endif
 
