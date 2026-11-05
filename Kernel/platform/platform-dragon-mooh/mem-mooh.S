@@ -5,7 +5,6 @@
 ;
 
 	; exported
-	.export reloc
 	.export size_ram
 	.export map_kernel
 	.export map_proc

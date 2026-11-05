@@ -9,12 +9,12 @@ VSRCS = vc.c
 
 CDSRCS = discard.c
 
-DSRCS = ../../dev/devdw.c ../../dev/blkdev.c ../../dev/devide.c \
+DSRCS = ../../dev/devdw.c ../../dev/tinydisk.c ../../dev/tinyide.c \
         ../../dev/crt9128.c \
-        ../../dev/devsd.c
+        ../../dev/tinysd.c
 
-DDSRCS = ../../dev/devide_discard.c ../../dev/mbr.c \
-         ../../dev/gpt.c ../../dev/devsd_discard.c
+DDSRCS = ../../dev/tinyide_discard.c ../../dev/tinydisk_discard.c \
+         ../../dev/tinysd_discard.c
 
 ASRCS = crt0.S dragon.S mem-mooh.S video.S ide.S spi.S
 ASRCS += tricks.S commonmem.S usermem_sam.S floppy.S ../../dev/drivewire/drivewire.S
@@ -37,13 +37,13 @@ JUNK = $(CSRCS:.c=.o) $(ASRCS:.S=.o) *~
 all: $(OBJS)
 
 $(COBJS): %$(BINEXT): %.c
-	$(CROSS_CC) $(CROSS_CCOPTS) $(CROSS_CC_SEG2) -c $<
+	$(CROSS_CC) $(CROSS_CCOPTS) $(CROSS_CC_SEG2) -c $< -o $@
 
 $(VOBJS): %$(BINEXT): %.c
-	$(CROSS_CC) $(CROSS_CCOPTS) $(CROSS_CC_VIDEO) -c $<
+	$(CROSS_CC) $(CROSS_CCOPTS) $(CROSS_CC_VIDEO) -c $< -o $@
 
 $(CDOBJS): %$(BINEXT): %.c
-	$(CROSS_CC) $(CROSS_CCOPTS) $(CROSS_CC_SEGDISC) -c $<
+	$(CROSS_CC) $(CROSS_CCOPTS) $(CROSS_CC_SEGDISC) -c $< -o $@
 
 $(DOBJS): %$(BINEXT): ../../dev/%.c
 	$(CROSS_CC) $(CROSS_CCOPTS) $(CROSS_CC_SEG2) -c $< -o $@
@@ -58,25 +58,26 @@ clean:
 	rm -f $(OBJS) $(JUNK)
 
 image: ../../tools/decb-mooh
-	$(CROSS_LD) -o ../../fuzix.bin -Map=../../fuzix.map --script=fuzix.link --oformat=decb \
-	crt0.o commonmem.o usermem_sam.o \
-	dragon.o mem-mooh.o ../../bank8k.o \
+	$(CROSS_LD) -b -8 0x0008 -S 0x0400 -C 0x2000 -f sSLCbXDB \
+	-o ../../fuzix.bin -m fuzix.tmpmap \
+	crt0.o commonmem.o usermem_sam.o dragon.o mem-mooh.o ../../mm/bank8k.o \
 	../../start.o ../../version.o ../../cpu-6809/lowlevel-6809.o \
 	tricks.o main.o ../../timer.o ../../kdata.o devfd.o floppy.o devices.o \
 	multihead.o crt9128.o vc.o vc_asm.o \
-	../../dev/drivewire/drivewire.o devdw.o ttydw.o ../../memalloc_none.o \
+	../../dev/drivewire/drivewire.o devdw.o ttydw.o ../../mm/memalloc_none.o \
 	../../devio.o ../../filesys.o ../../process.o ../../inode.o ../../syscall_fs.o \
 	../../syscall_proc.o ../../syscall_other.o ../../mm.o ../../swap.o \
 	../../tty.o ../../devsys.o ../../usermem.o ../../syscall_fs2.o ../../syscall_exec16.o \
 	../../syscall_fs3.o ../../syscall_exec.o ../../blk512.o ../../devinput.o devinput.o \
-	devlpr.o devtty.o libc.o ../../vt.o video.o ../../font8x8.o \
-	devide.o blkdev.o ide.o devide_discard.o mbr.o gpt.o \
-	devsd.o devsd_discard.o spi.o \
-	discard.o
-	../../tools/pad256 ../../fuzix.bin
-	../../tools/lw-checkmap ../../fuzix.map
-	../../tools/decb-mooh < ../../fuzix.bin > ../../fuzix-mooh.bin
-	mv ../../fuzix-mooh.bin ../../fuzix.bin
+	devlpr.o devtty.o libc.o ../../vt.o video.o ../../font/font8x8.o \
+	tinydisk.o tinyide.o ide.o tinyide_discard.o tinydisk_discard.o \
+	tinysd.o tinysd_discard.o spi.o discard.o  /opt/fcc/lib/6809/lib6809.a
+	perl -lpe '$$_=hex' fuzix.tmpmap | paste -d" " - fuzix.tmpmap  |  sort -n |  cut -d" " -f 2- >../../fuzix.map
+
+#	../../tools/pad256 ../../fuzix.bin
+#	../../tools/lw-checkmap ../../fuzix.map
+#	../../tools/decb-mooh < ../../fuzix.bin > ../../fuzix-mooh.bin
+#	mv ../../fuzix-mooh.bin ../../fuzix.bin
 
 
 IMAGES = $(FUZIX_ROOT)/Images/$(TARGET)

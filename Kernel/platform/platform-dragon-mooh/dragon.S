@@ -7,21 +7,11 @@
 	.export _mpi_set_slot
 	.export _cart_hash
 	.export _cart_analyze_hdb
-	.export _hdb_offset
 	.export _hdb_id
 	.export _hdb_port
 	.export _hdb_timeout
 	.export _bufpool
-	.export _discard_size
 	.export _framedet
-
-	; imported
-	.export unix_syscall_entry
-	.export fd_nmi_handler
-	.export size_ram
-	.export null_handler
-	.export _vid256x192
-	.export _vtoutput
 
 	; exported debugging tools
 	.export _plt_monitor
@@ -33,9 +23,6 @@
 
 #include "kernel.def"
 #include "../../cpu-6809/kernel09.def"
-
-
-	; TODO copy into place
 
 	.abs
 	.org 0xFEF0

@@ -20,7 +20,8 @@
 #include "kernel.def"
 #include "../../cpu-6809/kernel09.def"
 
-	; TODO - where to put
+	; code is above 0x2000 so this should be fine
+
 	.code
 
 ; These are not used yet.
@@ -283,7 +284,7 @@ clearnext:
 	sta	95,y
 	decb
 	bne	clearnext
-	jmp 	unmap_video
+	jmp 	_unmap_video
 ;
 ;	clear_lines(int8_t y, int8_t ct)
 ;
@@ -317,7 +318,7 @@ wipel:
 	stx	,y++
 	decb			; count of lines
 	bne	wipel
-	jmp	unmap_video
+	jmp	_unmap_video
 
 _m6847_cursor_on:
 	lda	2,s

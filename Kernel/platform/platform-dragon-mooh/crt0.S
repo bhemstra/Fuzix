@@ -4,6 +4,8 @@
         ; startup code
 	.common
 
+	; Starts at 0x0400 must be read only
+
 start:
 	; we enter from bootloader with MMU disabled
 	orcc #0x10		; interrupts definitely off

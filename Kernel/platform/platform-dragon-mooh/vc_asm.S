@@ -13,7 +13,6 @@
 
 #include "kernel.def"
 
-	; FIXME - where does video need to land ?
 	.code
 
 _set_vc_mode:
@@ -96,7 +95,7 @@ _vc_scroll_down:
 	jsr	vtbase
 	stx	,s
 	leax	-32,y
-	jsr	map_video
+	jsr	_map_video
 scdn:	ldd	,--x
 	std	,--y
 	cmpx	,s
