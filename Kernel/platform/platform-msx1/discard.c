@@ -16,7 +16,6 @@ extern uint8_t vdptype;
 void map_init(void)
 {
   uint8_t *bp = kernel_map;
-  uint8_t *kp;
   uint8_t *rp;
   uint8_t i;
   uint8_t pp;
@@ -61,7 +60,6 @@ void map_init(void)
       bp[*rp] = (rp[1] << 4) | (rp[1] << 2) | rp[1] | (kernel_map[*rp + 1] & 0xC0);
       user_map[0] |= 1 << *rp;
     }
-    kp--;
     pp <<= 2;
     pp |= *rp;
     rp -= 2;
