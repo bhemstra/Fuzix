@@ -286,6 +286,8 @@ stub_end:
 	; Font comes first (1K then)
 	.ds	1024
 	; 0x4400
+
+	.export	screen
 screen:
 	.ds	8192
 _bufdata:
@@ -307,4 +309,3 @@ dlist:	.byte	0x70,0x70,0x70
 	; Wait for vblank and return
 	.byte	0x41
 	.word	dlist
-
