@@ -46,11 +46,11 @@ int tty_carrier(uint8_t minor)
 void tty_pollirq(void)
 {
     uint16_t c;
-    while((c = sera_get()) != 0xFF)
+    while((c = sera_get()) != 0xFFFF)
             tty_inproc(1, c);
-    while((c = serc_get()) != 0xFF)
+    while((c = serc_get()) != 0xFFFF)
             tty_inproc(2, c);
-    while((c = serd_get()) != 0xFF)
+    while((c = serd_get()) != 0xFFFF)
             tty_inproc(3, c);
 }
 
