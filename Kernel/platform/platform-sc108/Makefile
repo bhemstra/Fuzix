@@ -1,7 +1,8 @@
 ASRCS = crt0.S tricks.S commonmem.S sc108.S usermem.S ide.S
 CSRCS = devices.c main.c devtty.c
-DISCARD_CSRCS = discard.c ../../dev/tinydisk_discard.c
-DISCARD_DSRCS = ../../dev/tinyide_discard.c ../../dev/ds1302_discard.c
+DISCARD_CSRCS = discard.c
+DISCARD_DSRCS = ../../dev/tinydisk_discard.c
+DISCARD_DSRCS += ../../dev/tinyide_discard.c ../../dev/ds1302_discard.c
 DSRCS = ../../dev/tinyide.c ../../dev/tinydisk.c
 DSRCS +=  ../../dev/ds1302.c
 DASRCS = ../../dev/ds1302_rcbusu.S
@@ -19,34 +20,32 @@ OBJS  = $(AOBJS) $(COBJS) $(DOBJS) $(DAOBJS) $(DISCARD_DOBJS) $(DISCARD_COBJS) $
 
 CROSS_CCOPTS += -I../../dev/ -I../../dev/net/
 
-JUNK = *.o *.lst *.asm *.sym *.rst *.map *.ihx *.bin
-
 all:	$(OBJS)
 
 $(AOBJS): %.o: %.S
-	$(CROSS_AS) $(ASOPTS) $<
+	$(CROSS_AS) $(ASOPTS) $< -o $@
 
 $(COBJS): %.o: %.c
-	$(CROSS_CC) $(CROSS_CCOPTS) -c $<
+	$(CROSS_CC) $(CROSS_CCOPTS) -c $< -o $@
 
 $(DOBJS): %.o: ../../dev/%.c
-	$(CROSS_CC) $(CROSS_CCOPTS) -c $<
+	$(CROSS_CC) $(CROSS_CCOPTS) -c $< -o $@
 
 $(DAOBJS): %.o: ../../dev/%.S
-	$(CROSS_AS) $(ASOPTS) $@ $<
+	$(CROSS_AS) $(ASOPTS) $@ $< -o $@
 
 $(DISCARD_COBJS): %.o: %.c
-	$(CROSS_CC) $(CROSS_CCOPTS) $(CROSS_CC_SEGDISC) -c $<
+	$(CROSS_CC) $(CROSS_CCOPTS) $(CROSS_CC_SEGDISC) -c $< -o $@
 
 $(DISCARD_DOBJS): %.o: ../../dev/%.c
-	$(CROSS_CC) $(CROSS_CCOPTS) $(CROSS_CC_SEGDISC) -c $<
+	$(CROSS_CC) $(CROSS_CCOPTS) $(CROSS_CC_SEGDISC) -c $< -o $@
 
 $(NOBJS): %.o: ../../dev/net/%.c
-	$(CROSS_CC) $(CROSS_CCOPTS) -c $<
+	$(CROSS_CC) $(CROSS_CCOPTS) -c $< -o $@
 
 clean:
-	rm -f $(OBJS) $(JUNK)  core *~ *.tmp
-	rm -f loader.bin loader-acia.bin fuzix.com
+	rm -f $(OBJS) *.o *.bin  core *~ *.tmp
+	rm -f fuzix.com fuzix.tmpmap fuzix.img
 
 image:	loader.bin loader-acia.bin
 
@@ -74,9 +73,8 @@ image: loader.bin loader-acia.bin
 	../../syscall_proc.o ../../syscall_other.o ../../syscall_net.o \
 	../../network.o ../../tty.o ../../mm.o ../../mm/memalloc_none.o \
 	../../swap.o ../../mm/simple.o ../../devsys.o \
-	devtty.o ../../dev/tinydisk.o ../../dev/tinydisk_discard.o \
-	../../dev/tinyide.o ../../dev/tinyide_discard.o ide.o \
-	../../dev/ds1302_rcbusu.o ../../dev/ds1302.o ../../dev/ds1302_discard.o \
+	devtty.o tinydisk.o tinydisk_discard.o tinyide.o tinyide_discard.o \
+	ide.o ds1302_rcbusu.o ds1302.o ds1302_discard.o \
 	/opt/fcc/lib/z80/libz80.a -m fuzix.tmpmap
 	perl -lpe '$$_=hex' fuzix.tmpmap | paste -d" " - fuzix.tmpmap  |  sort -n |  cut -d" " -f 2- >../../fuzix.map
 	../../tools/pack85 ../../fuzix.bin fuzix.tmp <../../fuzix.map
