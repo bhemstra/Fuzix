@@ -456,14 +456,11 @@ _dofork:
         add	hl, de
         push	hl
         call	_copy_and_map_proc
-        pop	hl
 
         ; now the copy operation is complete we can get rid of the stuff
         ; _switchin will be expecting from our copy of the stack.
-        ; now the copy operation is complete we can get rid of the stuff
-        ; _switchin will be expecting from our copy of the stack.
 	; ix/iy are untouched so don't need a restore BC is not so does
-	ld	hl, 18
+	ld	hl, 20	; clean up the copy/map and the stacked frame
 	add	hl, sp
 	ld	sp, hl
         pop	bc
@@ -957,7 +954,7 @@ map_buffers:
 map_kernel_di:
 map_kernel: ; map the kernel into the low 60K, leaves common memory unchanged
         push	af
-# 886
+# 883
         ld	a, OS_RAM1
         out0	(MMU_BBR), a
         pop	af
@@ -966,7 +963,7 @@ map_kernel: ; map the kernel into the low 60K, leaves common memory unchanged
 map_proc_always_di:
 map_proc_always: ; map the process into the low 60K based on current common mem (which is unchanged)
         push	af
-# 898
+# 895
         ld	a, (_udata + 2     )
         out0	(MMU_BBR), a
 
@@ -977,16 +974,16 @@ map_proc_always: ; map the process into the low 60K based on current common mem 
         ret
 
 map_for_swap:
-# 913
+# 910
 	out0	(MMU_BBR),a	; the page is passed in A, so we just do an out0
-# 918
+# 915
 	ret
 
 map_save_kernel:   ; save the current process/kernel mapping
         push	af
         in0	 a, (MMU_BBR)
         ld	(map_store), a
-# 928
+# 925
         ld	a, OS_RAM1
         out0	(MMU_BBR), a
         pop	af
@@ -994,7 +991,7 @@ map_save_kernel:   ; save the current process/kernel mapping
 
 map_restore: ; restore the saved process/kernel mapping
         push	af
-# 939
+# 936
         ld	a, (map_store)
         out0	(MMU_BBR), a
 
