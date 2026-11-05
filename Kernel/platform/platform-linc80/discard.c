@@ -18,7 +18,7 @@ void device_init(void)
 #ifdef CONFIG_TD_IDE
 	ide_probe();
 #endif
-#ifdef CONFIG_TDSD
+#ifdef CONFIG_TD_SD
 	sd_probe();
 #endif
 }
