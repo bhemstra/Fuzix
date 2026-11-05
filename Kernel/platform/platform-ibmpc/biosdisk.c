@@ -107,10 +107,10 @@ static int bios_transfer(bool is_read, uint8_t rawflag, struct disk_geom *g)
         uint16_t n = left;
         uint8_t sec = udata.u_block % g->secs + 1;
         uint16_t cyl = udata.u_block / g->secs;
-        uint8_t head = cyl / g->cyls;
-        cyl %= g->cyls;
+        uint8_t head = cyl % g->heads;
+        cyl /= g->heads;
         cylsec = (cyl << 8) | sec;
-        cylsec |= (cyl & 0x300) >> 10;
+        cylsec |= (cyl & 0x300) >> 2;
         
         if (n > g->max)
             n = g->max;
@@ -188,6 +188,7 @@ void biosdisk_init(void)
         floppy[i].dev = i;
         /* Keep to sectors/track or less */
         floppy[i].max = cx & 0x3F;
+        floppies |= (1 << i);
     }
     /* Now the hard disks.. This is so much more fun. We need to be careful
        not to read further once we have all the disks we should as the BIOS
@@ -198,6 +199,8 @@ void biosdisk_init(void)
         if (bits == 0xFFFF)
             continue;
         nhd--;
+        dx = bits >> 16;
+        cx = bits;
         p->heads = dx >> 8;
         p->cyls = cx >> 8;
         p->secs = cx & 0x3F;
