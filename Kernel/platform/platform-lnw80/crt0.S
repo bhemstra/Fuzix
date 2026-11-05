@@ -13,7 +13,7 @@ start:
 	ld	sp, kstack_top
 	ld	a,0x12
 	; RAM low, I/O space is RAM
-	out	(0x12),a
+	out	(0x1F),a
 	; Zero the BSS
 	ld 	hl, __bss
 	ld 	de, __bss + 1
