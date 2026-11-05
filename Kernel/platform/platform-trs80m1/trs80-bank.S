@@ -293,91 +293,85 @@ map_restore_kmap:
 ;	this is fine.
 ;
 __bank_0_2:			; Call from common to bank 2
-	exx
-	ld	bc,(map_bank2)
+	ld	a, (map_bank2 + 1)
 	jr	bankina
-__bank_0_1:
-	exx			; Call from common to bank 1
-	ld	bc,(map_bank1)
+__bank_0_1:			; Call from common to bank 1
+	ld	a, (map_bank1 + 1)
 bankina:
-	exx			; BC' holds the bank info
+	; A holds the bank number we target
 	pop	hl		; Get the return address
 	ld	e,(hl)		; The two bytes following it are the true
 	inc	hl		; function to call
 	ld	d,(hl)
 	inc	hl
 	push	hl
-	exx			; Set the bank
-	ld	(map_reg),bc
-	out	(c),b
-	exx
 	ex	de,hl
-	ld	a,(map_bank1 + 1)
-	exx
-	cp	b
+	push	bc
+	ld	bc, (map_reg)	; bc is the old value/reg
+	ld	(map_reg +1),a	; set new value
+	out	(c), a		; write new value
+	ld	a,b		; Save old into A
+	pop	bc
+	or	a		; bank 1 is zero with both mappers
 	jr	z, retbank1	; Arrange that we put the banks back as they
-	exx
+
 	call	callhl		; were before the call. Needed because calls
-	exx
+; Return to bank 2
+	push	bc
 	ld	bc,(map_bank2)	; to common routines don't do banking so
 	ld	(map_reg),bc	; the return won't either.
 	out	(c),b
-	exx
+	pop	bc
 	ret
 retbank1:
-	exx
 	call	callhl
-	exx
+	push	bc
 	ld	bc,(map_bank1)
 	ld	(map_reg),bc
 	out	(c),b
-	exx
+	pop	bc
 	ret
 
 __bank_1_2:
-	exx
-	ld	bc,(map_bank2)
-	exx
 	pop	hl		; Get the return address
 	ld	e,(hl)		; The two bytes following it are the true
 	inc	hl		; function to call
 	ld	d,(hl)
 	inc	hl
 	push	hl
-	exx
-	ld	(map_reg),bc
+	push	bc
+	ld	bc, (map_bank2)
+	ld	(map_reg), bc
 	out	(c),b
-	exx
+	pop	bc
 	ex	de,hl
 	call	callhl
-	exx
-	ld	bc,(map_bank1)
-	ld	(map_reg),bc
-	out	(c),b
-	exx
+	push	bc
+	ld	bc, (map_bank1)
+	ld	(map_reg), bc
+	out	(c), b
+	pop	bc
 	ret
 
 __bank_2_1:
-	exx
-	ld	bc,(map_bank1)
-	exx
 	pop	hl		; Get the return address
 	ld	e,(hl)		; The two bytes following it are the true
 	inc	hl		; function to call
 	ld	d,(hl)
 	inc	hl
 	push	hl
-	exx
-	ld	(map_reg),bc
-	out	(c),b
-	exx
+	push	bc
+	ld	bc, (map_bank1)
+	ld	(map_reg), bc
+	out	(c), b
+	pop	bc
 	ex	de,hl
 	call	callhl
-	exx
-	ld	bc,(map_bank2)
-	ld	(map_reg),bc
+	push	bc
+	ld	bc, (map_bank2)
+	ld	(map_reg), bc
 	out	(c),b
-	exx
+	pop	bc
 	ret
 
 ;
@@ -392,40 +386,38 @@ __bank_2_1:
 ;	banking setup.
 ;
 __stub_1:
-	exx
-	ld	bc,(map_bank1)
+	ld	a, (map_bank1 + 1)
 	jr	stub_call
 __stub_2:
-	exx
-	ld	bc,(map_bank2)
+	ld	a, (map_bank2 + 1)
 stub_call:
-	exx
+	;	A is the target bank code
 	pop	hl		; return address
 	ex	(sp),hl		; swap the junk word for the return
-	ld	a,(map_reg+1)	; where are we going back to ?
-	exx
-	ld	(map_reg),bc
-	out	(c),b
-	ld	bc,(map_bank1)
-	cp	b
-	exx
+	push	bc
+	ld	bc, (map_reg)	; Get the current bank reg/code
+	ld	(map_reg + 1), a ; update the code
+	out	(c), a		; write the new
+	ld	a,b		; Save old
+	or	a		; bank 1 is 0 in both mappers 
+	pop	bc		; clean up
 	ex	de,hl
 	jr	z, stub_ret_1
 	call	callhl
-	exx
-	ld	bc,(map_bank2)
+	push	bc
+	ld	bc, (map_bank2)
 	jr	stub_ret
 stub_ret_1:
 	call	callhl		; invoke code in other bank
-	exx
+	push	bc
 	ld	bc,(map_bank1)	; and back to bank 1
 stub_ret:
 	ld	(map_reg),bc
 	out	(c),b
-	pop	bc		; bc is now the return
-	push	bc		; stack it twice
-	push	bc
-	exx
+	pop	bc
+	pop	de
+	push	de
+	push	de
 	ret			; and ret - can't use jp (ix) or jp (hl) here
 callhl:	jp	(hl)
 
