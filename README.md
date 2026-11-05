@@ -18,6 +18,7 @@ machine itself:
 
 - `cc`, a small C compiler (see `Applications/scc/README.md`)
 - `basic`, an integer BASIC (see `Applications/basic/README`)
+- `tbasic`, an integer BASIC based on Palo Alto Tiny Basis (see `Applications/tbasic/README`)
 
 ## Layout
 
