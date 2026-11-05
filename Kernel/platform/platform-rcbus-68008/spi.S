@@ -1,10 +1,10 @@
 
 #include "../cpu-68000/kernel-68000.def"
 
-		.globl sd_spi_transmit_byte
-		.globl sd_spi_receive_byte
-		.globl sd_spi_transmit_sector
-		.globl sd_spi_receive_sector
+		.globl sd_spi_tx_byte
+		.globl sd_spi_rx_byte
+		.globl sd_spi_tx_sector
+		.globl sd_spi_rx_sector
 		.globl sd_spi_clock
 		.globl sd_spi_raise_cs
 		.globl sd_spi_lower_cs
@@ -134,7 +134,7 @@ spi_bitbang_rx:
 ;	Transmit a 512 byte SD card sector to the media. This is the bit
 ;	that needs to be optimised for speed.
 ;
-sd_spi_transmit_sector:
+sd_spi_tx_sector:
 		movem.l a2-a3/d2-d5,-(sp)
 		move.l blk_op,a0	; blk_op.addr
 		bsr spi_setup
@@ -150,7 +150,7 @@ spi_txb:
 ;	Receive a 512 byte burst from the SD card, even more so speed is
 ;	important here.
 ;
-sd_spi_receive_sector:
+sd_spi_rx_sector:
 		movem.l a2-a3/d2-d6,-(sp)
 		move.l blk_op,a0	; blk_op.addr
 		bsr spi_setup
@@ -167,7 +167,7 @@ spi_rxb:
 ;	C wrapper for transmit and receive of a byte - not particularly
 ;	speed sensitive.
 ;	
-sd_spi_transmit_byte:
+sd_spi_tx_byte:
 		move.b 7(sp),d0
 		movem.l a2-a3/d2-d5,-(sp)
 		bsr spi_setup
@@ -175,7 +175,7 @@ sd_spi_transmit_byte:
 		movem.l (sp)+,a2-a3/d2-d5
 		rts
 
-sd_spi_receive_byte:
+sd_spi_rx_byte:
 		movem.l a2-a3/d2-d6,-(sp)
 		bsr spi_setup
 		move.b #64,d5

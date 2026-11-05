@@ -52,12 +52,12 @@ void sd_spi_lower_cs(void)
   sd_spi_chipselect = 0xFE;
 }
 
-void sd_spi_transmit_byte(unsigned char byte)
+void sd_spi_tx_byte(unsigned char byte)
 {
   sd_spi_tx = byte;
 }
 
-uint8_t sd_spi_receive_byte(void)
+uint8_t sd_spi_rx_byte(void)
 {
   uint8_t r;
   sd_spi_tx = 0xFF;
@@ -67,7 +67,7 @@ uint8_t sd_spi_receive_byte(void)
 
 COMMON_MEMORY
 
-bool sd_spi_receive_sector(void) __naked
+bool sd_spi_rx_sector(void) __naked
 {
   __asm
     ld a, (_blk_op+BLKPARAM_IS_USER_OFFSET);
@@ -92,7 +92,7 @@ rx256_1:
   __endasm;
 }
 
-bool sd_spi_transmit_sector(void) __naked
+bool sd_spi_tx_sector(void) __naked
 {
   __asm
     ld a, (_blk_op+BLKPARAM_IS_USER_OFFSET)

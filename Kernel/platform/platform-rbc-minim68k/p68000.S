@@ -18,10 +18,10 @@
 	.globl plt_monitor
 	.globl udata_block
 
-	.globl sd_spi_transmit_byte
-	.globl sd_spi_receive_byte
-	.globl sd_spi_receive_sector
-	.globl sd_spi_transmit_sector
+	.globl sd_spi_tx_byte
+	.globl sd_spi_rx_byte
+	.globl sd_spi_rx_sector
+	.globl sd_spi_tx_sector
 	.globl sd_spi_clock
 	.globl sd_spi_raise_cs
 	.globl sd_spi_lower_cs
@@ -160,19 +160,19 @@ spi_tx_bit:
 	rts
 
 
-sd_spi_transmit_byte:
+sd_spi_tx_byte:
 	movem.l	d2-d3,-(sp)
 	move.l	12(sp),d0
 	bsr	spi_tx_byte
 	movem.l	(sp)+,d2-d3
 	rts
-sd_spi_receive_byte
+sd_spi_rx_byte
 	movem.l	d2-d3,-(sp)
 	bsr	spi_rx_byte
 	movem.l	(sp)+,d2-d3
 	rts
 
-sd_spi_receive_sector:
+sd_spi_rx_sector:
 	movem.l	a2/d2-d4,-(sp)
 	; Get the argument - address of buffer
 	; As we are a flat system we don't have to worry about
@@ -189,7 +189,7 @@ rx_block:
 	movem.l	(sp)+,a2/d2-d4
 	rts
 
-sd_spi_transmit_sector:
+sd_spi_tx_sector:
 	movem.l	a2/d2-d4,-(sp)
 	move.l	blk_op,a2
 	move.w	#510,d4
