@@ -21,25 +21,27 @@ CROSS_CCOPTS += -I../../dev/
 all:	$(OBJS)
 
 $(AOBJS): %.o: %.S
-	$(CROSS_AS) $(ASOPTS) $<
+	$(CROSS_AS) $(ASOPTS) $< -o $@
 
 $(COBJS): %.o: %.c
-	$(CROSS_CC) $(CROSS_CCOPTS) -c $<
+	$(CROSS_CC) $(CROSS_CCOPTS) -c $< -o $@
 
 $(DOBJS): %.o: ../../dev/%.c
-	$(CROSS_CC) $(CROSS_CCOPTS) -c $<
+	$(CROSS_CC) $(CROSS_CCOPTS) -c $< -o $@
 
 $(DAOBJS): %.o: ../../dev/%.S
-	$(CROSS_AS) $(ASOPTS) $@ $<
+	$(CROSS_AS) $(ASOPTS) $@ $< -o $@
 
 $(DISCARD_COBJS): %.o: %.c
-	$(CROSS_CC) $(CROSS_CCOPTS) $(CROSS_CC_SEGDISC) -c $<
+	$(CROSS_CC) $(CROSS_CCOPTS) $(CROSS_CC_SEGDISC) -c $< -o $@
 
 $(DISCARD_DOBJS): %.o: ../../dev/%.c
-	$(CROSS_CC) $(CROSS_CCOPTS) $(CROSS_CC_SEGDISC) -c $<
+	$(CROSS_CC) $(CROSS_CCOPTS) $(CROSS_CC_SEGDISC) -c $< -o $@
 
 clean:
-	rm -f $(OBJS) core *~ fuzix.com makecpmloader
+	rm -f *.o core *~ fuzix.com makecpmloader
+	rm -f boot-romwbw.tmp boot-romwbw.bin
+	rm -f fuzix.romwbw fuzix.tmpmap
 
 z180.o: z180.S kernelu.def ../../cpu-z180/z180.S
 
@@ -53,11 +55,9 @@ boot-romwbw.bin: boot-romwbw.S
 image: boot-romwbw.bin
 	$(CROSS_LD) -b -C 0x0100 -S 0xF600 -f CLDBbXSs -o ../../fuzix.bin \
 	crt0.o commonmem.o z180.o mark4.o main.o devices.o discard.o \
-	devtty.o devsdspi.o ../../dev/tinyide.o ../../dev/tinyide_discard.o \
-	ide.o ../../dev/tinydisk.o ../../dev/tinydisk_discard.o \
-	../../dev/tinysd.o ../../dev/tinysd_discard.o \
-	monitor.o ../../dev/ds1302.o ../../dev/ds1302_discard.o \
-	../../dev/ds1302_rcbusu.o ../../dev/propio2.o propio.o \
+	devtty.o devsdspi.o tinyide.o tinyide_discard.o \
+	ide.o tinydisk.o tinydisk_discard.o tinysd.o tinysd_discard.o \
+	monitor.o ds1302.o ds1302_discard.o ds1302_rcbusu.o propio2.o propio.o \
 	../../libfuzix.a ../../libfuzix.a /opt/fcc/lib/z80/libz80.a -m fuzix.tmpmap
 	perl -lpe '$$_=hex' fuzix.tmpmap | paste -d" " - fuzix.tmpmap  |  sort -n |  cut -d" " -f 2- >../../fuzix.map
 	../../tools/pack85 ../../fuzix.bin fuzix.bin <../../fuzix.map
