@@ -104,8 +104,10 @@ JUNK = $(CSRCS:.c=.lst) $(CSRCS:.c=.s) $(CSRCS:.c=.asm) $(CSRCS:.c=.sym) $(ASRCS
 .SUFFIXES: .c .s .rel .S
 
 
+.PHONY: build
+
 build:
-	ln -sf platform/platform-$(TARGET) build
+	ln -sfn platform/platform-$(TARGET) build
 
 target: include/kernel.h $(OBJS) | build
 	+$(MAKE) -C platform/platform-$(TARGET)
