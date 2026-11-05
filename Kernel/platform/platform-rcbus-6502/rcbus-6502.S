@@ -368,9 +368,13 @@ vector:
 	sta	_udata+U_DATA__U_INSYS
 	jsr	_chksigs
 	; Mark ourselves Ready not Running
-	ldx	_udata+U_DATA__U_PTAB
+	lda	_udata+U_DATA__U_PTAB
+	ldx	_udata+U_DATA__U_PTAB+1
+	sta	@tmp
+	stx	@tmp+1
+	ldy	#P_TAB__P_STATUS_OFFSET
 	lda	#P_READY
-	sta	P_TAB__P_STATUS_OFFSET,x
+	sta	(@tmp),y
 	; Switch out .. we will re-appear at some point
 	; When we enter this code we will switch the low 16K underneath
 	; us. Other stuff will run on a different low bank, and at some
