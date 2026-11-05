@@ -44,15 +44,15 @@ __sighandler:
 	jsr	__subysp
 	jsr	stash_zp	; saves sp etc
 	lda	#0x4C		; jmp xxxx
-	sta	@tmp
+	sta	@tmp3
 	pla
-	sta	@tmp+1		; ZP was swapped
+	sta	@tmp3+1		; ZP was swapped
 	pla
-	sta	@tmp+2		; Patch jmpvec
+	sta	@tmp3+2		; Patch jmpvec
 	pla			; Signal number
 	ldx	#0		; signal(sig)
 	jsr	__push		; stack word
-	jsr	@tmp		; no jsr (x) so fake it
+	jsr	@tmp3		; no jsr (x) so fake it
 	jsr	stash_zp	; recovers everything
 	ldy	#22		; 22 bytes to recover
 	jsr	__addysp	; Stack back as it was
