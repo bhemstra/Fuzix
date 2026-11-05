@@ -11,10 +11,10 @@
 
 #undef  DEBUG			/* UNdefine to delete debug code sequences */
 
-uint8_t *uart_data = (uint8_t *)0xFF04;	/* ACIA data */
-uint8_t *uart_status = (uint8_t *)0xFF05;	/* ACIA status */
-uint8_t *uart_command = (uint8_t *)0xFF06;	/* ACIA command */
-uint8_t *uart_control = (uint8_t *)0xFF07;	/* ACIA control */
+static volatile uint8_t *uart_data = (uint8_t *)0xFF04;		/* ACIA data */
+static volatile uint8_t *uart_status = (uint8_t *)0xFF05;	/* ACIA status */
+static volatile uint8_t *uart_command = (uint8_t *)0xFF06;	/* ACIA command */
+static volatile uint8_t *uart_control = (uint8_t *)0xFF07;	/* ACIA control */
 
 static unsigned char tbuf1[TTYSIZ];
 static unsigned char tbuf2[TTYSIZ];
@@ -32,7 +32,7 @@ tcflag_t termios_mask[NUM_DEV_TTY + 1] = {
 };
 
 uint8_t vtattr_cap = 0;
-struct vt_repeat keyrepeat;
+struct vt_repeat keyrepeat = { 40 , 4 };
 static uint8_t kbd_timer;
 
 /* tty1 is the screen tty2 is the serial port */
@@ -90,7 +90,7 @@ void tty_interrupt(void)
 	if (r & 0x8) {
 		r = *uart_data;
 		tty_inproc(2,r);
-	}	
+	}
 }
 
 void tty_data_consumed(uint8_t minor)
