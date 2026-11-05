@@ -50,6 +50,7 @@ void device_init(void)
 	ticks_per_dsecond = 6;
     } else {
 	kputs("PAL ");
+	ticks_per_dsecond = 5;
     }
     kputs("video.\n");
 
