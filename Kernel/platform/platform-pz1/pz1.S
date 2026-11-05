@@ -91,7 +91,7 @@ ___hard_di:
 	pla			; Old status
 	rts
 ___hard_ei:
-	cli			; on 6502 cli enables IRQs!!!
+;FIXME	cli			; on 6502 cli enables IRQs!!!
 	rts
 
 ___hard_irqrestore:
@@ -457,8 +457,8 @@ kirqout:
 ;	Get back on the user stack, but do not use the user C stack
 ;	until we leave
 ;
-	jsr	map_restore
 	jsr	stash_zp			; recover 6502 zp bits
+	jsr	map_restore
 
 irqout:
 	pla
@@ -664,14 +664,11 @@ _plt_interrupt_i:
 ;	Hard disk loops. In common memory because we do most I/O direct
 ;	to user space, and in asm for speed
 ;
-;	TODO: bank switching support, swap.
+;	TODO: swap.
 ;
 ;	On entry XA is the pointer in the memory space for the transfer,
 ;	and hd_mode indicates whether we are transferring to kernel, user
 ;	(or in future doing a swap transfer).
-;
-;	Note: hd_mode is in non common space. We can't read it once we've
-;	switched.
 ;
 _hd_data_in:
 	jsr	__pop

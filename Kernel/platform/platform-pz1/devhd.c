@@ -1,4 +1,4 @@
-/* 
+/*
  * PZ1 block device driver
  */
 
@@ -42,5 +42,6 @@ int hd_xfer(uint8_t dev, bool is_read, uint32_t lba, uint8_t * dptr)
 
 void hd_init(void)
 {
+	kprintf("hd:");
 	td_register(0, hd_xfer, td_ioctl_none, 1);
 }
