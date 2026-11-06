@@ -31,7 +31,8 @@ uint8_t probe_zxuno(void)
 	/* Check if Uno is present */
 	for (n = 0; n < 64; n++) {
 		c = in(UNO_DATA);
-		if (c == 0)
+		/* Don't get fooled by a single 0 read */
+		if (c == 0 && n > 4)
 			return 1;
 		if (c < 32 || c > 127)
 			return 0;
