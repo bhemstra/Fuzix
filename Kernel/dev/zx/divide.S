@@ -20,6 +20,11 @@ ide_setup:
 	ld	d,(hl)
 	ex	de,hl
 	ld	bc, IDE_REG_DATA		; port and count
+	;	Touching the DivIDE control register during a transfer
+	;	messes up the odd/even latching
+	di
+	ld 	a, 0x05
+	out	(0xfe), a
 	ld	a, (_td_raw)
 	or	a
 	jp	z, map_buffers
@@ -31,27 +36,26 @@ ide_setup:
 _devide_read_data:
 	push	bc
 	call	ide_setup
-	ld 	a,0x05
-	out	(0xfe),a
 	inir                                    ; transfer first 256 bytes
 	ld 	a,0x02
 	out	(0xfe),a
 	inir                                    ; transfer second 256 bytes
+out:
 	ld 	a, (_vtborder)
-	out	(0xfe),a
+	out	(0xfe), a
+	ld	a,(_int_disabled)
+	or	a
+	jr	nz, no_ei
+	ei
+no_ei:
 	pop	bc
 	jp	map_kernel_restore
 
 _devide_write_data:
 	push	bc
 	call	ide_setup
-	ld 	a,0x05
-	out	(0xfe),a
 	otir                                    ; transfer first 256 bytes
 	ld 	a,0x02
 	out	(0xfe),a
 	otir                                    ; transfer second 256 bytes
-	ld 	a, (_vtborder)
-	out	(0xfe),a
-	pop	bc
-	jp	map_kernel_restore
+	jr	out
