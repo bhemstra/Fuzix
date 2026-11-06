@@ -5,8 +5,6 @@ U_DATA__TOTALSIZE           .equ 0x200        ; 256+256 @ 2204
 
 U_DATA_STASH		    .equ 0xFE00	      ; FE00-FFFF
 
-Z80_TYPE		    .equ 1
-
 PROGBASE		    .equ 0x8000
 PROGLOAD		    .equ 0x8000
 
@@ -14,3 +12,5 @@ NBUFS			    .equ 5
 
 BANK_BITS		    .equ 0x10		; Spectrum ROM select
 						; Doesn't really matter!
+
+#define BANKED_Z80

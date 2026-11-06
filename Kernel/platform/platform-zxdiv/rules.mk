@@ -1,21 +1,20 @@
 #
-#	ZX128 uses banked kernel images
+#	Uses banked kernel images
 #
-CROSS_CCOPTS += --external-banker
+export CROSS_CCOPTS += -Os
 #
 # Tell the core code we are using the banked helpers
 #
 export BANKED=-banked
+export CCBANKED=-banked
 #
-export CROSS_CC_SEG1=--codeseg CODE2
-export CROSS_CC_SEG3=--codeseg CODE1
-export CROSS_CC_SEG4=--codeseg CODE1
-export CROSS_CC_SYS1=--codeseg CODE1
-export CROSS_CC_SYS2=--codeseg CODE1
-export CROSS_CC_SYS3=--codeseg CODE1
-export CROSS_CC_SYS4=--codeseg CODE3
-export CROSS_CC_SYS5=--codeseg CODE3
-#
-#	RST shortener
-#
-CROSS_CCOPTS += --peep-file $(FUZIX_ROOT)/Kernel/cpu-z80/rst.peep
+export CROSS_CC_SEG1=-Toverlay1
+export CROSS_CC_SEG2=-Toverlay2
+export CROSS_CC_SEG3=-Toverlay3
+export CROSS_CC_SEG4=-Toverlay1
+export CROSS_CC_SYS1=-Toverlay2
+export CROSS_CC_SYS2=-Toverlay2
+export CROSS_CC_SYS3=-Toverlay2
+export CROSS_CC_SYS4=-Toverlay3
+export CROSS_CC_VIDEO=-Toverlay3
+export CROSS_CC_SYS5=-Toverlay3

@@ -3,80 +3,107 @@ CDSRCS = discard.c
 DSRCS = ../../dev/tinyide.c ../../dev/tinysd.c ../../dev/tinydisk.c
 DDSRCS = ../../dev/tinyide_discard.c ../../dev/tinysd_discard.c
 DDSRCS += ../../dev/tinydisk_discard.c
-DZSRCS = ../../dev/zx/divide.c ../../dev/zx/divmmc.c ../../dev/zx/zxkeyboard.c
+DZSRCS = ../../dev/zx/divmmc.c ../../dev/zx/zxkeyboard.c
 DZSRCS += ../../dev/zx/devinput.c ../../dev/zx/bank128.c
 DDZSRCS = ../../dev/zx/zxuno.c
-ASRCS = crt0.s zx128.s zxvideo.s
-ASRCS += tricks.s commonmem.s loader-divide.s
+ASRCS = crt0.S zx128.S zxvideo.S
+ASRCS += tricks.S commonmem.S loader-divide.S
+AZSRCS = ../../dev/zx/divide.S ../../dev/zx/keyscan.S ../../dev/zx/divmmc-spi.S
 
-COBJS = $(CSRCS:.c=.rel)
-CDOBJS = $(CDSRCS:.c=.rel)
-AOBJS = $(ASRCS:.s=.rel)
-DOBJS = $(patsubst ../../dev/%.c,%.rel, $(DSRCS))
-DDOBJS = $(patsubst ../../dev/%.c,%.rel, $(DDSRCS))
-DZOBJS = $(patsubst ../../dev/zx/%.c,%.rel, $(DZSRCS))
-DDZOBJS = $(patsubst ../../dev/zx/%.c,%.rel, $(DDZSRCS))
-OBJS  = $(COBJS) $(CDOBJS) $(AOBJS) $(DOBJS) $(DDOBJS) $(DZOBJS) $(DDZOBJS)
+COBJS = $(CSRCS:.c=.o)
+CDOBJS = $(CDSRCS:.c=.o)
+AOBJS = $(ASRCS:.S=.o)
+AZOBJS = $(patsubst ../../dev/zx/%.S,%.o, $(AZSRCS))
+DOBJS = $(patsubst ../../dev/%.c,%.o, $(DSRCS))
+DDOBJS = $(patsubst ../../dev/%.c,%.o, $(DDSRCS))
+DZOBJS = $(patsubst ../../dev/zx/%.c,%.o, $(DZSRCS))
+DDZOBJS = $(patsubst ../../dev/zx/%.c,%.o, $(DDZSRCS))
+OBJS  = $(COBJS) $(CDOBJS) $(AOBJS) $(DOBJS) $(DDOBJS) $(DZOBJS) $(DDZOBJS) $(AZOBJS)
 
 CROSS_CCOPTS += -I../../dev/ -I../../dev/zx/
 
-CROSS_CC_SEG3 = --codeseg CODE3
+CROSS_CC_SEG3 = -Toverlay3
 
 all:	$(OBJS)
 
-$(COBJS): %.rel: %.c
-	$(CROSS_CC) $(CROSS_CCOPTS) $(CROSS_CC_SEG3) -c $<
+$(COBJS): %.o: %.c
+	$(CROSS_CC) $(CROSS_CCOPTS) $(CROSS_CC_SEG3) -c $< -o $@
 
-$(CDOBJS): %.rel: %.c
-	$(CROSS_CC) $(CROSS_CCOPTS) $(CROSS_CC_SEGDISC) -c $<
+$(CDOBJS): %.o: %.c
+	$(CROSS_CC) $(CROSS_CCOPTS) $(CROSS_CC_SEGDISC) -c $< -o $@
 
-$(DOBJS): %.rel: ../../dev/%.c
-	$(CROSS_CC) $(CROSS_CCOPTS) $(CROSS_CC_SEG3) -c $<
+$(DOBJS): %.o: ../../dev/%.c
+	$(CROSS_CC) $(CROSS_CCOPTS) $(CROSS_CC_SEG3) -c $< -o $@
 
-$(DDOBJS): %.rel: ../../dev/%.c
-	$(CROSS_CC) $(CROSS_CCOPTS) $(CROSS_CC_SEGDISC) -c $<
+$(DDOBJS): %.o: ../../dev/%.c
+	$(CROSS_CC) $(CROSS_CCOPTS) $(CROSS_CC_SEGDISC) -c $< -o $@ 
 
-$(DZOBJS): %.rel: ../../dev/zx/%.c
-	$(CROSS_CC) $(CROSS_CCOPTS) $(CROSS_CC_SEG3) -c $<
+$(AZOBJS): %.o: ../../dev/zx/%.S
+	$(CROSS_AS) $(ASOPTS) $< -o $@
 
-$(DDZOBJS): %.rel: ../../dev/zx/%.c
-	$(CROSS_CC) $(CROSS_CCOPTS) $(CROSS_CC_SEGDISC) -c $<
+$(DZOBJS): %.o: ../../dev/zx/%.c
+	$(CROSS_CC) $(CROSS_CCOPTS) $(CROSS_CC_SEG3) -c $< -o $@
 
-$(AOBJS): %.rel: %.s
-	$(CROSS_AS) $(ASOPTS) $<
+$(DDZOBJS): %.o: ../../dev/zx/%.c
+	$(CROSS_CC) $(CROSS_CCOPTS) $(CROSS_CC_SEGDISC) -c $< -o $@
+
+$(AOBJS): %.o: %.S
+	$(CROSS_AS) $(ASOPTS) $< -o $@
 
 clean:
-	rm -f $(OBJS) *.lst *.asm *.sym *.rst *.rel core *~ 
-	rm -f BOOT.BIN strap.bin load-esx.ihx load-esx.tmp
-	rm -f FUZIX.BIN FUZIX
+	rm -f *.o core *~ fuzix.tmpmap
+	rm -f *.tmp loader loader-zxcf
+	rm -f BOOT.BIN FUZIX FUZIX.BIN
+	rm -f fuzix.relocs tmp.fat
 
-# Re-order the image and snapshop it
-image:
-	# Merge the first code bank into common
-	dd if=../../bank1.bin bs=16384 skip=3 seek=3 count=1 \
-		of=../../common.bin conv=notrunc
-	# The bootstrap to con Fatware
-	# dd if=../../common.bin of=BOOT.BIN bs=8192 count=1
-	# Rest of the base image, starts at 0x2200, pad it
-	# dd if=../../common.bin bs=65536 count=1 conv=sync | \
-	#	dd of=strap.bin bs=512 skip=17
-	# Banked segments 1 and 7
-	# dd if=../../bank2.bin bs=16384 skip=3 >>strap.bin conv=sync
-	# dd if=../../bank3.bin bs=16384 skip=3 >>strap.bin conv=sync
-
-	# Build an esxdos friendly setup
-	sdasz80 -o load-esx.s
-	sdldz80 -i load-esx.rel
-	makebin -s 8704 load-esx.ihx load-esx.tmp
+FUZIX: load-esx.o
+	ldz80 -b load-esx.o -o load-esx.tmp
 	# Generate the image file we need
 	dd if=load-esx.tmp of=FUZIX bs=8192 skip=1
 
-	# Now build a FUZIX.BIN to load
-	# in the order we need it
-	dd if=../../common.bin bs=65536 count=1 conv=sync | \
-		dd of=FUZIX.BIN
-	dd if=../../bank2.bin bs=16384 skip=3 >>FUZIX.BIN conv=sync
-	dd if=../../bank3.bin bs=16384 skip=3 >>FUZIX.BIN conv=sync
+load-esx.o: load-esx.S
+	# Build an esxdos friendly setup
+	fcc -c -mz80 load-esx.S
+
+#	0000-1FFF	: ends up locked for write
+#		04C6 / 05C2	: Magic if M1 set (avoid code here)
+#		1FF8-1FFF	: DivIDE page out - avoid
+#	2000-3FFF	: from DivIDE, can write
+#		3D00-3DFF	: DivIDE page in - should be harmless
+#	4000-BFFF	: Sinclair unbanked memory
+#	C000-FFFF	: Sinclair banked memory
+#
+image: FUZIX
+	$(CROSS_LD) -b -L 0x0400 -O 0xC000 -D 0x5B00 -X 0x8200 -8 0x2200 \
+	-f LCSsbDBX -o ../../fuzix.bin \
+	crt0.o commonmem.o zx128.o ../../start.o \
+	../../version.o ../../cpu-z80u/lowlevel-z80u-banked.o \
+	../../cpu-z80u/usermem_std-z80u-banked.o \
+	../../usermem.o tricks.o main.o discard.o \
+	zxkeyboard.o divide.o zxuno.o \
+	../../timer.o ../../kdata.o devices.o ../../devio.o \
+	../../filesys.o ../../blk512.o ../../process.o \
+	../../inode.o ../../syscall_exec.o ../../syscall_exec16.o \
+	../../syscall_fs.o ../../syscall_fs2.o ../../syscall_fs3.o \
+	../../syscall_proc.o ../../syscall_other.o ../../syscall_net.o \
+	../../network.o ../../tty.o ../../mm.o ../../mm/memalloc_none.o \
+	../../swap.o bank128.o ../../devsys.o ../../vt.o \
+	../../devinput.o devinput.o keyscan.o ../../font/font8x8.o \
+	devtty.o zxvideo.o tinydisk.o tinydisk_discard.o tinyide.o \
+	tinyide_discard.o tinysd.o tinysd_discard.o divmmc.o divmmc-spi.o \
+	/opt/fcc/lib/z80/libz80.a -m fuzix.tmpmap -R fuzix.relocs
+	perl -lpe '$$_=hex' fuzix.tmpmap | paste -d" " - fuzix.tmpmap  |  sort -n |  cut -d" " -f 2- >../../fuzix.map
+	bankman ../../fuzix.bin fuzix.tmpmap fuzix.relocs z80
+
+	# build a FUZIX.BIN to load in the order we need it
+	# Copy the low 48k
+	dd if=../../fuzix.bin bs=16384 count=3 conv=sync of=FUZIX.BIN
+	# Overlay 1 C000-FFFF
+	dd if=../../fuzix.bin bs=16384 count=1 seek=3 skip=7 of=FUZIX.BIN
+	# Overlay 2 C000-FFFF
+	dd if=../../fuzix.bin bs=16384 count=1 seek=4 skip=11 of=FUZIX.BIN
+	# Overlay 3 C000-FFFF
+	dd if=../../fuzix.bin bs=16384 count=1 seek=5 skip=15 of=FUZIX.BIN
 
 IMAGES = $(FUZIX_ROOT)/Images/$(TARGET)
 # Adjust to wherever you have ESXDOS unpacked
@@ -95,3 +122,5 @@ diskimage:
 	hdfmonkey put $(IMAGES)/disk.hdf $(ESXDOS)/* /
 	hdfmonkey put $(IMAGES)/disk.hdf FUZIX.BIN FUZIX.BIN
 	hdfmonkey put $(IMAGES)/disk.hdf FUZIX BIN/FUZIX
+	dd if=$(IMAGES)/disk.hdf of=$(IMAGES)/disk.raw bs=534 skip=1
+	cat $(FUZIX_ROOT)/Standalone/filesystem-src/idehdr.40M $(IMAGES)/disk.raw >$(IMAGES)/emu-ide.img

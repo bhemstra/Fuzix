@@ -13,43 +13,6 @@ The additional memory on some DIVIDE/DIVMMC devices is not supported at this
 point. It would make sense to use that as the 'swap' disk or even the spare
 om the basic one to hold the low pages of the other user task.
 
-We run with the following mapping
-
-0000-1FFF	IRQ vectors and boot loader
-2000-3FFF	RAM (switchable): Common, const, commondata etc
-		(we have 2 spare banks here but it's not clear what use they
-		actually are).
-
-4000-5FFF	Spectrum screen memory and system variables
-6000-7FFF	Kernel data
-
-		[Note: keeping the video mapped is important for graphics
-		 and also means you can use it with the 128K/512K external
-		 48K expansions that do paging but don't do ROM switching
-		 or video switching. These have page 5 not the same as
-		 4000-7FFF so our loader may need a rework]
-
-8000-83FF	Needed to create the exec of init
-8400-BFFF	_DISCARD area - blown away when we exec init
-		(tons of room in this space)
-
-C000-FFFF
-	0:	Kernel CODE (fairly full)
-	1:	Kernel CODE2 (fairly full)
-	2:	Mapped at 0x8000-0xBFFF (exchanged with user process buffer)
-	3:	User process
-	4:	User process
-	5:	Mapped at 0x4000-0x7FFF (Sceen, Kernel data/common)
-	6:	User process (holds the 0x8000-BFFF of the other task)
-	7:	CODE3, Video (lots of room)
-
-We can move some stuff down into the low 16K (especially once we move the
-common space) We do need to do sort things out a bit and stuff commonmem etc
-in the low 8K to get more room.
-
-User processes live in 2/3 or 2/4. Because we can't swap the lower 16K
-around we exchange it with bank 6 as we go.
-
 To set up
 
 Easy way:
@@ -74,7 +37,7 @@ To Do:
 -	Why does ls /bin lose the lowest pixel row of the 'yes' command ?
 	(Seems we lose the bottom line of the left most char - off by one bug
 	 in zxvid ?)
--	If loading via ESX works remove the old clunky loader and fix reboot
+-	Expand buffers to 3FFF (or at last 3CFF if paging is problematic)
 -	Hand optimized bank exchange and bank to bank copy routines. These are
 	fairly performance critical due to the limitations of the memory model.
 	Right now we ldir in one case (could be faster abusing stack), and
@@ -89,19 +52,4 @@ To Do:
 	(May also make sense to hae a build 'the other way up' where we
 	page apps out of 0000-3FFF copying 4000-7FFF for allram devices on
 	a 128K machine
--	Speccyboot (ENC28J60)
--	SpectraNet (W5100)
--	Move vtborder to common
-
-DivIDE and DIVMMC I/O controls that let us get ourselves in the low
-16K.
-
-0xE3:	7: conmem 6: mapram 0-5: bank
-	(may only be 4 banks)
-
-	7 set ROM at 0000-1FFF and RAM at 2000-3FFF (banked)
-	and pins it (overrides 6)
-	6 is a one shot and write protects bank 3 and places it at
-	0000-1FFF, 
-	5-0: are the bank at 2000-3FFF
-
+-	Speccyboot (ENC28J60) ? 

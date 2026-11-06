@@ -8,16 +8,6 @@
 uint16_t ramtop = PROGTOP;
 uint16_t swap_dev = 0xFFFF;
 
-/* On idle we spin checking for the terminals. Gives us more responsiveness
-   for the polled ports */
-void plt_idle(void)
-{
-  /* We don't want an idle poll and IRQ driven tty poll at the same moment */
-  __asm
-   halt
-  __endasm;
-}
-
 uint8_t timer_wait;
 
 void plt_interrupt(void)
@@ -27,19 +17,6 @@ void plt_interrupt(void)
  poll_input();
  if (timer_wait)
   wakeup(&timer_interrupt);
-}
-
-/*
- *	So that we don't suck in a library routine we can't use from
- *	the runtime
- */
-
-size_t strlen(const char *p)
-{
-  size_t len = 0;
-  while(*p++)
-    len++;
-  return len;
 }
 
 /* This points to the last buffer in the disk buffers. There must be at least
@@ -56,7 +33,7 @@ struct blkbuf *bufpool_end = bufpool + NBUFS;
  */
 void plt_discard(void)
 {
-	uint16_t discard_size = PROGBASE - (uint16_t)bufpool_end;
+	uint16_t discard_size = 0x4000 - (uint16_t)bufpool_end;
 	bufptr bp = bufpool_end;
 
 	discard_size /= sizeof(struct blkbuf);

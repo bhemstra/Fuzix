@@ -1,0 +1,6 @@
+# Spectrum Video
+V 4000-5AFF
+# Pageout spots on the DivIDE
+! 1FF8-1FFF
+# Page in spots on the DivIDE (probably safe)
+! 3D00-3DFF

@@ -24,8 +24,6 @@
 #define CONFIG_DYNAMIC_BUFPOOL
 #define CONFIG_DYNAMIC_SWAP
 
-#define CONFIG_SMALL
-
 /* Custom banking */
 
 /* We have two mappings from our 128K of memory */
@@ -60,7 +58,6 @@
 #define TTYDEV   BOOT_TTY /* Device used by kernel for messages, panics */
 #define NBUFS    5       /* Number of block buffers */
 #define NMOUNTS	 4	  /* Number of mounts at a time */
-#define MAX_BLKDEV 4	    /* 2 IDE drives, 2 SD drive */
 
 #define SWAPBASE 0x8000
 #define SWAPTOP  0x10000UL
@@ -75,15 +72,11 @@
 #define CONFIG_TD_NUM	2
 /* IDE/CF support */
 #define CONFIG_TD_IDE
-#define CONFIG_TINYIDE_SDCCPIO
-#define CONFIG_TINYIDE_8BIT
-#define IDE_IS_8BIT(x)	1
 /* SD support */
 #define TD_SD_NUM 2
 #define CONFIG_TD_SD
 /* Emulator for this platform needs bug workarounds */
 #define CONFIG_TD_SD_EMUBUG
-/* Banked so no z88dk fastcalls */
 #define SD_SPI_CALLTYPE
 #define SD_SPI_BANKED
 

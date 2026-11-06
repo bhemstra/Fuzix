@@ -12,7 +12,7 @@ extern uint8_t shiftkeyboard[8][5];
 
 extern uint8_t timer_wait;
 
-extern int gfx_ioctl(uint8_t minor, uarg_t arg, char *ptr);
+extern int gfx_ioctl(uint_fast8_t minor, uarg_t arg, char *ptr);
 
 extern uint8_t vtborder;
 
