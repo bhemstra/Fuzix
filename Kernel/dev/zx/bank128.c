@@ -20,7 +20,7 @@
  *	5 Hardwired at 0x4000-0x7FFF (main screen - we don't use) Kernel data
  *	6 Exchanged with page 2 on task switches
  *	7 Hardwired for shadow screen (the one we use) at C000 for 6912 bytes
- *	We use this for video and code bank 3 at C000-FFFF 
+ *	We use this for video and code bank 3 at C000-FFFF
  *
  *	The Pentagon goes up to 1MB, all in top 16K banks. Page 0 can be
  *	assigned to the low 16K space. The Scorpion is similar but they don't
@@ -113,7 +113,7 @@ int swapout(ptptr p)
 	p; /* to shut the compiler */
 #else
 	uint16_t blk;
-	uint16_t map;
+	int16_t map;
 
 	if (!p->p_page)
 		panic("process already swapped!\n");
@@ -129,7 +129,7 @@ int swapout(ptptr p)
 
 	/* Are we out of swap ? */
 	map = swapmap_alloc();
-	if (map == 0)
+	if (map == -1)
 		return ENOMEM;
 	blk = map * SWAP_SIZE;
 	/* Write the top page and the included uarea stash to disk */
