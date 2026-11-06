@@ -1,0 +1,88 @@
+;
+;	Dual SIO serial driver. For latency reasons this all
+;	lives in the fixed bank space
+;
+#include "kernelu.def"
+
+	.export _sio_state
+	.export _sio_dropdcd
+	.export _sio_rxl
+	.export _sio_txl
+
+	.export	sioa_txd
+	.export sioa_status
+	.export sioa_rx_ring
+	.export sioa_special
+	.export	siob_txd
+	.export siob_status
+	.export siob_rx_ring
+	.export siob_special
+
+; These are laid out and exposed as arrays to C
+_sio_wr5:
+_sioa_wr5:
+	.byte 0xEA		; DTR, 8bit, tx enabled
+_siob_wr5:
+	.byte 0xEA		; DTR, 8bit, tx enabled
+_sio_flow:
+_sioa_flow:
+	.byte 0			; Flow starts off
+_siob_flow:
+	.byte 0			; Flow starts off
+_sio_state:
+_sioa_state:
+	.byte 0			; Last status report
+_siob_state:
+	.byte 0			; Last status report
+_sio_dropdcd:
+_sioa_dropdcd:
+	.byte 0			; DCD dropped since last checked
+_siob_dropdcd:
+	.byte 0			; DCD dropped since last checked
+_sio_rxl:
+_sioa_rxl:
+	.byte 0
+_siob_rxl:
+	.byte 0
+_sio_txl:
+_sioa_txl:
+	.byte 0
+_siob_txl:
+	.byte 0
+
+	.code
+;
+;	A little SIO helper
+;
+	.export _sio2_otir
+
+_sio2_otir:
+	pop	de
+	pop	hl
+	push	hl
+	push	de
+	push	bc
+	ld	b,0x06
+	ld	c,l
+	ld	hl,_sio_r
+	otir
+	pop	bc
+	ret
+
+	.common
+
+	.export outchar
+
+outchar:
+	push	af
+	; wait for transmitter to be idle
+ocloop_sio:
+        xor	a                   ; read register 0
+        out	(SIOA_C), a
+	in	a,(SIOA_C)		; read Line Status Register
+	and	0x04			; get THRE bit
+	jr	z,ocloop_sio
+	; now output the char to serial port
+	pop	af
+	out	(SIOA_D),a
+	ret

@@ -1,0 +1,10 @@
+#!/bin/sh
+#
+#	Generate the z80sio helpers using the template
+#
+cd $FUZIX_ROOT
+cat Kernel/build/serial.hdr
+template <Kernel/dev/z80sio.tmpl a ".abs\n.org 0xFE00" ".commondata" SIOA_C SIOA_D \
+	reti "" "" ".common"
+template <Kernel/dev/z80sio.tmpl b ".abs\n.org 0xFF00" ".commondata" SIOB_C SIOB_D \
+	reti "" "" ".common"
