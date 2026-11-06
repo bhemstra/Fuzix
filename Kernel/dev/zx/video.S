@@ -402,6 +402,6 @@ zx_do_beep:
 cursorpos:
         .word 0
 
-	.common		; commondata ? 
+	.commondata
 _curattr:
 	.byte 7
