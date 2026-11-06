@@ -55,7 +55,7 @@ $(AOBJS): %.o: %.S
 
 clean:
 	rm -f *.o core *~ fuzix.tmpmap
-	rm -f *.ihx *.tmp loader loader-zxcf
+	rm -f *.tmp loader loader-zxcf
 	rm -f FUZIX.BIN FUZIX comcode
 
 # Re-order the image and turn it into the raw image to load from disk
