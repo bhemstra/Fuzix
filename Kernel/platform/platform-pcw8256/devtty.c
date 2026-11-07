@@ -175,12 +175,12 @@ void tty_setup(uint8_t minor, uint8_t flags)
 
 	if (minor == 1)
 		return;
-	cflag = ttydata[1].termios.c_cflag;
+	cflag = ttydata[minor].termios.c_cflag;
 	baud = cflag & CBAUD;
 	if (baud > B19200) {
 		baud = B19200;
-		ttydata[1].termios.c_cflag &= ~CBAUD;
-		ttydata[1].termios.c_cflag |= B19200;
+		ttydata[minor].termios.c_cflag &= ~CBAUD;
+		ttydata[minor].termios.c_cflag |= B19200;
 	}
 	/* Set transmit rate */
 	ctcmode = 0x36;
@@ -278,7 +278,7 @@ static void keyproc(void)
 						keysdown--;
 						if (keyboard_grab == 3) {
 							queue_input(KEYPRESS_UP);
-							queue_input(keyboard[i][n]);
+							queue_input(keyboard[i][7-n]);
 						}
 					}
 				}
@@ -374,7 +374,7 @@ static void keydecode(void)
 			/* Queue an event giving the base key (unshifted)
 			   and the state of shift/ctrl/alt */
 			queue_input(KEYPRESS_DOWN | m);
-			queue_input(keyboard[keybyte][keybit]);
+			queue_input(keyboard[keybyte][7-keybit]);
 			break;
 		}
 	}
