@@ -42,9 +42,10 @@ void tty_putc(uint8_t minor, unsigned char c)
     vtoutput(&c, 1);
 }
 
-void tty_setup(uint8_t minor)
+void tty_setup(uint8_t minor, uint_fast8_t flags)
 {
     minor;
+    used(flags);
 }
 
 void tty_sleeping(uint8_t minor)

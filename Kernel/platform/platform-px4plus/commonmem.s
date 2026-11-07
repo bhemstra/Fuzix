@@ -5,4 +5,4 @@
 
         .area _UDATA
 
-	.include "../cpu-z80/std-commonmem.s"
+	.include "../../cpu-z80/std-commonmem.s"
