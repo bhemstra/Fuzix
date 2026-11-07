@@ -89,7 +89,7 @@ pcmciabootable:
 	; set system RAM size
 	ld hl, 256
 	ld (_ramsize), hl
-	ld hl, (256-64)		; 64K for kernel
+	ld hl, 256-64		; 64K for kernel
 	ld (_procmem), hl
 to_setup:
 	; 100Hz timer on
@@ -506,9 +506,9 @@ _scroll_down:
 	push af
 	ld a, 0x43		; main memory, bank 3 (video etc)
 	out (0x11), a
-	ld hl, VIDEO_BASE+0xFFF
-	ld de, VIDEO_BASE+0xFFF-512
-	ld bc, VIDEO_SIZE-512-1
+	ld hl, VIDEO_BASE+VIDEO_SIZE-513
+	ld de, VIDEO_BASE+VIDEO_SIZE-1
+	ld bc, VIDEO_SIZE-512
 	lddr
 vtdone:	pop af
 	out (0x11), a
