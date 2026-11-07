@@ -139,7 +139,7 @@ void tty_interrupt(void)
 	if (reg & 0x80) {
 		tty_inproc(2, in(TR1865_RXTX));
 	}
-	if ((trs_flow & 8) && fullq(&ttyinq[2]))
+	if ((trs_flow & 4) && fullq(&ttyinq[2]))
 		out(TR1865_CTRL, tr1865_ctrl_save & ~1);
 }
 
@@ -152,7 +152,7 @@ void tty_poll(void)
 		reg = in(VG_TR1865_WRST);
 		if (reg & 0x01)
 			tty_inproc(2, in(VG_TR1865_CTRD));
-		if ((trs_flow & 0x10) && fullq(&ttyinq[2]))
+		if ((trs_flow & 4) && fullq(&ttyinq[2]))
 			out(VG_TR1865_CTRD, vg_tr1865_ctrd_save & ~1);
 	}
 	/* Do the Model I/III port */
@@ -200,7 +200,7 @@ void tty_setup(uint_fast8_t minor, uint_fast8_t flags)
 	if (t->termios.c_cflag & CRTSCTS)
 		trs_flow |= (1 << minor);
 	else
-		trs_flow &- ~(1 << minor);
+		trs_flow &= ~(1 << minor);
 	if (sertype == 1) {
 		tr1865_ctrl_save = ctrl;
 		out(TR1865_CTRL, ctrl);
