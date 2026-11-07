@@ -925,6 +925,7 @@ endline:    pop de
 	xor a
 	cp (hl)		; 0 0 = end (for blank lines just do 01 ff 00)
 	jr nz, nextline
+	pop bc
 	pop af
 	out (0x11), a
 	ei
