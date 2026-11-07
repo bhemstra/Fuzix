@@ -57,7 +57,7 @@ _switchin:
 	sei
 	jsr	__pop
 	sta	@tmp1
-	stx	@tmp1
+	stx	@tmp1+1
 	; Take a second saved set as we are going to swap stacks and ZP
 	; with a CPU that hasn't got sufficient registers to keep it on
 	; CPU
