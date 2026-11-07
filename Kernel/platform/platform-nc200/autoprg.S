@@ -188,7 +188,7 @@ parse_filename:
     call parse_hex
     ld (_d_destination+1), a
 
-    ld d, (iy+0)
+    ld d, (iy+9)
     ld e, (iy+10)
     call parse_hex
     ld (0xb001), a ; tell the OS that we're changing banks
