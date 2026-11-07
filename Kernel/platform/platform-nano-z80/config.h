@@ -38,8 +38,8 @@
 #define PTABSIZE    32
 
 /* Networking */
-/*#define CONFIG_NET
-#define CONFIG_NET_NATIVE*/
+#define CONFIG_NET
+#define CONFIG_NET_NATIVE
 
 /* No swap */
 #undef SWAPDEV
