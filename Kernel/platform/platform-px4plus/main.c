@@ -51,7 +51,6 @@ void pagemap_init(void)
 
 	if (!sidecar && carttype != 2)
 	 panic("No suitable memory extension");
-	n /= 32;
 	/* Handle sidecar memory */
 	if (sidecar) {
 		nv = n - 4;	/* Number of non sidecar blocks (including in RAM) */

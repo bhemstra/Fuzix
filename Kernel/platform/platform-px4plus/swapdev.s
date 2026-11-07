@@ -125,7 +125,7 @@ cart_x256:
 ;	so the 16K cartridge while detected is useless.
 ;
 _cartridge_size:
-		ld c, #0xA512
+		ld bc, #0xA512
 		xor a
 		out (0x11), a	; low byte 0
 		ld a, #0x40
