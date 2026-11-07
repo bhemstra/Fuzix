@@ -110,6 +110,6 @@ void tty_interrupt(void)
 		tty_inproc_softparity(1,r);
 	}	
 	/* Ugly - need to move to full IRQ serial I think ? */
-	if (r & 0x02)
+	if (GETB(SCON) & 0x02)
 		PUTB(SCON, GETB(SCON) & 0xFD);
 }
