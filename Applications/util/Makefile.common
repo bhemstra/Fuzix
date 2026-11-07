@@ -3,7 +3,6 @@ include $(FUZIX_ROOT)/Target/rules.$(USERCPU)
 SRCSNS = \
 	basename.c \
 	border.c \
-	cat.c \
 	chgrp.c \
 	chmod.c \
 	chown.c \
@@ -46,6 +45,7 @@ SRCS  = \
 	bd.c \
 	blkdiscard.c \
 	cal.c \
+	cat.c \
 	chmem.c \
 	cksum.c \
 	colrm.c \
