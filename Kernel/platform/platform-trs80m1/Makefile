@@ -53,7 +53,7 @@ clean:
 	rm -f *.o *.lst *.asm *.lst *.sym *.adb *.rst *.ihx core *~
 
 image: trs80load.bin trs80load-m3.bin
-	$(CROSS_LD) -b -D 0x4300 -O 0x8C00 -9 0xF600 -f DLSsBCXb -o fuzix.bin \
+	$(CROSS_LD) -b -D 0x4300 -O 0x8C00 -9 0xF400 -f DLSsBCXb -o fuzix.bin \
 	crt0.o commonmem.o trs80.o trs80-bank.o ../../start.o \
 	../../version.o ../../cpu-z80u/lowlevel-z80u-banked.o \
 	../../usermem.o tricks.o main.o discard.o \

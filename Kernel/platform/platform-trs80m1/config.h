@@ -32,7 +32,6 @@
 /* And IDE */
 #define CONFIG_TD_NUM	4
 #define CONFIG_TD_IDE
-#define CONFIG_TINYIDE_SDCCPIO
 #define CONFIG_TINYIDE_8BIT
 #define IDE_IS_8BIT(x)	1
 

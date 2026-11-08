@@ -174,11 +174,9 @@ outchar:
 
 ;
 ;	Swap helpers.
-;	We have our buffers mapped in Bank 2 but we don't need to do
-;	anything here as we are in common memory and we've carefully
-;	arranged that the device driver callers are in BANK2 thus we'll
-;	have BANK2 mapped by default, although we may map a user bank
-;	in temporarily if going direct to user.
+;	We have our buffers mapped in Bank 2. We are in common memory
+;	and thge map_buffers will if needed ensure we have the right bank
+;	mapped
 ;
 
 hd_prep_xfer:
@@ -188,30 +186,25 @@ hd_prep_xfer:
 	inc	hl
 	ld	h,(hl)
 	ld	l,a
+	ld	bc, 0xC8		; 256 bytes from 0xC8
 	ld	a, (_hd_page)
 	or	a
-	ld	bc, 0xC8		; 256 bytes from 0xC8
-	ret
+	jp	z, map_buffers
+	jp	map_proc_a
 
 _hd_xfer_in:
 	push	bc
 	call	hd_prep_xfer
-	push	af
-	call	nz, map_proc_a
 	inir
-hd_out:
-	pop	af
-	call	nz, map_kernel_restore
 	pop	bc
-	ret
+	jp	map_kernel_restore
 
 _hd_xfer_out:
 	push	bc
 	call	hd_prep_xfer
-	push	af
-	call	nz, map_proc_a
 	otir
-	jr	hd_out
+	pop	bc
+	jp	map_kernel_restore
 
 
 

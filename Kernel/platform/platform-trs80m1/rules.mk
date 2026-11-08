@@ -4,7 +4,7 @@
 #
 # Tell the core code we are using the banked helpers
 #
-export CCROSS_CCOPTS=-Os
+export CROSS_CCOPTS+=-Os
 export BANKED=-banked
 export CCBANKED=-banked
 

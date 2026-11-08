@@ -18,6 +18,7 @@
 	.export map_restore
 	.export map_save_kmap
 	.export map_restore_kmap
+	.export map_buffers
 	.export fork_mapsave
 	.export mapper_init
 	.export _trs80_mapper
@@ -236,6 +237,18 @@ map_proc_always_di:
 	pop	af
 	ret
 
+map_buffers:
+	push	af
+	push	bc
+	ld	bc, (map_reg)
+	ld	(ksave_map), bc
+	ld	bc, (map_bank2)
+	ld	(map_reg), bc
+	out	(c),b
+	pop	bc
+	pop	af
+	ret
+
 map_save_kernel:
 	push bc
 	ld bc, (map_reg)
@@ -447,6 +460,7 @@ b2bcopy:
 b2b_loop:
 patch0:
 	ld	a,0
+	ld	(map_reg + 1),a
 bankpatch3:
 	out	(0x43),a
 	ld	a,(hl)
@@ -454,6 +468,7 @@ bankpatch3:
 	ex	af,af'
 patch1:
 	ld	a,0
+	ld	(map_reg + 1),a
 bankpatch4:
 	out	(0x43),a
 	ex	af,af'
@@ -497,7 +512,7 @@ __uget:
 	call	uputget
 	jr	z, uput_out
 	bit	7,e		; to buffer directly ?
-	jr	z,do_copy
+;	jr	z,do_copy
 	exx
 	; Use alt regs for bank numbers
 	ld	a, (_udata + U_DATA__U_PAGE)
@@ -514,7 +529,7 @@ __uput:
 	call	uputget
 	jr	z, uput_out
 	bit	7,h
-	jr	z, do_copy
+;	jr	z, do_copy
 	exx
 	; Use alt regs for bank numbers
 	ld	a, (_udata + U_DATA__U_PAGE)
