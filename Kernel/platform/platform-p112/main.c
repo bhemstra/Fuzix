@@ -26,15 +26,17 @@ void plt_discard(void)
 
 void z180_timer_interrupt(void)
 {
+    static uint8_t fd_div;
     unsigned char a;
 
     /* we have to read both of these registers in order to reset the timer */
     a = TIME_TCR;
     a = TIME_TMDR0L;
 
-    /* FIXME: we are calling this twice the rate it expects */
+    /* fd_tick() expects a 1/20ths interrupt but we run the timer at 40Hz */
 #ifdef CONFIG_P112_FLOPPY
-    fd_tick();
+    if (fd_div ^= 1)
+        fd_tick();
 #endif
 
     timer_interrupt();
