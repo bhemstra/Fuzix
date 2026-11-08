@@ -198,7 +198,6 @@ ttyready_t tty_writeready(uint_fast8_t minor)
 
 void tty_data_consumed(uint_fast8_t minor)
 {
-	used(minor);
 }
 
 /* kernel writes to system console -- never sleep! */
