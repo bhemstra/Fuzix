@@ -105,3 +105,19 @@ void tty_poll(void)
 		vt_inproc(1, c);
 #endif
 }
+
+int c64tty_ioctl(uint_fast8_t minor, uarg_t request, register char *data)
+{
+	switch(request)
+	{
+	case VTPAPER:
+		vidpaper = ugetc(data);
+		vtattr_notify();
+		return 0;
+	case VTBORDER:
+		vtborder = ugetc(data);
+		vtattr_notify();
+		return 0;
+	}
+	return vt_ioctl(minor, request, data);
+}

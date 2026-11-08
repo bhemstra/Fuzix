@@ -1140,7 +1140,6 @@ gaddr:
 	dey
 	lda	(@sp),y
 _cursor_disable:
-_vtattr_notify:
 	rts
 
 addr:
@@ -1188,7 +1187,7 @@ _plot_char:
 	ldy	#0
 	and	#0x7F
 	sta	(@tmp),y
-	lda	#14
+	lda	_c64ink
 	sta	(@tmp3),y
 	jmp	__add4sp
 
@@ -1223,7 +1222,7 @@ _clear_across:
 clac:
 	lda	#' '
 	sta	(@tmp),y
-	lda	#14
+	lda	_c64ink
 	sta	(@tmp3),y
 	iny
 	dex
@@ -1243,7 +1242,7 @@ line:
 doline:
 	lda	#' '
 	sta	(@tmp),y
-	lda	#14
+	lda	_c64ink
 	sta	(@tmp3),y
 	dey
 	cpy	#0xFF
@@ -1265,22 +1264,33 @@ _scroll_up:
 	lda	#0x04
 	sta	@tmp+1
 	sta	@tmp2+1
+	lda	#0xD8
+	sta	@tmp3+1
+	sta	@tmp4+1
 	lda	#0x00
 	sta	@tmp
+	sta	@tmp3
 	lda	#0x28
 	sta	@tmp2
+	sta	@tmp4
 	ldy	#0
 	ldx	#3
 cpup:	lda	(@tmp2),y
 	sta	(@tmp),y
+	lda	(@tmp4),y
+	sta	(@tmp3),y
 	iny
 	bne	cpup
-	inc	@tmp2+1
 	inc	@tmp+1
+	inc	@tmp2+1
+	inc	@tmp3+1
+	inc	@tmp4+1
 	dex
 	bne	cpup
 cpup2:	lda	(@tmp2),y
 	sta	(@tmp),y
+	lda	(@tmp4),y
+	sta	(@tmp3),y
 	iny
 	cpy	#0xC0
 	bne	cpup2
@@ -1292,37 +1302,93 @@ _scroll_down:
 	; 255 bytes from end of frame buffer
 	lda	#0xE7
 	ldx	#0x07
+	ldy	#0xDB
 	sta	@tmp
+	sta	@tmp3
 	stx	@tmp+1
-	lda	#0x0BF
+	sty	@tmp3+1
+	lda	#0xBF
 	sta	@tmp2
 	stx	@tmp2+1
+	sta	@tmp4
+	sty	@tmp4+1
 	ldy	#255
 	ldx	#3
 cpdown:
 	lda	(@tmp2),y
 	sta	(@tmp),y
+	lda	(@tmp4),y
+	sta	(@tmp3),y
 	dey
 	bne	cpdown
 	lda	(@tmp2),y
 	sta	(@tmp),y
+	lda	(@tmp4),y
+	sta	(@tmp3),y
 	dey
 	;	256 bytes moved
 	dex
-	dec	@tmp2+1
 	dec	@tmp+1
+	dec	@tmp2+1
+	dec	@tmp3+1
+	dec	@tmp4+1
 	bne	cpdown
 	;	We have done 768 bytes, We need to do
 	;	192 more
 cplast:
 	lda	(@tmp2),y
 	sta	(@tmp),y
+	lda	(@tmp4),y
+	sta	(@tmp3),y
 	dey
 	cpy	#0x3F
 	bne	cplast
 	rts
 
+_vtattr_notify:
+	; Map colours
+	lda	_vtink
+	and	#0x1F
+	tax
+	lda	coltab,x
+	sta	_c64ink
+	lda	_vidpaper
+	and	#0x1F
+	tax
+	lda	coltab,x
+	sta	0xD021
+	lda	_vtborder
+	and	#0x1F
+	tax
+	lda	coltab,x
+	sta	0xD020
+	rts
+
+coltab:
+	.byte	0		; black
+	.byte	6		; blue
+	.byte	2		; red
+	.byte	4		; magenta
+	.byte	5		; green
+	.byte	3		; cyan
+	.byte	7		; yellow
+	.byte	1		; white
+	.byte	0		; black
+	.byte	6		; blue
+	.byte	2		; red
+	.byte	4		; magenta
+	.byte	5		; green
+	.byte	3		; cyan
+	.byte	7		; yellow
+	.byte	1		; white
+	; And native
+	.byte	0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15
+
+
 	.data
+
+	.export	_vidpaper
+	.export	_vtborder
 
 cursorl:
 	.byte	0
@@ -1330,6 +1396,12 @@ cursorh:
 	.byte	0
 cursorc:
 	.byte	0
+_c64ink:
+	.byte	14		; native colour 14
+_vidpaper:
+	.byte	1		; blue
+_vtborder:
+	.byte	30		; native colour 14
 
 	.export _keydown
 	.export _keytab

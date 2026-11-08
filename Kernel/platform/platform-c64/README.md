@@ -1,19 +1,21 @@
 # Commodore 64 + IDE64
 
-This is just any early development test of a simple C64 + IDE64 setup with the
-OS in the IDE64 cartridge memory. A more serious setup would be to build
-a C64 + IDE64 + REU configuration as we can use the REU fast memory swap
-for process switching and we can also use the REU as a fast memory zero,
-copy and even in theory disk to REU direct transfer. That would allow us to
-keep the buffers in REU space and also read/write the disk really fast in
-CF mode.
+A simple C64 banked cartridge implementation of Fuzix for the C64 with the
+IDE64 cartridge and the OS loaded into the cartridge. Performance is not
+great with a 1MHz 6502 and the IDE64 being used for swapping tasks and
+disk I/O.
 
 ## To Look At
 
 - Switch to a proper keyboard scan routine maybe
-- Colour attributes + ink/paper/border
-- Graphics mode setting (but really need more memory for a full 2K video)
+- Graphics mode setting (but really need more memory for it)
 - Performance is horrible
+- Signals seem to be broken even though fixed on the rcbus systems
+- Some kind of Commodore specific driver for talking via kernal to IEC
+  devices, and /dev/lpr etc
+- Do the IRQ checks down to timer in asm before we switch to C, including
+  kbd initial check, and if so store kbd char and invoke C paths.
+- 6502 console driver for speed
 
 Our performance is mainly bounded by the speed of the disk sector transfers
 on the 1MHz 6502, especially the way they are arranged for writes on the
