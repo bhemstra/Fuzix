@@ -1328,8 +1328,6 @@ _scroll_down:
 
 _vtattr_notify:
 	; Map colours
-	; TODO: map according to the full colour set including bright
-	; and native colouring
 	lda	_vtink
 	and	#0x1F
 	tax
