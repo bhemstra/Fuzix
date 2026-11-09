@@ -1094,7 +1094,7 @@ inchar_acia:
 ;	And the Z180 support code
 ;
 
-	.include "../../lib/z180-support.s"
+	.include "../../lib/z180support.s"
 
 ;
 ;	Stub helpers for code compactness. Note that
