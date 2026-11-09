@@ -195,7 +195,7 @@ static uint8_t ns16x50_intr(uint_fast8_t minor)
 				bad = 1;
 			break;
 		case 0x04:
-		case 0x12:	/* Data */
+		case 0x0C:	/* Data (character timeout) */
 			if (bad) {
 				tty_inproc_bad(minor, uart->data);
 				bad = 0;
