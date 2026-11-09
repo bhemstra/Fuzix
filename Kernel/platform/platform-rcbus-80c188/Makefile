@@ -30,12 +30,12 @@ clean:
 
 image:
 	$(CROSS_LD) -M -o fuzix.aout -T fuzix.ld \
-	../../start.o ../../version.o ../../lowlevel-8086.o \
+	../../start.o ../../version.o ../../cpu-8086/lowlevel-8086.o \
 	main.o ../../swap.o ../../timer.o ../../simple.o ../../kdata.o devices.o \
 	../../tty.o ../../devio.o ../../filesys.o ../../process.o ../../inode.o \
 	../../syscall_fs.o ../../syscall_proc.o ../../syscall_other.o ../../mm.o \
 	../../devsys.o ../../usermem.o ../../syscall_exec.o ../../syscall_exec16.o \
 	../../syscall_fs2.o tricks.o ../../syscall_fs3.o ../../blk512.o \
-	../../usermem_std-8086.o \
+	../../cpu-8086/usermem_std-8086.o \
 	devide.o devide_discard.o blkdev.o mbr.o \
 	80c188.o devtty.o libc.o > ../../fuzix.map
