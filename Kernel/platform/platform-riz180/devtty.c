@@ -105,8 +105,8 @@ void tty_setup(uint_fast8_t minor, uint_fast8_t flags)
 	if (cntlb == 0xFF) {
 		baud = B9600;
 		cntlb = baudtable[B9600];
-		t->c_cflag &= ~CBAUD;
-		t->c_cflag |= B9600;
+		cflag &= ~CBAUD;
+		cflag |= B9600;
 	}
 
 	/* Calculate the control bits */
