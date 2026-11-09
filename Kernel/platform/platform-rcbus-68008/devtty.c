@@ -872,7 +872,7 @@ int rctty_ioctl(uint8_t minor, uarg_t arg, char *ptr)
 		case GFXIOC_GETINFO:
 			return uput(&tms_mode, ptr, sizeof(struct display));
 		case GFXIOC_MAP:
-			return uput(&tms_map, ptr, sizeof(struct display));
+			return uput(&tms_map, ptr, sizeof(struct videomap));
 		case GFXIOC_UNMAP:
 			return 0;
 		}
