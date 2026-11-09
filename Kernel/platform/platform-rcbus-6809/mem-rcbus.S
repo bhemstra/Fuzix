@@ -95,7 +95,6 @@ map_for_swap:
 	rts
 
 _copy_common:
-	ldb	3,s
 	;	B holds the page to stuff it in, ints are off, and we will
 	;	clean up all the maps in the caller later. Will need
 	;	review if we allow interrupts during fork copy
