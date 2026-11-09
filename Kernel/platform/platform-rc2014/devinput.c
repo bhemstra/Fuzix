@@ -61,7 +61,7 @@ static void merge(uint8_t *a, uint8_t *b)
     int8_t r;
     uint8_t i = 0;
 
-    while(i < 3) {
+    while (i++ < 3) {
         p = (int8_t)*a;
         n = (int8_t)*b;
         r = p + n;
