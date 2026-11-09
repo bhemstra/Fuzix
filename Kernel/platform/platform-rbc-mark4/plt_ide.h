@@ -8,7 +8,7 @@
 #define cmd	(MARK4_IO_BASE + 7)
 #define status	(MARK4_IO_BASE + 7)
 
-#define IDE_REG_DATA	(MARK4_IO_BNASE + 0)
+#define IDE_REG_DATA	(MARK4_IO_BASE + 0)
 
 #define IDE_NONSTANDARD_XFER
 
