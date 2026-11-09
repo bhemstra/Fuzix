@@ -9,7 +9,7 @@
 		.globl _plt_monitor
 
 		.include 'kernel.def'
-		.include '../kernel-rabbit.def'
+		.include '../../cpu-r2k/kernel-rabbit.def'
 
 _plt_reboot:
 _plt_monitor:
@@ -78,10 +78,10 @@ _program_vectors:
 		ret
 
 
-		.globl map_process
-		.globl map_process_always
-		.globl map_process_always_di
-		.globl map_process_a
+		.globl map_proc
+		.globl map_proc_always
+		.globl map_proc_always_di
+		.globl map_proc_a
 		.globl map_kernel
 		.globl map_kernel_di
 		.globl map_save_kernel
@@ -102,19 +102,19 @@ map_kernel_di:
 		pop af
 		ret
 
-map_process:
-map_process_di:
+map_proc:
+map_proc_di:
 		ld a,h
 		or a,l
 		jr z, map_kernel
 		ld a,(hl)
 map_for_swap:
-map_process_a:
+map_proc_a:
 		ioi
 		ld (DATASEG),a
 		ret
-map_process_always:
-map_process_always_di:
+map_proc_always:
+map_proc_always_di:
 		push af
 		ld a,(_udata + U_DATA__U_PAGE)
 		ioi

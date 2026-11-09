@@ -6,4 +6,4 @@
 
         .area _COMMONMEM
 
-	.include "../cpu-r2k/std-commonmem.s"
+	.include "../../cpu-r2k/std-commonmem.s"

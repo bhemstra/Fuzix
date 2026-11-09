@@ -16,7 +16,7 @@
 		.globl sera_tx,serc_tx,serd_tx
 
 		.include 'kernel.def'
-		.include '../kernel-rabbit.def'
+		.include '../../cpu-r2k/kernel-rabbit.def'
 
 _iir:
 

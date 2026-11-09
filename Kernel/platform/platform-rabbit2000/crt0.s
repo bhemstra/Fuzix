@@ -36,7 +36,7 @@
         .area _CODE
 
 	.include "kernel.def"
-	.include "../kernel-rabbit.def"
+	.include "../../cpu-r2k/kernel-rabbit.def"
 ;
 ;	For a RAM startup our configuration is
 ;
