@@ -64,7 +64,7 @@ image: boot-romwbw.bin
 	../../dev/tinyide_ppide_rbc.o ../../dev/ds1302.o \
 	../../dev/ds1302_discard.o ../../dev/ds1302_rcbusu.o ps2.o \
 	../../dev/ps2kbd.o ../../dev/ps2mouse.o devinput.o 7220.o monitor.o \
-	../../libfuzix.a /opt/fcc/lib/z80/libz80.a -m fuzix.tmpmap
+	../../libfuzix.a ../../libfuzix.a /opt/fcc/lib/z80/libz80.a -m fuzix.tmpmap
 	perl -lpe '$$_=hex' fuzix.tmpmap | paste -d" " - fuzix.tmpmap  |  sort -n |  cut -d" " -f 2- >../../fuzix.map
 	../../tools/pack85 ../../fuzix.bin fuzix.bin <../../fuzix.map
 	cat boot-romwbw.bin >fuzix.romwbw
