@@ -118,7 +118,7 @@ void tty_pirq_asci0(void)
 {
     while(in(ASCI_STAT0) & 0x80)
         tty_inproc(1, in(ASCI_RDR0));
-    if (in(ASCI_STAT0 & 0x70))
+    if (in(ASCI_STAT0) & 0x70)
     	out(ASCI_CNTLA0, in(ASCI_CNTLA0) & ~0x08);
 }
 
