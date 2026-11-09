@@ -230,7 +230,7 @@ static uint8_t ns16x50_intr(uint_fast8_t minor)
 static void ns16x50_data_consumed(uint_fast8_t minor)
 {
 	volatile struct uart16x50 *uart = U16X50(minor);
-	uart->mcr = RTS;
+	uart->mcr |= RTS;
 }
 
 static ttyready_t ns16x50_writeready(uint_fast8_t minor)
