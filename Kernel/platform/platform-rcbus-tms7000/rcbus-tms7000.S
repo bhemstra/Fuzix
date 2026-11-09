@@ -131,7 +131,7 @@ outchar:
 ;
 	.export _tmstty_get
 _tmstty_get:
-	btjop	%0x20,p0xC5,has_ch
+	btjop	%0x1,p0xC5,has_ch
 	movd	%0xFFFF,r5
 	rets
 has_ch:
