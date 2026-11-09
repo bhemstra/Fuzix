@@ -23,7 +23,7 @@ uint_fast8_t read_js(uint8_t * slot, uint_fast8_t n)
 	uint_fast8_t d = 0;
 	uint_fast8_t r;
 
-	if (n == 1)
+	if (n == 0)
 		r = jsin1();
 	else
 		r = jsin2();
