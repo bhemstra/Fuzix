@@ -471,7 +471,7 @@ _timer_check:
 	out 0x3F		;	Latch status of counter 2
 	in 0x3E			;	Read status
 	rlc
-	mov e,d			;	Return 0
+	mvi l,0			;	Return 0
 	rnc			;	Output is low - so not us
 	mvi a,10
 	out 0x3E		;	Set the count back to 10
