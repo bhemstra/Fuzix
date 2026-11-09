@@ -166,7 +166,6 @@ outchw:
 	xor 0xF3,#0xF7		; clear status again
 	; TODO wait..
 	ld 240,r3
-	pop r3
 	ret
 
 ;
