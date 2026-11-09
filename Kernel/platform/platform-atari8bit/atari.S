@@ -96,15 +96,53 @@ irq_off:
 ;	in our IRQ mask routines.
 ;
 vector:
-	; TODO move some things like the pokey handling here
-	; and hook the event in the NMI
+;
+;	Handle POKEY and the like. Needs to be in asm and not go into C
+;	code as we can be interrupted in turn by NMI
+;
+	pha
+	lda	0xD20E		; Check pokey status
+	sta	0xD20E		; Reset interrupt bits
+	bmi	nobrk		; Was the break key pressed ?
+	inc	_keybrk
+nobrk:
+	rol	a		; Was a key pressed
+	bmi	nokey
+;	lda	0xD20F
+;	and	#0x04
+;	bne	nokey		; Still down	- TODO
+	txa
+	pha
+	lda	0xD209
+	bpl	keynorm
+	tax
+	lda	_keydecode-0x80,x
+	and	#0x1F
+	jmp	keyin
+keynorm:
+	tax
+	lda	_keydecode,x
+keyin:	sta	_keyrx		; Indicate key pressed
+	pla
+	tax
+nokey:
+	lda	0xD20F		; Status
+	and	#0xE0		; Check if there is an error pending
+	beq	noerr
+	lda	#1
+	sta	0xD20A		; Reset errors
+noerr:
+	pla
 	rti
 
 	.commondata
 
-	.export _nmival
+	.export	_keyrx
+	.export _keybrk
 
-_nmival:
+_keyrx:
+	.byte	0
+_keybrk:
 	.byte	0
 
 	.literal

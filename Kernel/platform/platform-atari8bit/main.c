@@ -38,12 +38,8 @@ void device_init(void)
 
 void plt_interrupt(void)
 {
-	extern uint8_t nmival;
 	tty_poll();
-	if (nmival & 0x40) {
-		nmival = 0;
-		timer_interrupt();
-	}
+	timer_interrupt();
 }
 
 /* TODO: put these into the asm bits */
