@@ -25,10 +25,10 @@ sd_spi_clock:
 ;
 sd_spi_lower_cs:
 		move.b	sd_drive,d0
-		move.b	#$0C,$1000E	; device 3
+		move.b	#$0C,$100AE	; device 3
 		eor.b	#3,d0
 		rol.b	#2,d0
-		move.b	d0,$1000F	; clear bits to select our device
+		move.b	d0,$100AF	; clear bits to select our device
 		rts
 
 ;
