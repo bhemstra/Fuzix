@@ -58,10 +58,10 @@ _sd_spi_tx_sector:
  jsr iomap
  ldy #512
 writebyte:
- bsr _sd_spi_rx_byte
- stb ,x+
+ ldb ,x+
+ bsr _sd_spi_tx_byte
  leay -1,y
- bne readbyte
+ bne writebyte
  jsr map_kernel
  puls dp,pc
 _sd_spi_rx_sector:
