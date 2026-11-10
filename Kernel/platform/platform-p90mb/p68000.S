@@ -139,7 +139,7 @@ map_save:
 
 outchar:
 outcharw:
-	btst #2,SCON
+	btst #1,SCON
 	beq outcharw
 	move.b d0,SBUF
 	rts
