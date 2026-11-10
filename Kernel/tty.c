@@ -272,15 +272,18 @@ void tty_exit(void)
 }
 
 #ifdef CONFIG_LEVEL_2
-static uint8_t tty_input_ready(struct tty *t, struct s_queue *q)
+/*
+ *	FIXME: this code knows far too much about tty queue internals
+ *	but it's not obvious how we address that
+ */
+static uint_fast8_t tty_input_ready(struct tty *t, register struct s_queue *q)
 {
-	queueptr_t p;
+	register queueptr_t p;
 	int count;
-	irqflags_t irq = di();
-	uint8_t ready = 0;
+	uint_fast8_t ready = 0;
 
 	if (!(t->termios.c_lflag & ICANON)) {
-		uint8_t minimum = t->termios.c_cc[VMIN];
+		uint_fast8_t minimum = t->termios.c_cc[VMIN];
 		if (minimum == 0)
 			minimum = t->termios.c_cc[VTIME] ? 1 : 0;
 		ready = q->q_count >= minimum;
@@ -298,7 +301,6 @@ static uint8_t tty_input_ready(struct tty *t, struct s_queue *q)
 				p = q->q_base;
 		}
 	}
-	irqrestore(irq);
 	return ready;
 }
 #endif
@@ -388,21 +390,23 @@ int tty_ioctl(uint_fast8_t minor, uarg_t request, char *data)
 	case SELECT_TEST:
 	{
 		uint8_t n = *data;
+		irqflags_t irq = di();
 		*data = 0;
 		if (n & SELECT_EX) {
 			if (t->flag & TTYF_DEAD) {
 				*data = SELECT_IN|SELECT_EX;
+				irqrestore(irq);
 				return 0;
 			}
 		}
-		/* FIXME: IRQ race */
-		if ((n & SELECT_IN) && tty_input_ready(t, tty_input_queue(minor)))
+		if ((n & SELECT_IN) && tty_input_ready(t, ttyinq + minor))
 			*data |= SELECT_IN;
 		if (n & SELECT_OUT) {
 			if ((!(t->flag & TTYF_STOP)) &&
 				tty_writeready(minor) != TTY_READY_LATER)
 					*data |= SELECT_OUT;
 		}
+		irqrestore(irq);
 		return 0;
 	}
 #endif
