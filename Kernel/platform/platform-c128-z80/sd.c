@@ -38,17 +38,17 @@ void sd_spi_clock(bool go_fast) __z88dk_fastcall
   if (go_fast)
       sd_ctrl |= 0x04;
   else
-      sd_ctrl &= 0xF7;
+      sd_ctrl &= ~0x04;
 }
 
-void sd_spi_transmit_byte(uint8_t byte) __z88dk_fastcall
+void sd_spi_tx_byte(uint8_t byte) __z88dk_fastcall
 {
   if (!fast)
     while(!(sd_status & 0x80));
   sd_data = byte;
 }
 
-uint8_t sd_spi_receive_byte(void)
+uint8_t sd_spi_rx_byte(void)
 {
   if (fast) {
     sd_data = 0xFF;
@@ -62,22 +62,21 @@ uint8_t sd_spi_receive_byte(void)
 
 COMMON_MEMORY
 
-bool sd_spi_receive_sector(void) __naked
+bool sd_spi_rx_sector(void) __naked
 {
   __asm
     ld a, (_blk_op+BLKPARAM_IS_USER_OFFSET)
     ld hl, (_blk_op+BLKPARAM_ADDR_OFFSET)
     or a
-    jr nz, from_user
+    jr nz, rx_user
     call map_buffers
-    jr doread
-to_user:
+    jr rx_go
+rx_user:
     call map_proc_always
-doread:
+rx_go:
     ld bc,#0xDF10
-    ld e,#0xFF
-    ld d,#0x80
-r_next:
+    ld de,#0x80FF	; D = 128 groups of 4, E = dummy byte out
+rx_next:
     out (c),e
     in a,(c)
     ld (hl),a
@@ -94,26 +93,27 @@ r_next:
     in a,(c)
     ld (hl),a
     inc hl
-    dec e
-    jr nz, r_next
+    dec d
+    jr nz, rx_next
     jp map_kernel_restore
   __endasm;
 }
 
-bool sd_spi_transmit_sector(void) __naked
+bool sd_spi_tx_sector(void) __naked
 {
   __asm
     ld a, (_blk_op+BLKPARAM_IS_USER_OFFSET)
     ld hl, (_blk_op+BLKPARAM_ADDR_OFFSET)
     or a
-    jr nz, from_user
+    jr nz, tx_user
     call map_buffers
-from_user:
+    jr tx_go
+tx_user:
     call map_proc_always
-dowrite:
+tx_go:
     ld bc,#0xDF10
     ld d,#0x80
-w_next:
+tx_next:
     ld a,(hl)
     out (c),a
     inc hl
@@ -126,8 +126,8 @@ w_next:
     ld a,(hl)
     out (c),a
     inc hl
-    dec e
-    jr nz, w_next
+    dec d
+    jr nz, tx_next
     jp map_kernel_restore
   __endasm;
 }
