@@ -107,7 +107,7 @@ l1:
 	lde r0,@rr12
 	incw rr12
 	lde r1,@rr12
-	sub r10,r14
+	sub r0,r14
 	jr nz, switchfail
 	sub r1,r15
 	jr nz, switchfail
