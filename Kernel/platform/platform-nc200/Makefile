@@ -32,13 +32,13 @@ $(AOBJS): %.o: %.S
 clean:
 	rm -f $(OBJS) core *~
 	rm -f *.o *.map
-	rm -f floppyskeleton.img autoprg.bin bootfloppy.img
+	rm -f bootblock bootblock.img floppyskeleton.img autoprg.bin bootfloppy.img
 
-bootblock.img: bootblock.s
+bootblock: bootblock.S
 	fcc -mz80 -c bootblock.S
 	ldz80 -b bootblock.o -o bootblock
 
-image:
+image: bootblock
 	$(CROSS_LD) -b -C 0x0 -S 0xF000 -X 0xE000 -f CLDBbXSs -o ../../fuzix.bin \
 	crt0.o commonmem.o nc200.o ../../start.o \
 	../../version.o ../../cpu-z80u/lowlevel-z80u.o \
@@ -57,8 +57,8 @@ image:
 	../../tools/pack85 ../../fuzix.bin fuzix.img <../../fuzix.map
 	dd if=bootblock of=fuzix.img bs=1 conv=notrunc
 
-cardimage: $(ROOT_DIR)/fuzix.bin bootblock.img
-	dd if=bootblock.img of=$(ROOT_DIR)/fuzix.bin bs=1 conv=notrunc
+cardimage: $(ROOT_DIR)/fuzix.bin bootblock
+	dd if=bootblock of=$(ROOT_DIR)/fuzix.bin bs=1 conv=notrunc
 
 floppyimage: cardimage floppyskeleton.img autoprg.bin $(ROOT_DIR)/fuzix.bin
 	cp floppyskeleton.img $(FUZIX_ROOT)/Images/$(TARGET)/fuzixboot.img
