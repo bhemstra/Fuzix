@@ -56,7 +56,7 @@ not_swapin:
 #endif
     or a
     jr z,doread
-    call map_process_always
+    call map_proc_always
 doread:
     call rabbit_spi_rxblock
     jp map_kernel
@@ -78,7 +78,7 @@ not_swapout:
 #endif
     or a
     jr z,dowrite
-    call map_process_always
+    call map_proc_always
 dowrite:
     call rabbit_spi_txblock
     jp map_kernel

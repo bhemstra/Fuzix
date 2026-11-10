@@ -12,7 +12,7 @@ void pagemap_init(void)
 {
  int i;
  for (i = 0; i < 2; i++)
-  pagemap_add(kdataseg + 16 + i << 3);	/* In 32K chunks to get us going */
+  pagemap_add(kdataseg + 16 + (i << 3));	/* In 32K chunks to get us going */
 }
 
 /* On idle we spin checking for the terminals. Gives us more responsiveness
