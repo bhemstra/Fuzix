@@ -54,7 +54,7 @@ int fd_transfer(uint8_t minor, bool is_read, uint8_t rawflag)
     ct = 0;
 
     if (rawflag == 0) {
-	dptr = (uint16_t)udata.u_buf->bf_data;
+	dptr = (uint16_t)udata.u_buf->__bf_data;
 	block = udata.u_buf->bf_blk << 2 ;
 	nblock = 4;
 	page = 0;		/* Kernel */
@@ -209,7 +209,7 @@ int rom_read(uint8_t minor, uint8_t rawflag, uint8_t flag)
     } else if (rawflag == 2) {
         goto bad;
     } else { /* rawflag == 0 */
-        romd_addr = (uint16_t)udata.u_buf->bf_data;
+        romd_addr = (uint16_t)udata.u_buf->__bf_data;
         romd_off = udata.u_buf->bf_blk << 1;
         romd_size = 512;
     }
