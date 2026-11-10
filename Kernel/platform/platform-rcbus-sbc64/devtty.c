@@ -172,15 +172,16 @@ void tty_irq_sio0(void)
 			else
 				tty_carrier_drop(2);
 		}
+		old_ca = ca;
 		out(SIOB_C, 0);		// read register 0
 		cb = in(SIOB_C);
 		if (cb & 1) {
 			tty_inproc(3, in(SIOB_D));
 			progress = 1;
 		}
-		if ((cb & 4) && (sleeping & 16)) {
+		if ((cb & 4) && (sleeping & 8)) {
 			tty_outproc(3);
-			sleeping &= ~16;
+			sleeping &= ~8;
 			out(SIOB_C, 5 << 3);	// reg 0 CMD 5 - reset transmit interrupt pending
 		}
 		if ((cb ^ old_cb) & 8) {
@@ -189,6 +190,7 @@ void tty_irq_sio0(void)
 			else
 				tty_carrier_drop(3);
 		}
+		old_cb = cb;
 	} while(progress);
 }
 
@@ -230,6 +232,7 @@ void tty_irq_sio1(void)
 			else
 				tty_carrier_drop(4);
 		}
+		old_ca = ca;
 		out(SIOD_C, 0);		// read register 0
 		cb = in(SIOD_C);
 		if (cb & 1) {
@@ -247,6 +250,7 @@ void tty_irq_sio1(void)
 			else
 				tty_carrier_drop(5);
 		}
+		old_cb = cb;
 	} while(progress);
 }
 
