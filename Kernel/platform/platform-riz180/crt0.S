@@ -101,7 +101,7 @@ startup:
         ; Zero the data area
         ld	hl,__bss
         ld	de, __bss + 1
-        ld	bc, __bss_size
+        ld	bc, __bss_size - 1
         ld	(hl), 0
         ldir
 

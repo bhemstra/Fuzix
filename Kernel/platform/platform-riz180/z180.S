@@ -795,8 +795,8 @@ _program_vectors:
 	ld	hl,#null_handler
 	ld 	(0x01),hl
 	ld	hl,#nmi_handler
-	ld	(0x67),a
+	ld	(0x67),hl
 	ld	hl,#interrupt_handler
-	ld	(0x39),a
+	ld	(0x39),hl
 	jp	map_kernel
 

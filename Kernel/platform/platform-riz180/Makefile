@@ -55,7 +55,7 @@ image:
 	ide.o ../../dev/tinydisk.o ../../dev/tinydisk_discard.o \
 	../../dev/tinysd.o ../../dev/tinysd_discard.o \
 	monitor.o ../../dev/ds1302.o ../../dev/ds1302_discard.o \
-	../../dev/ds1302_rcbusu.o ../../dev/net/net_w5x00.o wiznet.o \
+	../../dev/ds1302_rcbusu_z180.o ../../dev/net/net_w5x00.o wiznet.o \
 	../../libfuzix.a ../../libfuzix.a /opt/fcc/lib/z80/libz80.a -m fuzix.tmpmap
 	perl -lpe '$$_=hex' fuzix.tmpmap | paste -d" " - fuzix.tmpmap  |  sort -n |  cut -d" " -f 2- >../../fuzix.map
 	dd if=../../fuzix.bin of=fuzix.rom bs=262488 conv=sync

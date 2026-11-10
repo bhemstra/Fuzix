@@ -56,6 +56,7 @@ __uputc:
 	ld	l,a
 	call	map_proc_always
 	ld 	(hl), e
+	ld	hl,0
 	jp	map_kernel_restore	; map the kernel back below common
 
 __uputw:
@@ -73,6 +74,7 @@ __uputw:
 	ld	(hl), e
 	inc	hl
 	ld	(hl), d
+	ld	hl,0
 	jp	map_kernel_restore
 
 __ugetc:
@@ -189,4 +191,5 @@ __uzero:
 	ldir
 uz_out:
 	pop	bc
+	ld	hl,0
 	jp	map_kernel_restore
