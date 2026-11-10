@@ -41,7 +41,7 @@ void plt_idle(void)
 	irqrestore(irq);
 }
 
-uint8_t plt_param(unsigned char *p)
+uint_fast8_t plt_param(unsigned char *p)
 {
 	used(p);
 	return 0;
@@ -64,17 +64,3 @@ void do_beep(void)
 {
 	/* for now */
 }
-
-/*
- *	So that we don't suck in a library routine we can't use from
- *	the runtime
- */
-
-size_t strlen(const char *p)
-{
-	size_t len = 0;
-	while(*p++)
-		len++;
-	return len;
-}
-

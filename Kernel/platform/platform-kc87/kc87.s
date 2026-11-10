@@ -1,52 +1,57 @@
+# 1 "kc87.S"
 ;
 ;	Basic KC87 support
 ;
-        .module kc87
+	; exported symbols
+	.export init_hardware
+	.export _program_vectors
+	.export map_kernel
+	.export map_proc
+	.export map_proc_always
+	.export map_proc_save
+	.export map_kernel_di
+	.export map_kernel_restore
+	.export map_proc_di
+	.export map_proc_always_di
+	.export map_save_kernel
+	.export map_restore
 
-        ; exported symbols
-        .globl init_hardware
-	.globl _program_vectors
-	.globl map_kernel
-	.globl map_proc
-	.globl map_proc_always
-	.globl map_proc_save
-	.globl map_kernel_di
-	.globl map_kernel_restore
-	.globl map_proc_di
-	.globl map_proc_always_di
-	.globl map_save_kernel
-	.globl map_restore
-
-	.globl map_for_swap
-	.globl map_buffers
-	.globl plt_interrupt_all
-	.globl _plt_reboot
-	.globl _plt_monitor
-	.globl _bufpool
-	.globl _int_disabled
-
-        ; imported symbols
-	.globl init
-        .globl _ramsize
-        .globl _procmem
-        .globl outhl
-        .globl outnewline
-	.globl interrupt_handler
+	.export map_for_swap
+	.export map_buffers
+	.export plt_interrupt_all
+	.export _plt_reboot
+	.export _plt_monitor
+	.export _bufpool
+	.export _int_disabled
 
 	; exported debugging tools
-	.globl outchar
+	.export outchar
+# 1 "kernelu.def"
+; FUZIX mnemonics for memory addresses etc
 
-        .include "kernel.def"
-        .include "../../cpu-z80/kernel-z80.def"
+U_DATA__TOTALSIZE	.equ	0x200	; 256+256 bytes @ 0x0100
 
+
+
+PROGBASE		.equ	0x4000
+PROGLOAD		.equ	0x4000
+
+; Force any reti to go via higher memory where it is seen by the CPU
+# 1 "../../cpu-z80u/kernel-z80.def"
+ 
+# 26
+ 
+# 44
+ 
+# 32 "kc87.S"
 ;=========================================================================
 ; Buffers
 ;=========================================================================
-        .area _BUFFERS
-	.globl kernel_endmark
+	.buffers
+	.export kernel_endmark
 
 _bufpool:
-        .ds	(BUFSIZE * 4) ; adjust NBUFS in config.h in line with this
+	.ds	520  * 4 ; adjust NBUFS in config.h in line with this
 ;
 ;	So we can check for overflow
 ;
@@ -55,11 +60,11 @@ kernel_endmark:
 ;=========================================================================
 ; Initialization code
 ;=========================================================================
-        .area _DISCARD
+	.discard
 init_hardware:
-	ld	hl,#64		; FIXME - 16K + 2 x ?
+	ld	hl, 64		; FIXME - 16K + 2 x ?
 	ld	(_ramsize), hl
-	ld	hl,#32
+	ld	hl, 32
 	ld	(_procmem), hl
 
 	im	2		; set Z80 CPU interrupt mode 2
@@ -68,7 +73,7 @@ init_hardware:
 ;=========================================================================
 ; Common Memory (mapped low below ROM)
 ;=========================================================================
-        .area _COMMONMEM
+	.common
 
 _plt_monitor:
 _plt_reboot:
@@ -78,13 +83,13 @@ _plt_reboot:
 ;=========================================================================
 
 _int_disabled:
-	.db	1
+	.byte	1
 
 ; install interrupt vectors
 _program_vectors:
 	; Steal the ROM timer (we should possibly chain this TODO)
-	ld	hl,#interrupt_handler
-	ld	(0x0206),hl
+	ld	hl, interrupt_handler
+	ld	(0x0206), hl
 ; platform fast interrupt hook
 plt_interrupt_all:
 	ret
@@ -100,9 +105,9 @@ plt_interrupt_all:
 ;=========================================================================
 map_proc:
 map_proc_di:
-	ld	a,h
+	ld	a, h
 	or	l				; HL == 0?
-	jr	z,map_kernel			; HL == 0 - map the kernel
+	jr	z, map_kernel			; HL == 0 - map the kernel
 
 	; fall through
 
@@ -120,21 +125,21 @@ map_for_swap:
 
 ;=========================================================================
 ; map_proc_always - map process pages
-; Inputs: page table address in #U_DATA__U_PAGE
+; Inputs: page table address in #2     
 ; Outputs: none; all registers preserved
 ;=========================================================================
 map_proc_save:
 map_proc_always:
 map_proc_always_di:
 	push	af
-	ld	a,(_rom_page)
-	ld	(kmaprom),a
+	ld	a, (_rom_page)
+	ld	(kmaprom), a
 was_u:
 	xor	a
-	ld	(kmapped),a
-	ld	(0xFC00),a	; ROM off if possible
-	out	(5),a		; RAM second bank
-	out	(7),a		; RAM on high
+	ld	(kmapped), a
+	ld	(0xFC00), a	; ROM off if possible
+	out	(5), a		; RAM second bank
+	out	(7), a		; RAM on high
 	pop	af
 	ret
 
@@ -147,8 +152,8 @@ was_u:
 map_buffers:
 	; No work needed but remember for undo correctly
 	push	af
-	ld	a,(_rom_page)
-	ld	(kmaprom),a
+	ld	a, (_rom_page)
+	ld	(kmaprom), a
 	pop	af
 	ret
 
@@ -156,14 +161,14 @@ map_kernel:
 map_kernel_di:
 map_kernel_restore:
 	push	af
-	ld	a,#1
-	ld	(kmapped),a
-	ld	a,(kmaprom)
-	ld	(_rom_page),a
-	out	(0xFF),a	; set the ROM bank we were in before
-	out	(4),a		; RAM first bank
-	out	(6),a		; RAM off high
-	ld	(0xF800),a	; ROM in
+	ld	a, #1
+	ld	(kmapped), a
+	ld	a, (kmaprom)
+	ld	(_rom_page), a
+	out	(0xFF), a	; set the ROM bank we were in before
+	out	(4), a		; RAM first bank
+	out	(6), a		; RAM off high
+	ld	(0xF800), a	; ROM in
 	pop	af
 	ret
 
@@ -174,14 +179,14 @@ map_kernel_restore:
 ;=========================================================================
 map_restore:
 	push	af
-	ld	a,(map_save)
+	ld	a, (map_save)
 	or	a
 	jr	z, was_u
 	; Not much work to do if we are restoring a kernel context as we
 	; are currently have all but the megarom page right
-	ld	a,(kmaprom)	; Restore the ROM contet
-	ld	(_rom_page),a
-	out	(0xFF),a
+	ld	a, (kmaprom)	; Restore the ROM contet
+	ld	(_rom_page), a
+	out	(0xFF), a
 	pop	af
 	ret
 	
@@ -193,28 +198,28 @@ map_restore:
 ;=========================================================================
 map_save_kernel:
 	push	af
-	ld	a,(kmapped)
-	ld	(map_save),a
-	ld	a,(_rom_page)
-	ld	(kmaprom),a	; Save former ROM context
-	out	(4),a		; RAM first bank
-	out	(6),a		; RAM off high
-	ld	(0xF800),a	; ROM in
+	ld	a, (kmapped)
+	ld	(map_save), a
+	ld	a, (_rom_page)
+	ld	(kmaprom), a	; Save former ROM context
+	out	(4), a		; RAM first bank
+	out	(6), a		; RAM off high
+	ld	(0xF800), a	; ROM in
 	pop	af
 	ret
 
 ;
 ;	Helpers specific to the banked singe task support
 ;
-	.globl map_save_kmap
-	.globl map_restore_kmap
+	.export map_save_kmap
+	.export map_restore_kmap
 
 map_save_kmap:
-	ld	a,(_rom_page)
+	ld	a, (_rom_page)
 	ret
 map_restore_kmap:
-	ld	(_rom_page),a
-	out	(0xFF),a
+	ld	(_rom_page), a
+	out	(0xFF), a
 	ret
 
 kmapped:
@@ -225,28 +230,27 @@ map_save:
 	.byte 	0
 
 
-	.globl __bank_0_1
-	.globl __bank_0_2
-	.globl __bank_0_3
-	.globl __bank_0_4
-	.globl __bank_1_2
-	.globl __bank_1_3
-	.globl __bank_1_4
-	.globl __bank_2_1
-	.globl __bank_2_3
-	.globl __bank_2_4
-	.globl __bank_3_1
-	.globl __bank_3_2
-	.globl __bank_3_4
-	.globl __bank_4_1
-	.globl __bank_4_2
-	.globl __bank_4_3
+	.export __bank_0_1
+	.export __bank_0_2
+	.export __bank_0_3
+	.export __bank_0_4
+	.export __bank_1_2
+	.export __bank_1_3
+	.export __bank_1_4
+	.export __bank_2_1
+	.export __bank_2_3
+	.export __bank_2_4
+	.export __bank_3_1
+	.export __bank_3_2
+	.export __bank_3_4
+	.export __bank_4_1
+	.export __bank_4_2
+	.export __bank_4_3
 
-	.globl __stub_0_1
-	.globl __stub_0_2
-	.globl __stub_0_3
-	.globl __stub_0_4
-	.globl __stub_3_2
+	.export __stub_1
+	.export __stub_2
+	.export __stub_3
+	.export __stub_4
 
 _rom_page:
 	.byte	0
@@ -263,27 +267,27 @@ callhl:
 ;	ports
 ;
 __bank_0_1:
-	ld	a,#1
+	ld	a, 1
 	jr	bank0
 __bank_0_2:
-	ld	a,#2
+	ld	a, 2
 	jr	bank0
 __bank_0_3:
-	ld	a,#3
+	ld	a, 3
 	jr	bank0
 __bank_0_4:
-	ld	a,#4
+	ld	a, 4
 bank0:
 	pop	hl		; after call holds the true address
-	ld	e,(hl)
+	ld	e, (hl)
 	inc	hl
-	ld	d,(hl)
+	ld	d, (hl)
 	inc	hl
 	push	hl		; return is now right and DE is target
-	ex	de,hl		; HL is now target in bank
-	ld	bc,(_rom_page)	; ROM page into C
-	ld	(_rom_page),a	; update with new page (must do before out)
-	out	(0xFF),a	; switch to new bank
+	ex	de, hl		; HL is now target in bank
+	ld	bc, (_rom_page)	; ROM page into C
+	ld	(_rom_page), a	; update with new page (must do before out)
+	out	(0xFF), a	; switch to new bank
 	ld	a, c		; old page
 	dec	a		; bank 1 ?
 	jr	z, retbank1
@@ -293,150 +297,149 @@ bank0:
 	jr	z, retbank3
 	; Must be bank 4
 	call	callhl		; 
-	ld	a,#4
-	ld	(_rom_page),a
-	out	(0xFF),a	; Flip back
+	ld	a, 4
+	ld	(_rom_page), a
+	out	(0xFF), a	; Flip back
 	ret
 retbank1:
 	call	callhl
-	ld	a,#1
-	ld	(_rom_page),a
-	out	(0xFF),a	; Flip back
+	ld	a, 1
+	ld	(_rom_page), a
+	out	(0xFF), a	; Flip back
 	ret
 retbank2:
 	call	callhl
-	ld	a,#2
-	ld	(_rom_page),a
-	out	(0xFF),a	; Flip back
+	ld	a, 2
+	ld	(_rom_page), a
+	out	(0xFF), a	; Flip back
 	ret
 retbank3:
 	call	callhl
-	ld	a,#3
-	ld	(_rom_page),a
-	out	(0xFF),a	; Flip back
+	ld	a, 3
+	ld	(_rom_page), a
+	out	(0xFF), a	; Flip back
 	ret
 
 ;
 ;	Fixed inter bank cases
 ;
 __bank_1_2:
-	ld	a,#0x02
+	ld	a, 0x02
 outbank1:
 	pop	hl		;	Retrieve target address
-	ld	e,(hl)
+	ld	e, (hl)
 	inc	hl
-	ld	d,(hl)
+	ld	d, (hl)
 	inc	hl
 	push	hl		;	Fixed up stack pointer
-	ld	(_rom_page),a
-	out	(0xFF),a	;	Switch banks
-	ex	de,hl		;	targt into HL
+	ld	(_rom_page), a
+	out	(0xFF), a	;	Switch banks
+	ex	de, hl		;	targt into HL
 	call	callhl
-	ld	a,#1
-	ld	(_rom_page),a
-	out	(0xFF),a	;	switch bank to old bank
+	ld	a, 1
+	ld	(_rom_page), a
+	out	(0xFF), a	;	switch bank to old bank
 	ret
 __bank_1_3:
-	ld	a,#3
+	ld	a, 3
 	jr	outbank1
 __bank_1_4:
-	ld	a,#4
+	ld	a, 4
 	jr	outbank1
 
 __bank_2_1:
-	ld	a,#0x01
+	ld	a, 0x01
 outbank2:
 	pop	hl		;	Retrieve target address
-	ld	e,(hl)
+	ld	e, (hl)
 	inc	hl
-	ld	d,(hl)
+	ld	d, (hl)
 	inc	hl
 	push	hl		;	Fixed up stack pointer
-	ld	(_rom_page),a
-	out	(0xFF),a	;	Switch banks
-	ex	de,hl		;	targt into HL
+	ld	(_rom_page), a
+	out	(0xFF), a	;	Switch banks
+	ex	de, hl		;	targt into HL
 	call	callhl
-	ld	a,#2
-	ld	(_rom_page),a
-	out	(0xFF),a	;	switch bank to old bank
+	ld	a, 2
+	ld	(_rom_page), a
+	out	(0xFF), a	;	switch bank to old bank
 	ret
 __bank_2_3:
-	ld	a,#3
+	ld	a, 3
 	jr	outbank2
 __bank_2_4:
-	ld	a,#4
+	ld	a, 4
 	jr	outbank2
 
 __bank_3_1:
-	ld	a,#0x01
+	ld	a, 0x01
 outbank3:
 	pop	hl		;	Retrieve target address
-	ld	e,(hl)
+	ld	e, (hl)
 	inc	hl
-	ld	d,(hl)
+	ld	d, (hl)
 	inc	hl
 	push	hl		;	Fixed up stack pointer
-	ld	(_rom_page),a
-	out	(0xFF),a	;	Switch banks
-	ex	de,hl		;	targt into HL
+	ld	(_rom_page), a
+	out	(0xFF), a	;	Switch banks
+	ex	de, hl		;	targt into HL
 	call	callhl
-	ld	a,#3
-	ld	(_rom_page),a
-	out	(0xFF),a	;	switch bank to old bank
+	ld	a, 3
+	ld	(_rom_page), a
+	out	(0xFF), a	;	switch bank to old bank
 	ret
 __bank_3_2:
-	ld	a,#2
+	ld	a, 2
 	jr	outbank3
 __bank_3_4:
-	ld	a,#4
+	ld	a, 4
 	jr	outbank3
 
 __bank_4_1:
-	ld	a,#0x01
+	ld	a, 0x01
 outbank4:
 	pop	hl		;	Retrieve target address
-	ld	e,(hl)
+	ld	e, (hl)
 	inc	hl
-	ld	d,(hl)
+	ld	d, (hl)
 	inc	hl
 	push	hl		;	Fixed up stack pointer
-	ld	(_rom_page),a
-	out	(0xFF),a	;	Switch banks
-	ex	de,hl		;	targt into HL
+	ld	(_rom_page), a
+	out	(0xFF), a	;	Switch banks
+	ex	de, hl		;	targt into HL
 	call	callhl
-	ld	a,#4
-	ld	(_rom_page),a
-	out	(0xFF),a	;	switch bank to old bank
+	ld	a, #4
+	ld	(_rom_page), a
+	out	(0xFF), a	;	switch bank to old bank
 	ret
 __bank_4_2:
-	ld	a,#2
+	ld	a, 2
 	jr	outbank4
 __bank_4_3:
-	ld	a,#3
+	ld	a, 3
 	jr	outbank4
 
 ;
 ;	Stubs. These are used when functions are called via pointers
 ;
-__stub_0_1:
-	ld	a, #1
+__stub_1:
+	ld	a, 1
 	jr	__stub_in
-__stub_3_2:
-__stub_0_2:
-	ld	a, #2
+__stub_2:
+	ld	a, 2
 	jr	__stub_in
-__stub_0_3:
-	ld	a, #3
+__stub_3:
+	ld	a, 3
 	jr	__stub_in
-__stub_0_4:
-	ld	a, #4
+__stub_4:
+	ld	a, 4
 __stub_in:
 	pop	hl
-	ex	(sp),hl			; bank space is now return
-	ex	de,hl			; HL is now target
-	ld	bc,(_rom_page)		; old page into C
-	ld	(_rom_page),a		; new page
-	out	(0xFF),a
+	ex	(sp), hl			; bank space is now return
+	ex	de, hl			; HL is now target
+	ld	bc, (_rom_page)		; old page into C
+	ld	(_rom_page), a		; new page
+	out	(0xFF), a
 	dec	c			; old page 1 ?
 	jr	z, __stub_ret_1
 	dec	c
@@ -445,25 +448,25 @@ __stub_in:
 	jr	z, __stub_ret_3
 	; Nope so 4
 	call	callhl			; call banked function
-	ld	a,#4
+	ld	a, #4
 __stub_ret:
-	ld	(_rom_page),a
-	out	(0xFF),a		; back to calling bank
-	pop	bc			; Fix up stack
-	push	bc
-	push	bc
+	ld	(_rom_page), a
+	out	(0xFF), a		; back to calling bank
+	pop	de			; Fix up stack
+	push	de
+	push	de
 	ret
 __stub_ret_1:
 	call	callhl
-	ld	a,#1
+	ld	a, 1
 	jr	__stub_ret
 __stub_ret_2:
 	call	callhl
-	ld	a,#2
+	ld	a, 2
 	jr	__stub_ret
 __stub_ret_3:
 	call	callhl
-	ld	a,#3
+	ld	a, 3
 	jr	__stub_ret
 
 	
@@ -478,24 +481,25 @@ __stub_ret_3:
 ;=========================================================================
 outchar:
 	push	hl
-	ld	hl,(outpt)
-	ld	(hl),a
+	ld	hl, (outpt)
+	ld	(hl), a
 	inc	hl
-	ld	(outpt),hl
+	ld	(outpt), hl
 	pop	hl
 	ret
 outpt:	.word	0xEC00
 
 
-	.area _COMMONMEM
+	.common
 
 ;
 ;	Character pending or 0
 ;
 
-	.globl _keycheck
+	.export _keycheck
 ;
 _keycheck:
+	push	bc
 	push	ix
 	push	iy
 	call	0xF006
@@ -503,13 +507,14 @@ _keycheck:
 	call	nz, 0xF009	
 	pop	iy
 	pop	ix
-	ld	l,a
+	pop	bc
+	ld	l, a
 	ret
 
-	.globl _rd_dptr
-	.globl _rd_page
-	.globl _rd_port
-	.globl _rd_block
+	.export _rd_dptr
+	.export _rd_page
+	.export _rd_port
+	.export _rd_block
 
 _rd_dptr:
 	.word	0
@@ -530,57 +535,59 @@ _rd_block:
 ;	L'	lower byte of block number on ramdisc
 ;
 ramconf:
-	ld	a,(_rd_port)	; get the port to use
+	ld	a, (_rd_port)	; get the port to use
 	inc	a		; control port
-	ld	c,a
-	ld 	hl,(_rd_block)	; Requested 512 byte block
-	add	hl,hl		; Turn HL into 128 byte sectors
-	add	hl,hl		; as the disk is sector addressed
-	ld	b,h
-	out	(c),l		; Set the sector number
-	ld	a,c
+	ld	c, a
+	ld 	hl, (_rd_block)	; Requested 512 byte block
+	add	hl, hl		; Turn HL into 128 byte sectors
+	add	hl, hl		; as the disk is sector addressed
+	ld	b, h
+	out	(c), l		; Set the sector number
+	ld	a, c
 	exx			; BC' and L' for the block info
-	ld	c,a
+	ld	c, a
 	dec	c		; Data port
-	ld	hl,(_rd_dptr)	; Set up HL for the caller
-	ld	e,#4
-	ld	a,(_rd_page)	; check if we need to page user space in
+	ld	hl, (_rd_dptr)	; Set up HL for the caller
+	ld	e, #4
+	ld	a, (_rd_page)	; check if we need to page user space in
 	or	a
 	jr	z, via_k
 	jp	map_proc_always
 via_k:				; kernel buffer
 	jp	map_buffers
 
-	.globl	_ramread
+	.export	_ramread
 
 _ramread:
+	push	bc
 	call	ramconf
 rrloop:
-	ld	b,#0x7F
+	ld	b, #0x7F
 	inir
 	ini
 	exx
 	inc	l
-	out	(c),l
+	out	(c), l
 	exx
 	dec	e
-	jr	nz,rrloop
+	jr	nz, rrloop
 ramout:
-	ld	(_rd_dptr),hl
+	ld	(_rd_dptr), hl
+	pop	bc
 	jp	map_kernel_restore
 
-	.globl	_ramwrite
+	.export	_ramwrite
 
 _ramwrite:
+	push	bc
 	call	ramconf
 rwloop:
-	ld	b,#0x80
+	ld	b, #0x80
 	otir
 	exx
 	inc	l
-	out	(c),l
+	out	(c), l
 	exx
 	dec	e
-	jr	nz,rwloop
+	jr	nz, rwloop
 	jr	ramout
-

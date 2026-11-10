@@ -90,7 +90,7 @@ extern uint16_t swap_dev;
 
 /* IDE/CF support */
 #define CONFIG_TD_IDE
-#define CONFIG_TINYIDE_SDCCPIO
+#define CONFIG_TINYIDE_INDIRECT
 
 /* JKCEMU has some limits */
 #ifdef CONFIG_JKCEMU
@@ -117,5 +117,3 @@ extern uint16_t swap_dev;
 #define TTYDEV   BOOT_TTY /* Device used by kernel for messages, panics */
 
 #define plt_copyright()
-
-#define CONFIG_SMALL

@@ -1,3 +1,4 @@
+# 1 "usermem.S"
 ;
 ;	No fancy optimisations here. It's not clear they are worth it once
 ; 	you have to deal with misaligned transfers that might cross source
@@ -7,9 +8,9 @@
         .module usermem
 
 	.include "kernel.def"
-        .include "../../cpu-z80/kernel-z80.def"
+.include "../../cpu-z80/kernel-z80.def"
 
-        ; exported symbols
+; exported symbols
         .globl __uget
         .globl __ugetc
         .globl __ugetw
@@ -38,7 +39,7 @@ uputget:
 	ret z		; no work
 	dec de		; we return BC as a count for two 8bit loops
 	ld b, e		; not a 16bit value
-	inc b		; See http://map.grauw.nl/articles/fast_loops.php
+	inc b		; See http:
 	inc d
 	ld c, d
         ; load HL with the source address
