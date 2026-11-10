@@ -111,7 +111,7 @@ commonmem.s: ../../cpu-z80/std-commonmem.s
 crt0.s: kernel.def
 monitor.s: kernel.def ../../lib/monitor-z80.s
 ncr5380.s: kernel.def
-rc2014.s: kernel.def ../../lib/z180-support.s
+rc2014.s: kernel.def ../../lib/z180support.s
 tricks.s: kernel.def
 usermem.s: kernel.def
 kernel.def: ../../cpu-z80/kernel-z80.def

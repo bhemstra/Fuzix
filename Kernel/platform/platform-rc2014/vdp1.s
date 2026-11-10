@@ -480,7 +480,7 @@ boundclear:
 	    out (c), h
 	    exx
 	    dec e
-	    jr nz, ropl
+	    jr nz, wopl
 	    pop ix
 	    ld hl,#0
 	    jp map_kernel_restore

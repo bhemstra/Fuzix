@@ -104,7 +104,7 @@ void ps2_int(void)
     while ((stat = ps2stat) & 0x21) {
         data = ps2data;
         if (stat & 0x20)
-            ps2mouse_byte(ps2data);
+            ps2mouse_byte(data);
         else 
             ps2kbd_byte(data);
     }
