@@ -54,7 +54,8 @@ void spi_select_port(uint8_t port)
         c = c | 0x03;     /* set low two bits, clk/160 (can go down to clk/1280, see data sheet) */
         out(CSIO_CNTR, c);
     } else {
-        out(CSIO_CNTR, in(CSIO_CNTR & 0xf8)); /* clear low three bits, gives fastest rate (clk/20) */
+        c = in(CSIO_CNTR) & 0xf8; /* clear low three bits, gives fastest rate (clk/20) */
+        out(CSIO_CNTR, c);
     }
 }
 
