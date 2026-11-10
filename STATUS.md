@@ -60,9 +60,13 @@ everything in a sensibly laid out location.
 - SC720
 - Searle
 - Simple80
+- SmallZ80
 - Sorceror (Exidy), WIP only
+- TC2068 (Sinclair)
 - Tom's SBC (ROM based and banked form)
 - TRS80 (Model 4/4D/4P)
+- TRS80 (XLR8R)
+- VZ200
 - Z1013
 - Z180ITX
 - Z1RCC
@@ -73,6 +77,10 @@ everything in a sensibly laid out location.
 - Z80Retro
 - Zeta V2
 - ZRC
+- ZX+3 (Sinclair)
+- ZXDiv (Sinclair)
+- ZXDiv48 (Sinclair)
+- ZXUno (Sinclair)
 
 ### In Progress
 
@@ -93,15 +101,7 @@ everything in a sensibly laid out location.
 - RC2014
 - Sam Coupe
 - Scorpion
-- Scrumpel
-- Small Z80
 - SocZ80
-- TC2068 (Sinclair)
-- VZ200
-- YAZ180
-- ZX+3 (Sinclair)
-- ZXDiv (Sinclair)
-- ZXUno (Sinclair)
 
 
 # Target Status
@@ -124,7 +124,7 @@ Work in progress, not targeted for 0.6
 
 Passes basic tests.
 
-## AmproLb (Ampro Littleboard)
+## AmproLb (Ampro Littleboard) (both with and without mdisk)
 
 Passes basic tests.
 
@@ -141,10 +141,28 @@ Passes basic tests
 Long term project - probably needs a better compiler. Not for 0.6. Still not
 got enough code density.
 
+## Atari 8bit
+
+Mostly working, 6502 PoC port. Needs some video work, disk optimizatiosn and
+further interrupt handling improvements for performance. Probably needs a
+6502 video driver for speed.
+
+Signal handling to debug.
+
 ## Atari ST
 
 Early 68K work. Now core 68K is stable can be resurrected. Probably not for
 0.6
+
+## C64
+
+Similar state to Atari 8bit but ever slower and more in need of performance
+tweaks
+
+## C64-REU
+
+Basics done but the bit work is to use the REU for disk I/O. Right now that
+breaks on VICE so is tricky to work on.
 
 ## C128-Z80
 
@@ -161,15 +179,15 @@ Builds, needs a 0.6 test run
 
 ## COCO2 (64K, no cartridge)
 
-Has size issues.
+Converted, very limited user space size but runs
 
 ## COCO2Cart (64K with cartridge ROM)
 
-To convert to fcc
+Passes basic tests
 
 ## COCO3
 
-To convert to fcc
+Brett is working on this.
 
 ## CPC6128 / CPCSME
 
@@ -177,19 +195,23 @@ Neeeds conversion, should be working
 
 ## CPM22
 
-Experimental only.
+Experimental only. Needs conversion finishing
 
 ## CROMEMCO
 
-Passes basic tests
+Needs conversion
 
 ## Dragon (MOOH)
 
-Needs conversion
+Mostly converted, needs a new boot loader
 
 ## Dragon (NX32)
 
-Needs conversion
+Passes basic tests
+
+## Dragon SamX8
+
+Passes basic tests
 
 ## Dyno
 
@@ -199,17 +221,13 @@ Passes basic tests
 
 Passes basic tests
 
-## ESP32
-
-Early WIP only
-
 ## ESP8266
 
 Builds, testing pending
 
-## EZRetro
+## EZ512
 
-Passes basic tests
+Builds, passes basic tests
 
 ## Gemini
 
@@ -231,13 +249,9 @@ Early sketches only
 
 Early sketches only
 
-## JeeRetro
-
-Dropped
-
 ## KC87
 
-Builds, passes basic tests
+Needs conversion
 
 ## LINC80
 
@@ -273,15 +287,15 @@ Work in progress only (need info on cartridge headers to progress)
 
 ## MSX1
 
-Builds, passes basic tests
+Needs conversion, look at doing switchable RAM 4000-BFFF version
 
 ## MSX2
 
-Builds, passes basic tests
+Needs conversion
 
 ## MTX (Memotech)
 
-Builds, test pending
+Needs conversion
 
 ## Multicomp09
 
@@ -289,7 +303,7 @@ Not converted, will probably drop
 
 ## N8 (Retrobrew)
 
-Builds, passes basic tests
+Conversion in progress
 
 ## NASCOM
 
@@ -297,7 +311,7 @@ Builds, passes basic tests
 
 ## OSI50x
 
-WIP only
+Builds but too big to be useful. Would need a banked port somehow.
 
 ## P112
 
@@ -305,7 +319,7 @@ Builds, not tested
 
 ## P90MB (Plasmo)
 
-Builds, passes basic tests
+Builds, some debug needed
 
 ## PCW8256 (Amstrad)
 
@@ -318,11 +332,11 @@ basic stuff alas)
 
 ## Pentagon
 
-Builds, passes basic tests
+Conversion pending
 
 ## Pentagon 1024
 
-Builds, passes basic tests
+Conversion pending
 
 ## Pico68K
 
@@ -334,7 +348,7 @@ Early WIP, probably never feasible
 
 ## PZ1
 
-Needs conversion to fcc
+Conversion in progress
 
 ## Rabbit 2000
 
@@ -350,7 +364,7 @@ Builds, passes basic tests
 
 ## RC2014
 
-Builds, passes basic tests
+Conversion needed
 
 ## RC2014-Tiny
 
@@ -446,7 +460,7 @@ Builds
 
 ## sam (Sam Coupe)
 
-Builds, passes basic tests
+Needs conversion to fcc
 
 ## sbc08k
 
@@ -488,13 +502,17 @@ Builds, passes basic tests
 
 Builds, passes basic tests
 
+## smallz180
+
+Builds, works on emulator only, fails no hardware
+
 ## smallz80
 
 Builds, passes basic tests
 
 ## socz80
 
-Builds, test pending
+Needs a plan
 
 ## sorceror (Exidy)
 
@@ -502,7 +520,7 @@ Work in progress only
 
 ## T100
 
-Early work in progress only
+Early sizing and experimental work in progress only, probably not viable
 
 ## TC2068 (Timex)
 
@@ -542,11 +560,11 @@ Builds, passes basic tests
 
 ## TRS80m1 (Model 1/3)
 
-Builds, failign tests
+Builds, failing tests
 
 ## ubee (Microbee)
 
-Builds, passes basic tests
+Needs conversion
 
 ## v65c816(-big)
 
@@ -570,7 +588,7 @@ Experiment only, may well not be possible
 
 ## z1013 (Robotron)
 
-Builds, passes basic tests
+Builds, needs testing
 
 ## Z1RCC
 
@@ -626,11 +644,11 @@ Builds, passes basic tests
 
 ## ZXDiv (ZX Spectrum 128K with DIVIDE/DIVMMC)
 
-Builds, test pending
+Builds, passes basic tests
 
-## ZXDiv48
+## ZXDiv48 (ZX Spectrum 48K with DIVIDE Plus)
 
-Experiment only
+Builds, passes basic tests
 
 ## ZXEvo (Evolution)
 
