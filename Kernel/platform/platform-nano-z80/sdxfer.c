@@ -30,6 +30,8 @@ int nz80_sd_xfer(uint_fast8_t dev, bool is_read, uint32_t lba, uint8_t *dptr)
     // Performed disk access
     if(is_read) sd_read_block();
     else sd_write_block();
+
+    return 1;
 } 
 
 

@@ -255,7 +255,6 @@ void read_kb(void)
         visible_vt = data - 0xf0;
         out(io_page_reg, io_page_vid);
         out(vid_tty_vis_buf, visible_vt);
-        change_vt(visible_vt);
     }
     else
         vt_inproc(minor, data);
@@ -289,9 +288,11 @@ void nz80_tty_set_color(uint8_t tty, uint8_t request, uint8_t col)
 
     switch(request) {
         case VTINK:
+            vtink = col;
             out(vid_tty_ink, col);
             break;
         case VTPAPER:
+            vtpaper = col;
             out(vid_tty_paper, col);
             break;
         default:
