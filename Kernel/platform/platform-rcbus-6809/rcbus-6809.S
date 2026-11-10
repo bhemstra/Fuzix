@@ -134,7 +134,7 @@ set_vector:
 	lda	#0x7E
 	sta	0
 	ldd	#null_handler
-	sta	1
+	std	1
 	rts
 
 ;
