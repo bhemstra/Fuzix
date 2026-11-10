@@ -706,7 +706,9 @@ int netproto_listen(struct socket *s)
  */
 int netproto_begin_connect(struct socket *s)
 {
-	return netn_synchronous_event(s, SS_CONNECTING);
+    /* Set destination address before connecting */
+    memcpy(&s->dst_addr, &udata.u_net.addrbuf, sizeof(struct ksockaddr));
+    return netn_synchronous_event(s, SS_CONNECTING);
 }
 
 int netproto_accept_complete(struct socket *s)
