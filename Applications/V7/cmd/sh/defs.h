@@ -157,6 +157,7 @@ extern BOOL reserv;
 extern const char stdprompt[];
 extern const char supprompt[];
 extern const char profile[];
+extern const char etcprofile[];
 
 /* built in names */
 extern NAMNOD fngnod;

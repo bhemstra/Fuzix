@@ -68,6 +68,7 @@ const char readmsg[] = "> ";
 const char stdprompt[] = "$ ";
 const char supprompt[] = "# ";
 const char profile[] = ".profile";
+const char etcprofile[] = "/etc/profile";
 
 
 /* tables */
