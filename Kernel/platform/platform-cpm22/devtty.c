@@ -8,6 +8,7 @@
 #include <stdbool.h>
 #include <tty.h>
 #include <devtty.h>
+#include <devinput.h>
 #include <cpm.h>
 #include <sysmod.h>
 

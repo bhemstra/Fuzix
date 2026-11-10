@@ -28,8 +28,8 @@
 
 
 ;
-;	Call the bios function in the byte following, return to the layer
-;	above.
+;	Call the bios function whose entry offset is in A, return to the
+;	layer above.
 ;
 ; These calls also copy A into L on return but it doesn't matter
 
@@ -71,11 +71,10 @@ bioscall_hl:
 	pop bc
 	ret
 ;
-;	Perform a bios call
+;	Perform a bios call. The entry offset is in A, so the called BIOS
+;	routine returns straight to our caller.
 ;
 bioscall:
-	pop hl
-	ld a,(hl)
 	ld hl,(biosbase)
 	ld l,a
 callhl:	jp (hl)
@@ -104,7 +103,7 @@ _cpm_reader:
 	jr bioscall_a
 _cpm_home:
 	ld a,24
-	call bioscall
+	jr bioscall_a
 _cpm_settrk:
 	ld a,30
 	jr bioscall_bc
