@@ -194,11 +194,11 @@ sd_spi_tx_sector:
 	move.l	blk_op,a2
 	move.w	#510,d4
 	; This first call primes all the register setup
+	move.b	(a2)+,d0
 	bsr	spi_tx_byte
-	move.b	d0,(a2)+
 tx_block:
+	move.b	(a2)+,d0
 	bsr	spi_tx_next
-	move.b	d0,(a2)+
 	dbra.w	d4,tx_block
 	movem.l	(sp)+,a2/d2-d4
 	rts
