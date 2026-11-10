@@ -13,7 +13,7 @@ void device_init(void);
 void sd_rawinit(void);
 void sd_spi_raise_cs(void);
 void sd_spi_lower_cs(void);
-uint_fast8_t sd_spi_receive_byte(void);
+uint_fast8_t sd_spi_rx_byte(void);
 struct u_data udata;
 struct test_blk_op blk_op;
 spi_inst_t fixture_spi[2];
@@ -104,7 +104,7 @@ int main(int argc,char **argv)
         gpio_cb(21,GPIO_IRQ_EDGE_FALL); try_poll_during_spi=true;
         w5x00_readsb(0,0); assert(polls==1 && wiz_irq_pending);
         wiz_poll(); assert(polls==2 && !wiz_irq_pending);
-        gpio_cb(21,GPIO_IRQ_EDGE_FALL); release_sd=true; sd_spi_receive_byte();
+        gpio_cb(21,GPIO_IRQ_EDGE_FALL); release_sd=true; sd_spi_rx_byte();
         assert(polls==2 && wiz_irq_pending); /* Includes clocks with CS high. */
         wiz_poll(); assert(polls==3 && !wiz_irq_pending);
         sd_spi_lower_cs(); gpio_cb(21,GPIO_IRQ_EDGE_FALL); release_sd=true;

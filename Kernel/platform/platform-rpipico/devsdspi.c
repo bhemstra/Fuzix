@@ -107,14 +107,14 @@ void sd_spi_lower_cs(void)
     gpio_put(Pico_SD_CS, false);
 }
 
-void sd_spi_transmit_byte(uint_fast8_t b)
+void sd_spi_tx_byte(uint_fast8_t b)
 {
     sd_spi_active = true;
     spi_write_blocking(Pico_SD_SPI_MOD, (uint8_t*) &b, 1);
     sd_spi_active = false;
 }
 
-uint_fast8_t sd_spi_receive_byte(void)
+uint_fast8_t sd_spi_rx_byte(void)
 {
     uint8_t b;
     sd_spi_active = true;
@@ -123,7 +123,7 @@ uint_fast8_t sd_spi_receive_byte(void)
     return b;
 }
 
-bool sd_spi_receive_sector(void)
+bool sd_spi_rx_sector(void)
 {
     sd_spi_active = true;
     spi_read_blocking(Pico_SD_SPI_MOD, 0xff, (uint8_t*) blk_op.addr, 512);
@@ -131,7 +131,7 @@ bool sd_spi_receive_sector(void)
         return 0;
 }
 
-bool sd_spi_transmit_sector(void)
+bool sd_spi_tx_sector(void)
 {
     sd_spi_active = true;
     spi_write_blocking(Pico_SD_SPI_MOD,  (uint8_t*) blk_op.addr, 512);
