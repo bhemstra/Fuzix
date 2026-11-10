@@ -15,7 +15,7 @@ uint8_t plt_rtc_secs(void){
 #ifdef CONFIG_SYMBIFACE_RTC
 	if (ds12885_present)
 		return sf_plt_rtc_secs();
-	else 
+	else
 #endif
 #ifdef CONFIG_M4BOARD
 		if (m4_present)
@@ -29,7 +29,7 @@ int plt_rtc_read(void){
 		return sf_plt_rtc_read();
 	else
 #endif
-#ifdef CONFIG_M4BOARD		
+#ifdef CONFIG_M4BOARD
 		if (m4_present)
 			return m4_plt_rtc_read();
 #endif
@@ -48,6 +48,7 @@ int plt_rtc_write(void){
 
 void plt_idle(void)
 {
+	irqflags_t irq = di();
 	tty_poll();
 #ifdef CONFIG_USIFAC_SERIAL
 	tty_poll_usifac();
@@ -55,6 +56,10 @@ void plt_idle(void)
 #ifdef CONFIG_NET_WIZNET
 	w5x00_poll();
 #endif
+	/* plt_idle is always invoked with interrupts enabled but doing
+	   this means we'll get a much easier to diagnose hang if it all goes
+	   wrong */
+	irqrestore(irq);
  __asm
   halt
  __endasm;
