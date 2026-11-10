@@ -73,7 +73,7 @@ void tty_setup(uint8_t minor, uint8_t flags)
 {
 	if (minor == 2) {
 		/* FIXME: do proper mode setting */
-		*uart_command = 0x01;	/* DTR high, IRQ enabled, TX irq disabled 8N1 */
+		*uart_command = 0x09;	/* DTR high, IRQ enabled, TX on, TDRE off 8N1 */
 		*uart_control = 0x1E;	/* 9600 baud */
 	}
 }

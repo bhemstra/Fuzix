@@ -119,8 +119,6 @@ scrdn_tl:
 ;
 ;	clear_across(int8_t y, int8_t x, uint16_t l)
 ;
-;	Never used in text mode
-;
 _clear_across:
 	lda	2,s		; Y,X into B,A
 	jsr	txtaddr
