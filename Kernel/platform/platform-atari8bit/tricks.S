@@ -189,8 +189,11 @@ not_swapped:
 	sta	@sp
 	lda	_udata + U_DATA__U_ININTERRUPT
         beq	swtchdone		; in ISR, leave interrupts off
-	cli
+	lda	#0x40
+	sta	0xD40F
+	sta	0xD40E	; NMI back on
 swtchdone:
+	cli		; IRQ back on regardless once stack is valid
 	pla		; Return code
 	tax
 	pla

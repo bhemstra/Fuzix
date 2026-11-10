@@ -162,6 +162,8 @@ _sys_stubs:
 ; outchar: Wait for UART TX idle, then print the char in a without
 ; corrupting other registers
 
+	.common
+
 outchar:
 outcharw:
 	; TODO
@@ -323,6 +325,10 @@ no_preempt:
 	pha
 	lda	#<PROGLOAD + 16
 	pha
+	;	Re-enable NMI
+	lda	#0x40
+	sta	0xD40F
+	sta	0xD40E				; re-enable NMI
 	lda	#0
 	pha					; dummy flags, with irq enable
 	rti					; return on the fake frame

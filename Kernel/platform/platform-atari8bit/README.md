@@ -27,13 +27,14 @@ ROM at D800-FFFF.
 
 ## TODO
 -	ink/paper/border/video modes
--	NMI/IRQ handling for timer tick
 -	For 130XE style systems we have 8K set up for the screen
 	so do we support hardware scrolled 320x192 ?
 -	When we do graphic modes restore font from cartridge with RAMBO
 	systems. Then we've got a bit more video space.
 -	Add support for machines with enough memory to bank processes in
 	RAM (neeeds 8 banks + base including kernel)
+-	Only call into C irq handler when there is a char on the kbd or
+	a timer tick, so we can cut IRQ load a lot (ditto C64)
 
 Runs from a 128K SpartaDOS style cartridge
 
