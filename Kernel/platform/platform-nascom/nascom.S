@@ -183,6 +183,7 @@ outwait:
 	in	a, (0x02)
 	bit	6,a
 	jr	z, outwait
+	pop	af
         out	(0x1), a
 	ret
 

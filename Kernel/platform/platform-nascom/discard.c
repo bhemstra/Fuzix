@@ -56,7 +56,7 @@ void device_init(void)
 		/* If we found no swap use ramdisc 0 as 512K of swap */
 		swap_dev = 0x0800;
 		for (i = 0; i < 10; i++)
-			swapmap_add(i * 48);
+			swapmap_init(i);
 		kputs("Using /dev/rd0 GM833 for swap\n");
 	}
 	/* Check for MM58174 */
