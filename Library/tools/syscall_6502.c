@@ -26,8 +26,24 @@ static void write_call(int n)
   fprintf(fp, "\tjsr __syscall\n");
   if (syscall_args[n] != VARARGS) {
     /* Clean stack */
-    fprintf(fp, "\tldy #%u\n", 2 * syscall_args[n]);
-    fprintf(fp, "\tjmp __addysp\n");
+    unsigned pop_count = 2 * syscall_args[n];
+
+    switch(pop_count) {
+    case 0:
+      /* Defensive. There should always be arguments for a syscall */
+      fprintf(fp, "\trts\n");
+      break;
+    case 2:
+    case 4:
+      /* Common stack clean operations have their own versions */
+      fprintf(fp, "\tjmp __add%usp\n", pop_count);
+      break;
+    default:
+      /* Anything else is handled by loading Y and jumping to __addysp */
+      fprintf(fp, "\tldy #%u\n", pop_count);
+      fprintf(fp, "\tjmp __addysp\n");
+      break;
+    }
   } else {
     /* Varargs - caller cleans */
     fprintf(fp, "\trts\n");
