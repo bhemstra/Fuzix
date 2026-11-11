@@ -23,7 +23,7 @@ clean:
 	rm -f $(OBJS) $(JUNK)  core *~ 
 
 image:
-	$(CROSS_LD) -b -C 0x0800 -O 0xD000 -f CDLBbXSs -Z 0x00../../fuzix.bin -m fuzix.tmpmap \
+	$(CROSS_LD) -b -C 0x0800 -O 0xD000 -f CDLBbXSs -Z 0x00 -o ../../fuzix.bin -m fuzix.tmpmap \
 	crt0.o commonmem.o \
 	appleii.o ../../start.o ../../version.o ../../cpu-6502/lowlevel-6502.o ../../mm/simple.o \
 	../../swap.o ../../mm/memalloc_none.o \

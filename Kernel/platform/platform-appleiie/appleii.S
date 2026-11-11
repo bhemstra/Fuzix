@@ -306,16 +306,17 @@ vector:
 	stx	_udata + U_DATA__U_CURSIG
 	asl	a
 	tay
-	lda	_udata + U_DATA__U_SIGVEC,y	; Our vector (low)
-	pha					; stack half of vector
-	lda	_udata + U_DATA__U_SIGVEC+1,y	; High half
-	pha					; stack rest of vector
+	lda	_udata + U_DATA__U_SIGVEC+1,y	; Vector high half
+	pha					; (popped second)
+	lda	_udata + U_DATA__U_SIGVEC,y	; Vector low half
+	pha					; (popped first)
 	txa
 	sta	_udata + U_DATA__U_SIGVEC,y	; Wipe the vector
 	sta	_udata + U_DATA__U_SIGVEC+1,y
+	lda	#>PROGLOAD + 20		; RTI pops P, PCL, PCH so the
+	pha				; high byte of the target first
 	lda	#<PROGLOAD + 20
 	pha
-	lda	#>PROGLOAD + 20
 	lda	#0
 	pha				; dummy flags, with irq enable
 	rti	    			; return on the fake frame
@@ -450,9 +451,9 @@ copy_args:
 	stx	_udata + U_DATA__U_CURSIG
 	asl	a
 	tay
-	lda	_udata + U_DATA__U_SIGVEC,y	; Our vector
+	lda	_udata + U_DATA__U_SIGVEC+1,y	; Vector high half
 	pha
-	lda	_udata + U_DATA__U_SIGVEC+1,y
+	lda	_udata + U_DATA__U_SIGVEC,y	; Vector low half
 	pha
 	txa
 	sta	_udata + U_DATA__U_SIGVEC,y	; Wipe the vector

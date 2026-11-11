@@ -12,6 +12,8 @@
 
         .commondata
 
+#include "../../cpu-6502/kernel02.def"
+
 ;
 ;	In 6502 land these are the C stacks, we will need to handle the
 ;	hardware stack separately, and also to save sp,sp+1 etc on irqs
@@ -34,8 +36,7 @@ istack_switched_sp: .word 0
 ;
 ; Swap space for the the C temporaries (FIXME - we stash sp twice right now)
 ;
-; TODO: size correctly
+; stash_zp swaps STASHSIZE bytes, so this must be exactly that big
+;
 CTemp:
-	.ds    2               ; sp
-	.ds    2               ; sreg
-        .ds    26-4 		; Other stuff
+	.ds	STASHSIZE
