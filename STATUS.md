@@ -141,6 +141,10 @@ Passes basic tests
 Long term project - probably needs a better compiler. Not for 0.6. Still not
 got enough code density.
 
+## Aquarius Plus
+
+Initial port, passes basic test.
+
 ## Atari 8bit
 
 Mostly working, 6502 PoC port. Needs some video work, disk optimizatiosn and
