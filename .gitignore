@@ -23,7 +23,8 @@ size.report
 .obj
 *.elf
 bin
-*.debug# Build output of the TRS-80 kernels and their tools
+*.debug
+# Build output of the TRS-80 kernels and their tools
 *.ihx
 *.bin
 *.jv3
@@ -39,3 +40,28 @@ Kernel/tools/visualize
 Library/tools/syscall_z80
 Kernel/cpu-z80/sdccrt/*.lib
 .symtmp*
+# Build output of the libraries and applications: the compiler's
+# intermediate files, the assembly it makes from the C sources, and
+# programs built next to their sources. The hand-written assembly sources
+# there are listed back in.
+*.#
+*.%
+*.@
+*.^
+Applications/**/*.s
+Library/libs/**/*.s
+!Applications/scc/sccrt.s
+!Applications/tinybasic/tbasic.s
+!Library/libs/crt0.s
+!Library/libs/crt0_z80.s
+!Library/libs/crt0nostdio_z80.s
+!Library/libs/fuzixz80/syscall_z80.s
+!Library/libs/longjmp_z80.s
+!Library/libs/setjmp_z80.s
+Library/libs/fuzixz80/Makefile
+Applications/assembler/as
+Applications/assembler/dumprelocs
+Applications/assembler/ld
+Applications/assembler/nm
+Applications/assembler/osize
+Applications/games/2048/2048
