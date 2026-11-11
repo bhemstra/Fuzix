@@ -182,6 +182,8 @@ void dw_vclose( uint8_t minor){
 	buf[2]=DW_VCLOSE;
 	if( p->flags & DW_FLG_OPEN ){
 		dw_transaction( buf, 3, NULL, 0, 0 );
+		p->flags &= ~DW_FLG_OPEN;
+		open_ports--;
 	}
 }
 
@@ -222,7 +224,13 @@ void dw_vpoll( ){
 		/* VSER Channel closed? */
 		if( buf[0] == 16 ){
 			int minor=dw_minor( buf[1] );
-			struct dw_in *p=dw_gettab( minor );
+			struct dw_in *p;
+			/* byte 2 is 0x0F for all channels and 0xFF
+			   for a reboot request: only a real channel
+			   number may index dwtab[] and ttydata[] */
+			if( minor < DW_MIN_OFF || minor >= DW_NS_OFF )
+				continue;
+			p = dw_gettab( minor );
 		       	if( p->flags & DW_FLG_OPEN ){
 				p->flags &= ~DW_FLG_OPEN;
 				open_ports--;

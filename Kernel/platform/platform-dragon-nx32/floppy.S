@@ -294,6 +294,8 @@ piaload:
 ;
 _fd_reset:
 	pshs	dp
+	tfr	d,x		; drive struct
+	clr	,x		; we will be on track 0
 	lda	#0xFF
 	tfr	a,dp
 	ldb	fdcctrl
@@ -376,7 +378,8 @@ notsel:
 	jsr	disknap
 	; FIXME: longer motor spin up delay goes here
 	jsr	waitdisk
-	tfr	a,b		; return in the right place
+	beq	motor_was_on	; ready and idle - success
+	ldd	#0xff		; not ready or no response
 	puls	dp,pc
 
 ;
