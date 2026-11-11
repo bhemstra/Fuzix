@@ -113,7 +113,7 @@ wait:
 	move.b (0x30001),d1
 	and.b #2,d1
 	beq wait
-	move.b d0,(0x30000)
+	move.b d0,(0x30003)
 	movem.l (sp)+,d0/d1
 	rts
 
