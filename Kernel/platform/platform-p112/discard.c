@@ -5,10 +5,7 @@
 #include <devtty.h>
 #include "config.h"
 #include <z180.h>
-#ifdef CONFIG_P112_FLOPPY
-#include "devfd.h"
-#endif
-#include <devide.h>
+#include <tinyide.h>
 #include <ds1302.h>
 
 void init_hardware_c(void)
@@ -46,23 +43,23 @@ void tty_hw_init(void)
 
     /* setup for tty5 (16550) for 115200,8n1 */
     /* 37C655GT feature: Out2 in MCR is the master UART interrupt enable */
-    TTY_COM1_MCR = 0x0B; /* disable loopback, set DTR and RTS, enable Out2 */
-    TTY_COM1_LCR = 0x80; /* enable DLAB to access divisor */
-    TTY_COM1_DLL = 0x01; /* program divisor for 115200bps */
-    TTY_COM1_DLM = 0x00;
-    TTY_COM1_LCR = 0x03; /* disable DLAB, program 8 bits, no parity */
-    TTY_COM1_FCR = 0x07; /* enable and clear FIFOs, interrupt threshold 1 byte */
-    TTY_COM1_IER = 0x01; /* enable only receive interrupts */
+    out(COM1_MCR, 0x0B); /* disable loopback, set DTR and RTS, enable Out2 */
+    out(COM1_LCR, 0x80); /* enable DLAB to access divisor */
+    out(COM1_DLL, 0x01); /* program divisor for 115200bps */
+    out(COM1_DLM, 0x00);
+    out(COM1_LCR, 0x03); /* disable DLAB, program 8 bits, no parity */
+    out(COM1_FCR, 0x07); /* enable and clear FIFOs, interrupt threshold 1 byte */
+    out(COM1_IER, 0x01); /* enable only receive interrupts */
 }
 
 void device_init(void)
 {
-    devide_init();
+    ide_probe();
     ds1302_init();
     tty_hw_init();
 }
 
-uint8_t plt_param(char *p)
+uint_fast8_t plt_param(char *p)
 {
     used(p);
     return 0;
