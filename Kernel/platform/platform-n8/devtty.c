@@ -133,7 +133,7 @@ void tty_setup(uint_fast8_t minor, uint_fast8_t flags)
 	if (minor == 1) {
 		out(ASCI_CNTLA0, cntla);
 		out(ASCI_CNTLB0, cntlb);
-		out(ASCI_ASEXT0, in(ASCEXT0) & ~0x20);
+		out(ASCI_ASEXT0, in(ASCI_ASEXT0) & ~0x20);
 		out(ASCI_ASEXT1, in(ASCI_ASEXT1) | ecr);
 	} else if (minor == 2) {
 		out(ASCI_CNTLA1, cntla);
@@ -173,12 +173,13 @@ static void tms_setoutput(uint_fast8_t minor)
 static void tms_putc(uint_fast8_t minor, uint_fast8_t c)
 {
 	irqflags_t irq = di();
+	uint8_t ch = c;
 
 	if (outputtty != minor)
 		tms_setoutput(minor);
 	irqrestore(irq);
 	if (!vswitch)
-		vtoutput(&c, 1);
+		vtoutput(&ch, 1);
 }
 
 void tty_putc(uint_fast8_t minor, uint_fast8_t c)
@@ -191,11 +192,11 @@ void tty_putc(uint_fast8_t minor, uint_fast8_t c)
 	    tms_putc(minor, c);
 	    break;
         case 5:
-            while(!(ASCI_STAT0 & 2));
+            while(!(in(ASCI_STAT0) & 2));
             out(ASCI_TDR0, c);
             break;
         case 6:
-            while(!(ASCI_STAT1 & 2));
+            while(!(in(ASCI_STAT1) & 2));
             out(ASCI_TDR1, c);
             break;
     }
@@ -417,7 +418,7 @@ static uint8_t igrb_to_msx(uint8_t c)
 }
 
 /* We can have up to 4 vt consoles or it may be shadowing serial input */
-int n8tty_ioctl(uint8_t minor, uarg_t arg, char *ptr)
+int n8tty_ioctl(uint_fast8_t minor, uarg_t arg, char *ptr)
 {
   uint_fast8_t is_wr = 0;
   unsigned i = 0;
@@ -433,7 +434,7 @@ int n8tty_ioctl(uint8_t minor, uarg_t arg, char *ptr)
 		if (vswitch)
 			return -EBUSY;
 		vswitch = minor;
-		return uput(&tms_map, ptr, sizeof(struct display));
+		return uput(&tms_map, ptr, sizeof(struct videomap));
 	case GFXIOC_UNMAP:
 		if (vswitch == minor) {
 			vdp_reload(1);
