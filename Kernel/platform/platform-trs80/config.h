@@ -1,4 +1,4 @@
-/* Set if you want RTC support and have an RTC on ports 0xB0-0xBC */
+/* RTC support: the clock chip on ports 0xB0-0xBC, or else the FreHD clock */
 #define CONFIG_RTC
 #define CONFIG_RTC_FULL
 #define CONFIG_RTC_INTERVAL	10	/* fast RTC */

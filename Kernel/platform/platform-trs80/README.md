@@ -19,7 +19,7 @@
 - Alpha technology supermem
 - Anitek MegaMem as a ramdisk/swap
 - Anitek Hypermem
-- FreHD specific features
+- FreHD specific features other than the clock
 - Split base 128K kernel from a thunked kernel for the memory bank cards
 
 ## Unsupported
@@ -54,6 +54,21 @@ with the same boot sector, which loads the kernel from the hard disk.
 
 `Tools/m2web/m4boot.mjs` runs the boot sector against the image the way
 the ROM does and checks the kernel arrives intact.
+
+## Clock
+
+`/dev/rtc` (read by `setdate` from `/etc/rc` at boot) takes the time from
+the clock chip on ports 0xB0-0xBC when there is one, and else from the
+FreHD clock, so a Model 4 with a FreHD comes up with the right date
+without asking. `setdate -w` sets the FreHD clock from the system time
+(`setdate -u` first to type it in). The clock chip cannot be set.
+
+The FreHD is asked through its own ports: a command to 0xC4 (1 GET_TIME,
+2 SET_TIME), wait until the status at 0xCF is no longer busy, then six
+binary bytes through 0xC2: seconds, minutes, hours, year from 2000, day,
+month. It is never read from an interrupt, as it shares the controller
+with the hard disk; without a clock chip the seconds come from the 30 Hz
+timer.
 
 ## Floppy Disks
 
