@@ -76,7 +76,9 @@ diskimage: image
 	cp hdboot4p.jv3 $(IMAGES)/hdboot.jv3
 	# Build a file system to fit
 	(cd $(FUZIX_ROOT)/Standalone/filesystem-src; ./build-filesystem $(ENDIANFLAGH) $(IMAGES)/filesys.img 256 21760)
-	dd if=$(IMAGES)/filesys.img of=disk.tmp bs=32768 seek=2
+	# Grow the disk out to 202 cylinders to keep FreHD happy
+	dd if=/dev/zero of=disk.tmp bs=1 seek=13238271 count=1
+	dd if=$(IMAGES)/filesys.img of=disk.tmp bs=32768 seek=2 conv=notrunc
 	dd if=hdboot.bin of=disk.tmp seek=2 bs=128 count=1 conv=notrunc
 	dd if=fuzix.bin bs=256 of=disk.tmp seek=4 skip=1 conv=notrunc
 	cat xtrsheader disk.tmp >$(IMAGES)/hard4p-0
