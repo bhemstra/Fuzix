@@ -22,7 +22,7 @@
 #define TICKSPERSEC 40U     /* Ticks per second */
 #define PROGBASE    0x0000  /* also data base */
 #define PROGLOAD    0x0100  /* also data base */
-#define PROGTOP     0xF800  /* Top of program, base of U_DATA copy */
+#define PROGTOP     0xF600  /* Top of program, base of U_DATA copy */
 #define KERNTOP     0xF000  /* Kernel has lower 60KB */
 #define PROC_SIZE   64      /* Memory needed per process */
 
@@ -42,9 +42,10 @@
 /* Hardware parameters */
 #define Z180_IO_BASE       0x00
 
-#define MAX_BLKDEV  2		    /* 2 IDE drives */
-
-#define CONFIG_IDE                  /* enable if IDE interface present */
+/* G-IDE (IDE/ATA) disk via the tinydisk/tinyide driver stack */
+#define CONFIG_TD_NUM		2   /* two IDE drives (master/slave) */
+#define CONFIG_TD_IDE
+#define CONFIG_TINYIDE_INDIRECT     /* register access via in()/out() in plt_ide.h */
 
 /* We have a DS1302, we can read the time of day from it */
 #define CONFIG_RTC_DS1302

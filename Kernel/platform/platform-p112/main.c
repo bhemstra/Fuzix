@@ -30,8 +30,9 @@ void z180_timer_interrupt(void)
     unsigned char a;
 
     /* we have to read both of these registers in order to reset the timer */
-    a = TIME_TCR;
-    a = TIME_TMDR0L;
+    a = in(TIME_TCR);
+    a = in(TIME_TMDR0L);
+    used(a);
 
     /* fd_tick() expects a 1/20ths interrupt but we run the timer at 40Hz */
 #ifdef CONFIG_P112_FLOPPY
@@ -40,15 +41,6 @@ void z180_timer_interrupt(void)
 #endif
 
     timer_interrupt();
-}
-
-void plt_idle(void)
-{
-    /* Let's go to sleep while we wait for something to interrupt us;
-     * sadly no fun LED to change colour */
-    __asm
-        halt
-    __endasm;
 }
 
 void plt_interrupt(void)
@@ -64,10 +56,10 @@ void plt_interrupt(void)
             z180_timer_interrupt(); 
             return;
         case Z180_INT_ASCI0:
-            tty_pollirq_asci0();
+            tty_irq_asci0();
             return;
         case Z180_INT_ASCI1:
-            tty_pollirq_asci1();
+            tty_irq_asci1();
             return;
         default:
             kprintf("[int:%d?]", irqvector);

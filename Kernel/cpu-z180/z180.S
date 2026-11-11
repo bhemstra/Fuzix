@@ -142,6 +142,15 @@ z180_init_hardware:
         ld	hl, nmi_handler
         ld	(0x0067), hl
 
+        ; Set vector for INT0. In IM1 a Z180 INT0 is serviced as RST 38H
+        ; (jump to 0x0038). Platforms whose console/peripheral IRQ arrives on
+        ; INT0 (e.g. the P112 ESCC console) need this vec setup here or the
+        ; first interrupt runs off into zero-filled low memory. Inert on
+        ; platforms that never take INT0. (a still has 0xC3 from above.)
+        ld	(0x0038), a	; Set vector for INT0 (RST 38H)
+        ld	hl, z80_irq
+        ld	(0x0039), hl
+
         ; program Z180 interrupt table registers
         ld	hl, interrupt_table ; note table MUST be 32-byte aligned!
         out0	(INT_IL), l

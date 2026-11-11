@@ -4,9 +4,9 @@ By Will Sowerbutts <will@sowerbutts.com>
 Assumes a P112 fitted with 1024KB RAM and G-IDE
 
 Supported hardware:
- - Real time clock
+ - Real time clock (DS1302)
  - SMC floppy disk drive controller
- - G-IDE hard disk drive controller
+ - G-IDE hard disk drive controller (IDE/ATA, register base 0x50)
  - Serial ports:
    tty1: ESCC channel A (RS232 levels on P4, standard boot ROM uses this port)
    tty2: ESCC channel B (TTL levels on P14 header; untested)
@@ -16,33 +16,24 @@ Supported hardware:
 
 The serial ports require the use of RTS/CTS flow control.
 
-To build the kernel, edit the TARGET line in Kernel/Makefile to read:
-    export TARGET=p112
-Then run "make clean; make all" in the "Kernel" directory.
+This platform now builds with the fcc toolchain (asz80/ldz80). Build with:
+    make TARGET=p112 all
+in the "Kernel" directory. The result is "Kernel/fuzix.bin".
 
-There are two ways to boot the system.
+Disk: the root file system lives on the G-IDE disk (IDE/ATA). The SMC
+37C665 floppy controller is supported as /dev/fd.
 
-The file "Kernel/platform-p112/fuzix.com" is a CP/M executable which will load
-and boot the Fuzix kernel from within CP/M on the P112. This works well,
-however the kernel is now starting to get quite large and may be too large for
-CP/M to load.
+Boot (CF/IDE): "make diskimage" builds a bootable CF/IDE image. Sector 0
+carries the P112 ROM (v5.8) G-IDE 0x2176 boot header; the ROM loads 32 sectors
+to 0x8100 and runs tdboot, which relocates itself to 0xFC00, reads the packed
+kernel from LBA 32 and enters it at 0x0088. The root filesystem is MBR
+partition 0 at LBA 2048. It needs Images/p112/filesys.img (see
+Standalone/filesystem-src).
 
-The file "Kernel/platform-p112/fuzix-boot.fdd" can be used to make a bootable
-floppy disk. Write the file to the first few tracks of a floppy disk, then put
-it in the first floppy drive and tell the P112 ROM to boot from floppy (for
-example by typing "Z1" in the P112 ROM monitor). This will load and boot the
-kernel, and does not suffer from the same kernel size restrictions as the CP/M
-loading method. To write the fuzix-boot.fdd file to a floppy under Linux you
-can use dd as follows;
-  dd if=fuzix-boot.fdd bs=512 of=/dev/fd0
-
-The resulting floppy disk can currently be used only for the kernel, a separate
-floppy disk or IDE hard disk must be used to hold the root file system. In the
-future it should be possible to port the UZI-180 "insboot" program so that the
-floppy boot sector can read the kernel directly out of a Fuzix file system on
-the floppy disk.
-
-When booting the system from CP/M you can specify the root filesystem device
-number on the command line after the command name. This can be specified as
-either a decimal number, or as a a device name (without the /dev prefix). For
-example hda, hdb, hda1, hda2, fd0, fd1, etc.
+Legacy boot paths (NOT TESTED since the fcc port): the CP/M loader
+(fuzix.com, "make cpmimage") and the floppy boot sector (fuzix-boot.fdd,
+"make floppyimage") are still in the tree but are still the original sdas
+sources and have not been built or run with the fcc toolchain. Booting from
+CP/M, the root filesystem device number can be given on the command line after
+the command name, as a decimal number or a device name without the /dev
+prefix (for example hda, hda1, hda2, fd0).

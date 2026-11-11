@@ -4,8 +4,7 @@
 #include <tty.h>
 #include <devsys.h>
 #include <devtty.h>
-#include <devide.h>
-#include <blkdev.h>
+#include <tinydisk.h>
 #include <ds1302.h>
 #include <devrd.h>
 #ifdef CONFIG_P112_FLOPPY
@@ -15,7 +14,7 @@
 struct devsw dev_tab[] =  /* The device driver switch table */
 {
 /*   open	    close	read		write		ioctl */
-  {  blkdev_open,   no_close,	blkdev_read,	blkdev_write,	blkdev_ioctl },	/* 0: /dev/hd -- standard block device interface */
+  {  td_open,	    no_close,	td_read,	td_write,	td_ioctl },	/* 0: /dev/hd -- G-IDE hard disc (tinydisk) */
 #ifdef CONFIG_P112_FLOPPY
   {  fd_open,	    fd_close,	fd_read,	fd_write,	no_ioctl },	/* 1: /dev/fd -- floppy drive */
 #else
