@@ -55,6 +55,20 @@ with the same boot sector, which loads the kernel from the hard disk.
 `Tools/m2web/m4boot.mjs` runs the boot sector against the image the way
 the ROM does and checks the kernel arrives intact.
 
+## Floppy Disks
+
+`/dev/fd0` to `/dev/fd3` are drives 0-3. The default mode is the TRS-80
+double density layout: 40 tracks, one side, 18 sectors of 256 bytes
+numbered from 0, as LS-DOS and TRSDOS 6 format them. Fuzix cannot format
+a floppy, so format it with LS-DOS (`FORMAT :1 (DDEN,SIDES=1,CYL=40)`)
+and make a file system on it:
+
+    mkfs /dev/fd0 32 360
+    mount /dev/fd0 /mnt
+
+Other modes (`FDIO_SETMODE`): 1 double sided TRS-80, 2 single density
+TRS-80 (10 sectors), 3 PC 360K, 4 PC 180K (the PC ones number from 1).
+
 ## Installation
 
 `make TARGET=trs80 diskimage` puts `hard4p-0.hdv`, `boot.jv3` and

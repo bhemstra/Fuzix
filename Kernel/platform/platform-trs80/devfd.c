@@ -47,11 +47,14 @@ static struct fdcinfo fdcap = {
 static uint8_t mode[MAX_FD];
 
 #define NUM_MODES	5
+/* The TRS-80 formats number their sectors from 0 (as LS-DOS and TRSDOS
+   format them), the PC ones from 1 */
 static struct fdcinfo fdcmodes[NUM_MODES] = {
     /* Classic TRS80 SS/DD */
     {
         0,
         FDTYPE_TRS40DD,
+        FDC_SEC0,
         FDF_DD|FDF_SEC256,	/* Double density 256 byte sectors */
         18,			/* 18 sectors/track */
         40,			/* 40 tracks */
@@ -61,7 +64,8 @@ static struct fdcinfo fdcmodes[NUM_MODES] = {
     /* Classic TRS80 DS/DD: late machines only */
     {
         1,
-        FDTYPE_TRS40DD,
+        FDTYPE_TRSDSDD,
+        FDC_SEC0,
         FDF_DD|FDF_SEC256,	/* Double density 256 byte sectors */
         18,			/* 18 sectors/track */
         40,			/* 40 tracks */
@@ -73,15 +77,17 @@ static struct fdcinfo fdcmodes[NUM_MODES] = {
     {
         2,
         FDTYPE_TRS40SD,
-        FDF_DD|FDF_SEC256,	/* Single density 256 byte sectors */
+        FDC_SEC0,
+        FDF_SD|FDF_SEC256,	/* Single density 256 byte sectors */
         10,			/* 10 sectors/track */
         40,			/* 40 tracks */
-        1,			/* double sided */
-        21
+        1,			/* single sided */
+        0
     },
     {
         3,
         FDTYPE_PC360,		/* Double sided drive, PC format */
+        0,
         FDF_DD|FDF_SEC512,
         9,
         40,
@@ -91,6 +97,7 @@ static struct fdcinfo fdcmodes[NUM_MODES] = {
     {
         4,
         FDTYPE_PC180,		/* Interchange with PC and TRS80 SS drive */
+        0,
         FDF_DD|FDF_SEC512,
         9,
         40,
@@ -104,6 +111,7 @@ struct diskprop {
     uint16_t size;
     uint8_t precomp;
     uint8_t features;
+    uint8_t config;	/* FDC_SEC0 */
     uint8_t sectors;	/* per track */
     uint8_t heads;
     uint8_t step;
@@ -187,7 +195,7 @@ static int fd_transfer(uint8_t minor, bool is_read, uint8_t rawflag)
         fd_cmd[4] = ((uint16_t)udata.u_dptr) & 0xFF;
         fd_cmd[5] = ((uint16_t)udata.u_dptr) >> 8;
         /* Some single density media has sectors numbered from zero */
-        if (!(dp->features & FDC_SEC0))
+        if (!(dp->config & FDC_SEC0))
             fd_cmd[2]++;
         /* Now try the I/O */
         for (tries = 0; tries < 4 ; tries++) {
@@ -224,6 +232,7 @@ static void fd_setup(uint8_t minor, uint8_t step)
     uint8_t s;
 
     dp->features = f->features;
+    dp->config = f->config;
     dp->size = f->features & FDF_SECSIZE;
     switch(dp->size) {
     case 128:

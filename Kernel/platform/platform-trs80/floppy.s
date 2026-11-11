@@ -129,7 +129,7 @@ waitdisk_l:
 ;
 fdsetup:
 	ld	a, (fdcctrl)
-	and	#0xE0		; mask off side
+	and	#0xCF		; mask off side and precomp, keep the drive
 	ld	b,a
 	xor	a
 	cp	HEAD(ix)
@@ -170,6 +170,8 @@ setuptimeout:			; NE = bad
 ;	Head in the right place
 ;
 fdiosetup:
+	ld	a, TRACK(ix)
+	ld	(de), a		; save track (before DE is used for the patch)
 	ld	bc,#0x0518		; patch in a skip over the out and
 	ld	de,#0x0718		; JR + 7
 	ld	a, SIZE(ix)
@@ -182,11 +184,10 @@ patchfor256:
 	ld	(fdio_outpatch),de
 
 	ld	a, TRACK(ix)
-	ld	(de), a		; save track
 	cp	COMP(ix)
 	ld	a, (fdcctrl)
-	jr	nc, noprecomp
-	or	#0x10		; Precomp on
+	jr	c, noprecomp	; precomp from track COMP inwards
+	or	#0x20		; Precomp on (bit 4 is the side)
 noprecomp:
 	out	(FDCCTRL), a
 	ld	a, SECTOR(ix)
@@ -210,7 +211,8 @@ noprecomp:
 	ld	a, DIRECT(ix)		; 19
 	dec	a			; 23
 	jr	z, fdio_in		; 30/35	 12/7
-	jp	nc, fdio_out		; 40	 10
+	dec	a			; 34 (not carry: dec leaves it
+	jp	z, fdio_out		; 44  as the code before set it)
 ;
 ;	And we can afford to be later to non data commands
 ;
@@ -258,13 +260,13 @@ fdio_inbyte2:				; this is patched for I/O size
 ;
 ;	Write to the disk - HL points to the target buffer
 ;
-;	We arrive here 40 clocks after the command, and we want to hit
+;	We arrive here 44 clocks after the command, and we want to hit
 ;	status at about 58 clocks
 
 fdio_out:
-	ld	a, #0x76		; 47
-	ld	e,a			; 51
-	set	6,d			; 59
+	ld	a, #0x76		; 51
+	ld	e,a			; 55
+	set	6,d			; 63
 	ld	b,#0x0F
 fdio_p:	djnz	fdio_p
 fdio_outl:
