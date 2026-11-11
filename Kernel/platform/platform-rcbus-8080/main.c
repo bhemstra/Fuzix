@@ -54,7 +54,7 @@ void plt_interrupt(void)
 
 	/* If the TMS9918A is present prefer it as a time source */
 	if (tms9918a_present) {
-		if (tms_interrupt());
+		if (tms_interrupt())
 			vblank++;
 		while(vblank >= 6) {
 			/* TODO vblank wakeup for gfx */

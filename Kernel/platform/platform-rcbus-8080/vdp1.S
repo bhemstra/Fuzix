@@ -353,7 +353,7 @@ _cursor_disable:
 		.export _set_console
 
 _set_console:
-		lda _inputty
+		lda _inputtty
 		dcr a
 		out 0x99
 		mvi a,0x82		; Register 2 (base)

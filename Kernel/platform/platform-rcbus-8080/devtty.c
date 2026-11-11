@@ -50,8 +50,10 @@ static void calc_acia_setup(void)
 		break;
 	case CS7|PARENB|CSTOPB:
 		r = 0x82;
+		break;
 	case CS7|PARENB|PARODD|CSTOPB:
 		r = 0x86;
+		break;
 	case CS8|CSTOPB:
 		r = 0x92;
 		break;
@@ -218,7 +220,7 @@ int rctty_ioctl(uint_fast8_t minor, uarg_t arg, char *ptr)
  	case GFXIOC_GETINFO:
  		return uput(&tms_mode, ptr, sizeof(struct display));
 	case GFXIOC_MAP:
-	        return uput(&tms_map, ptr, sizeof(struct display));
+	        return uput(&tms_map, ptr, sizeof(struct videomap));
 	case GFXIOC_UNMAP:
 		return 0;
 	}
