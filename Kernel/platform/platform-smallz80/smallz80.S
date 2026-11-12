@@ -147,6 +147,8 @@ old_board:
 	inc	c
 	out	(c),a		; test off, 24hr mode, stop/reset off
 
+	ld	a,(0xFFC0)	; ROM CP/M CON: port (16x50 base, or on
+	ld	(_uart_base),a	; the Z180 0=ASCI0 1=ASCI1 FF=none)
 	ld	hl, 0xFFC2	; set up the uart map early
 	ld	de, _uart_base + 1
 
@@ -162,8 +164,12 @@ old_board:
 	ld	(_num_banks),a
 	;	Ignore the expansion board info for now (floppy etc)
 
-	cp	30	; 	30 banks is the Z180 board
-	jr	nz, is_z80
+	;	Test the CPU for Z180 (same DAA check as
+	;	set_cpu_type: a Z80 sets carry here, a Z180 does not).
+	xor	a
+	dec	a
+	daa
+	jr	c, is_z80
 	.z180
 	ld	a,0xE0
 	out0	(MMU_CBAR),a

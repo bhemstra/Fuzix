@@ -43,6 +43,9 @@
 #define CONFIG_RTC_FULL
 #define CONFIG_RTC_INTERVAL	10
 
+/* Z180 internal I/O base (used by the ASCI driver, matches kernelu.def) */
+#define Z180_IO_BASE	0x00
+
 /*
  * How fast does the clock tick (if present), or how many times a second do
  * we simulate if not. For a machine without video 10 is a good number. If
@@ -74,8 +77,7 @@
 #define CMDLINE	NULL	  /* Location of root dev name */
 
 /* Device parameters */
-#define NUM_DEV_TTY 4	  /* How many tty devices does the platform support */
-/* Could be up to 4 if we ever deal with the add on board */
+#define NUM_DEV_TTY 4	  /* ROM console, then Serial A/B, ASCI0/1 (see devtty.c) */
 #define TTYDEV   BOOT_TTY /* Device used by kernel for messages, panics */
 #define NBUFS    5        /* Number of block buffers. Must be 4+ and must match
                              kernel.def */
@@ -83,7 +85,7 @@
 
 /* This can optionally be set to force a default baud rate, eg if the system
    console should match a firmware set rate */
-#define TTY_INIT_BAUD B9600	/* We need read this back really */
+#define TTY_INIT_BAUD B9600	/* devtty.c keeps the ROM rate on each port */
 
 #define plt_copyright()
 
