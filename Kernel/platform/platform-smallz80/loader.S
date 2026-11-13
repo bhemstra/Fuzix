@@ -144,19 +144,45 @@ print:
 	inc	hl
 	jr	print
 
+;
+;	The ROM console byte is a 16x50 base (0x10, 0x40, 0x48 ...), or on the
+;	Z180 board 0x00 = ASCI0, 0x01 = ASCI1, 0xFF = NULL port.
+;
 putchar:
 	push	bc
 	push	af
-	ld	a,(0xFFC0)	; get console port base
-	add	a,5
+	ld	b,0		; Z180 internal I/O needs A15-A8 = 0
+	ld	a,(0xFFC0)	; get console port
+	cp	0xFF
+	jr	z, putdone	; NULL console
+	cp	2
+	jr	c, putasci
+	add	a,5		; 16x50 LSR
 	ld	c,a
 waitch:
 	in	a, (c)
-	bit	5, a
+	bit	5, a		; THRE
 	jr	z, waitch
-	ld	bc,(0xFFC0)
+	ld	a,c
+	sub	5		; 16x50 THR
+	ld	c,a
+	jr	putout
+putasci:
+	add	a,4		; STAT0 (0x04) or STAT1 (0x05)
+	ld	c,a
+waitasci:
+	in	a, (c)
+	bit	1, a		; TDRE
+	jr	z, waitasci
+	inc	c
+	inc	c		; TDR0 (0x06) or TDR1 (0x07)
+putout:
 	pop	af
 	out	(c),a
+	pop	bc
+	ret
+putdone:
+	pop	af
 	pop	bc
 	ret
 
