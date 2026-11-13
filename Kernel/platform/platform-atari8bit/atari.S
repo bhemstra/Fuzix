@@ -54,6 +54,13 @@ reg4:	.word	0
 
 usp:	.word	0
 
+	.ds	32
+
+	; Beyond this point registers are not restored
+
+	.export	private_zp
+private_zp:
+
 	.common
 ;
 ;	We disable both the interrupt and NMI for now. Probably with care
@@ -101,6 +108,14 @@ vector:
 ;	code as we can be interrupted in turn by NMI
 ;
 	pha
+	txa
+	pha
+	tsx
+	lda	0x0103,x
+	and	#0x10
+	beq	is_int
+	.byte	0x02		; JAM for debugging
+is_int:
 	lda	0xD20E		; Check pokey status
 	sta	0xD20E		; Reset interrupt bits
 	bmi	nobrk		; Was the break key pressed ?
@@ -111,8 +126,6 @@ nobrk:
 ;	lda	0xD20F
 ;	and	#0x04
 ;	bne	nokey		; Still down	- TODO
-	txa
-	pha
 	lda	0xD209
 	bpl	keynorm
 	tax
@@ -123,8 +136,6 @@ keynorm:
 	tax
 	lda	_keydecode,x
 keyin:	sta	_keyrx		; Indicate key pressed
-	pla
-	tax
 nokey:
 	lda	0xD20F		; Status
 	and	#0xE0		; Check if there is an error pending
@@ -133,16 +144,22 @@ nokey:
 	sta	0xD20A		; Reset errors
 noerr:
 	pla
+	tax
+	pla
 	rti
 
 	.commondata
 
+	; Key must be common
+
 	.export	_keyrx
 	.export _keybrk
-
+	.export _vbticks
 _keyrx:
 	.byte	0
 _keybrk:
+	.byte	0
+_vbticks:
 	.byte	0
 
 	.literal
@@ -188,6 +205,16 @@ nmivec:
 	pha
 	cld
 
+	lda	_keyrx		; in common
+	bne	service		; key presses are handled that vblank
+	inc	_vbticks	; otherwise only every 5 is needed
+	lda	_vbticks	; and we can improve on that later
+	cmp	#6		; FIXME: 50Hz and 60Hz machines ?
+	bcs	service
+	jmp	irqout		; just count, our work here is done
+
+service:
+
 	jsr	map_save_kernel
 
 ;	Save our zero page bits (and thus the C stack etc). The save
@@ -209,7 +236,7 @@ nmivec:
 ;	This will map in the upper kernel pages via map_save_kernel, invoke
 ;	the handler and then return restoring the mapped pages of either
 ;	the kernel or calling user process to the high space.
-;
+
 	jsr	_plt_interrupt_i
 	; Bankman will fix this up into a banked jump
 	jmp	x1
@@ -644,6 +671,7 @@ hd_write256:
 	bne	hd_write256
 	rts
 
+#if 0
 ;
 ;	Screen handling
 ;
@@ -811,6 +839,8 @@ cursorl:
 	.byte	0
 cursorh:
 	.byte	0
+
+#endif
 
 	; Keyboard table
 

@@ -32,13 +32,15 @@
 #define MAX_MAPS	1
 #define MAP_SIZE	0xC000U
 
-#define TICKSPERSEC 60	    /* Ticks per second */
+#define TICKSPERSEC	10	    /* Ticks per second */
 
 /* We've not yet made the rest of the code - eg tricks match this ! */
 #define MAPBASE	    0x0200  /* We map from 0200 */
 #define PROGBASE    0x0200  /* also data base */
 #define PROGLOAD    0x0200
 #define PROGTOP     0xC000
+#define DP_BASE	    0x18
+#define DP_SIZE	    0x20    /* Zero page bytes available FIXME - do C64 */
 
 /* Settings for swap only mode */
 #define CONFIG_SPLIT_UDATA

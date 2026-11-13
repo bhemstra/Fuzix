@@ -143,7 +143,12 @@ load_zp:
 	lda	0xD500
 	sta	0x0000,x
 	inx
+	cpx	#@private_zp
 	bne	load_zp
+skip_zp:
+	lda	0xD500
+	inx
+	bne	skip_zp
 load_s:
 	lda	0xD500
 	sta	0x0100,x

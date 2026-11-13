@@ -26,7 +26,7 @@ No AXLON style kernel is built as the original 400/800 cannot map out the
 ROM at D800-FFFF.
 
 ## TODO
--	ink/paper/border/video modes
+-	ink/paper/border/video modes (very limited options)
 -	For 130XE style systems we have 8K set up for the screen
 	so do we support hardware scrolled 320x192 ?
 -	When we do graphic modes restore font from cartridge with RAMBO

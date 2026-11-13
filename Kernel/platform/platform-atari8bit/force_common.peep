@@ -1,0 +1,6 @@
+#	Force the font into C000
+	.data
+=
+	.abs
+	.org	0xC000
+

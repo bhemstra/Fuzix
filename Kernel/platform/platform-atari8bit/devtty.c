@@ -4,8 +4,10 @@
 #include <stdbool.h>
 #include <devtty.h>
 #include <device.h>
-#include <vt.h>
+//#include <vt.h>
 #include <tty.h>
+
+extern uint8_t vtputchar(char c);
 
 static char tbuf1[TTYSIZ];
 
@@ -36,7 +38,8 @@ ttyready_t tty_writeready(uint8_t minor)
 
 void tty_putc(uint8_t minor, unsigned char c)
 {
-	vtoutput(&c, 1);
+	vtputchar(c);
+//	vtoutput(&c, 1);
 }
 
 void tty_setup(uint8_t minor, uint8_t flag)
@@ -57,18 +60,27 @@ void tty_data_consumed(uint8_t minor)
 {
 }
 
-extern uint8_t keyrx, keybrk;
-
 void tty_poll(void)
 {
 	uint8_t c;
 	if (keybrk) {
 		keybrk = 0;
-		vt_inproc(1, 3);
+		tty_inproc(1, 3);
 	}
 	if (keyrx) {
 		c = keyrx;
 		keyrx = 0;
-		vt_inproc(1, c);
+		tty_inproc(1, c);
 	}
+}
+
+int vt_ioctl(uint_fast8_t minor, uarg_t request, register char *data)
+{
+	switch(request) {
+	case VTSIZE:
+		return (VT_BOTTOM + 1) << 8 | (VT_RIGHT + 1);
+	case VTATTRS:
+		return vtattr_cap;
+	}
+	return tty_ioctl(minor, request, data);
 }

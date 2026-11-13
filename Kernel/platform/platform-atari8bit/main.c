@@ -28,6 +28,8 @@ uint_fast8_t plt_param(char *p)
 
 static volatile uint8_t *via = (volatile uint8_t *)0xFE60;
 
+extern void bufsetup(void);
+
 void device_init(void)
 {
 	bufsetup();
@@ -38,8 +40,12 @@ void device_init(void)
 
 void plt_interrupt(void)
 {
-	tty_poll();
-	timer_interrupt();
+	if (keybrk || keyrx)
+		tty_poll();
+	if (vbticks >= 6) {
+		timer_interrupt();
+		vbticks = 0;
+	}
 }
 
 /* TODO: put these into the asm bits */
