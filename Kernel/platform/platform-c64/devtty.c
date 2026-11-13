@@ -37,7 +37,7 @@ ttyready_t tty_writeready(uint8_t minor)
 
 void tty_putc(uint8_t minor, unsigned char c)
 {
-	vtoutput(&c, 1);
+	vtputchar(c);
 }
 
 void tty_setup(uint8_t minor, uint8_t flag)
@@ -96,7 +96,7 @@ void tty_poll(void)
 	if (c > 0x80)
 		kprintf("?%x", c);
 	else if (c)
-		vt_inproc(1, c);
+		tty_inproc(1, c);
 #if 0
 	uint8_t c = keyscan();
 	if (c)
@@ -119,5 +119,5 @@ int c64tty_ioctl(uint_fast8_t minor, uarg_t request, register char *data)
 		vtattr_notify();
 		return 0;
 	}
-	return vt_ioctl(minor, request, data);
+	return tty_ioctl(minor, request, data);
 }

@@ -15,7 +15,7 @@ disk I/O.
   devices, and /dev/lpr etc
 - Do the IRQ checks down to timer in asm before we switch to C, including
   kbd initial check, and if so store kbd char and invoke C paths.
-- 6502 console driver for speed
+DONE - 6502 console driver for speed
 
 Our performance is mainly bounded by the speed of the disk sector transfers
 on the 1MHz 6502, especially the way they are arranged for writes on the

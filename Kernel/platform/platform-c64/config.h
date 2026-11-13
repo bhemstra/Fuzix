@@ -40,7 +40,8 @@
 #define PROGBASE    0x4000  /* also data base */
 #define PROGLOAD    0x4000
 #define PROGTOP     0xFE00
-
+#define DP_BASE	    0x1A    /* Must match @usp on the 6502 */
+#define DP_SIZE	    32
 /* Settings for swap only mode */
 #define CONFIG_SPLIT_UDATA
 #define UDATA_SIZE 0x200

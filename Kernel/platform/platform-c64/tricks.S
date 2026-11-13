@@ -149,7 +149,13 @@ load_zp:
 	lda	0xDE31
 	sta	0x0000,x
 	inx
+	cpx	#@private_zp
 	bne	load_zp
+skip_zp:
+	lda	0xDE20		; loads a word
+	inx
+	inx
+	bne	skip_zp
 load_s:
 	lda	0xDE20
 	sta	0x0100,x

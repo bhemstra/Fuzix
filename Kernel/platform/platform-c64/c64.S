@@ -66,6 +66,11 @@ reg3:	.word	0
 reg4:	.word	0
 
 usp:	.word	0
+	.ds	32
+
+; ZP beyond this point is not saved/restored on a task switch
+	.export private_zp
+private_zp:
 
 	.common
 
@@ -1114,6 +1119,7 @@ hd_write256:
 	bne	hd_write256
 	rts
 
+#if 0
 ;
 ;	Screen handling. Much like an Atari but we have to do the scrolling
 ;
@@ -1402,6 +1408,8 @@ _vidpaper:
 	.byte	1		; blue
 _vtborder:
 	.byte	30		; native colour 14
+
+#endif
 
 	.export _keydown
 	.export _keytab
