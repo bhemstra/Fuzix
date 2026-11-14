@@ -7,8 +7,7 @@ scrolling.
 ## TODO
 
 ### Check versus other ports to see if this is a compiler/general issue
-- Signal handling bugs possibly related to memory base (shutdown fail,
-  crash ^C on zork)
+- Signal handling bugs possibly related to memory base (crash ^C on zork)
 - Zork isn't happy (vocab broken) - need to cross check with rcbus-6502
   looks like a general compiler bug
 
@@ -18,15 +17,15 @@ scrolling.
 - Switch to keeping all but tmpbuf buffers in the REU all the time
 - Use freed space to allow for full console and 2K character table
 - Set UDG and font symbols
-DONE - Ink/paper/border
 - How to expose colour map for apps ?
 - Use REU space to allow for a second console and console switching
 - Better cursor - sprite maybe ?
 - Add back swap once REU disk I/O is working
+- Defer most interrupts from the C code as much as we can (minimally
+  we can do 10 per sec not 50 except if kbd)
 
 ## Performance
 - Need to sort REU to get disk speed up
-- Possibly we need a 6502 native asm implementation of the console I/O driver
 
 
 ## Memory Map

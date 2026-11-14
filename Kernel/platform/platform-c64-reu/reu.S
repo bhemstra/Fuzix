@@ -91,6 +91,7 @@ reuct:	.byte	0
 
 	.code
 
+#if 0
 	.export _scroll_down
 	.export _scroll_up
 
@@ -138,6 +139,8 @@ scroll:
 	stx	0xDF01		; copy back
 	plp
 	rts
+
+#endif
 
 ; 	uzero(addr, len)
 
@@ -426,9 +429,10 @@ docopy:
 	lda	#0
 	sta	0xDF03			;	clear high bytes
 	sta	0xDF08
-	lda	#0x0A			;	from 000A
+	lda	#@sp			;	from 0002
 	sta	0xDF02
-	lda	#0x66			;	for 0x46 bytes (0A-6F)
+	; *** ADJUST THIS IF YOU TWEAK SHARED ZP BITS ***
+	lda	#58			;	save kernel/user switched only
 	sta	0xDF07
 	lda	#>REUZP			;	store below the main copy
 	sta	0xDF05

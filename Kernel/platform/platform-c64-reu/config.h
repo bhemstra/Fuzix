@@ -42,6 +42,8 @@
 #define PROGLOAD    0x4000
 #define PROGTOP     0xFE00  /* UDATA at 3E00-3FFF and asm changes needed
                                to adjust this */
+#define DP_BASE	    0x1A
+#define DP_SIZE	    32
 
 #if 0
 /* Settings for swap only mode */
@@ -57,7 +59,6 @@
 
 #define BOOT_TTY 513        /* Set this to default device for stdio, stderr */
 
-#define CONFIG_VT
 #define CONFIG_FONT8X8
 #define CONFIG_FONT8X8_7BIT	/* Only 128 symbols */
 

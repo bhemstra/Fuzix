@@ -5,6 +5,6 @@ extern void tty_poll(void);
 extern uint8_t keyscan(void);
 extern uint8_t vidpaper;
 extern uint8_t vtborder;
-
+extern void vtputchar(uint8_t ch);
 extern int c64tty_ioctl(uint_fast8_t minor, uarg_t request, register char *data);
 #endif

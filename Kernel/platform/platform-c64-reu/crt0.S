@@ -8,11 +8,6 @@
 	.zp
 	.export dirport
 	.export mmu
-	.export	vidptr
-	.export	colourptr
-	.export	cursor
-	.export cursory
-	.export	vtstate
 
 	; 0 and 1 in the ZP are hardware and special so push our main
 	; ZP to 2
@@ -20,18 +15,6 @@ dirport:
 	.byte	0
 mmu:
 	.byte	0
-vidptr:
-	.word	0
-colourptr:
-	.word	0
-cursor:
-	.byte	0
-cursory:
-	.byte	0
-vtstate:
-	.word	0
-
-	; We only restore from 0x0A if this changes alter rcu.S as well
 
 	.abs
 	.org	0x8000
