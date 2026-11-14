@@ -51,6 +51,11 @@
 
 
 	.export usp
+;
+;	We save sp to private_zp so that we cover the user temporaries
+;	and also the kernel workspace but we don't mess with other
+;	pieces of the C64 kernal or our working stuff for the console etc
+;
 
 sp:	.word	0
 hireg:	.word	0
@@ -116,6 +121,10 @@ init_hardware:
 	sta	oldvec
 	lda	0x0315
 	sta	oldvec+1
+	lda	#<brkvec
+	sta	0x0316
+	lda	#>brkvec
+	sta	0x0317
 	jsr	program_vectors_k
 	lda	#0xEA
 	sta	0xD012		; ???
@@ -124,6 +133,15 @@ init_hardware:
 	jmp	x0
 	nop
 x0:	rts
+
+	.common
+
+	; For now as a debug trap - eventually be smarter
+
+	.export	brkvec	; for debug
+brkvec:
+	sei
+	jmp	brkvec
 
 	.commondata
 
@@ -212,11 +230,14 @@ program_vectors_k:
 ;
 map_proc_always:
 	pha
+	php
+	sei
 	; HIRAM, LORAM off and CHAREN on
 	; Gives us a full RAM map with no I/O (except 0/1)
 	lda	@0x01
 	and	#0xFC
 	sta	@0x01
+	plp
 	pla
 	rts
 ;
@@ -239,9 +260,12 @@ map_proc:
 ;
 map_kernel:
 	pha
+	php
+	sei
 	lda	@mmu		; Switch the banked cart into the map
 	ora	#7
 	sta	@mmu
+	plp
 	pla
 	rts
 
@@ -272,6 +296,7 @@ map_restore:
 
 ;
 ;	How do we want to force a given kernel map or do we ?
+;	Interrupts are off in this case
 ;
 map_save_kernel:
 	pha
@@ -544,7 +569,9 @@ vector2:
 	lda	@mmu
 	sta	old_mmu	; Remember existing MMU
 vector_do:
-#if 1
+	;
+	;	Run the KERNAL handlers
+	;
 	cld
 	lda	#>vector3
 	pha
@@ -556,7 +583,6 @@ vector_do:
 	pha
 	;	can't JSR this as RTI and RTS work differently (sigh)
 	jmp	(oldvec)
-#endif
 
 vector3:
 ;
@@ -1119,304 +1145,14 @@ hd_write256:
 	bne	hd_write256
 	rts
 
-#if 0
-;
-;	Screen handling. Much like an Atari but we have to do the scrolling
-;
-;	We pull a trick here. When we have the kernel mapped we need the
-;	cartridge mapped so we have I/O mapped in Dxxx. When we are in user
-;	space we have RAM mapped so the I/O space also vanishes
-;
-	.overlay4
-
-	.export	_plot_char
-	.export _scroll_up
-	.export _scroll_down
-	.export _vtattr_notify
-	.export _clear_across
-	.export _clear_lines
-	.export _cursor_on
-	.export _cursor_off
-	.export _cursor_disable
-
-gaddr:
-	ldy	#1
-	lda	(@sp),y
-	tax
-	dey
-	lda	(@sp),y
-_cursor_disable:
-	rts
-
-addr:
-	jsr	gaddr
-	; A = Y X = X Y = 0
-set_addr:
-	ldy	#0
-	stx	@tmp		; X co-ord
-	; A is 0-39
-	asl	a		; x 2
-	asl	a		; x 4
-	; Can overflow beyond this point
-	asl	a
-	bcc	noover
-	iny
-noover:
-	sty	@tmp2		; set upper byte
-	sty	@tmp3+1		; save whole x 8 value
-	sta	@tmp3
-	asl	a		; x 16
-	rol	@tmp2
-	asl	a		; x 32
-	rol	@tmp2
-	; C will be clear
-	adc	@tmp3		; low add
-	bcc	nobump
-	inc	@tmp3+1		; carry into upper for add
-	clc
-nobump:	adc	@tmp		; add X
-	sta	@tmp		; low set
-	sta	@tmp3		; save for colour
-	lda	@tmp2		; high
-	adc	@tmp3+1		; fold in upper of tmp3 and any X overflow
-	adc	#0x04		; screen base
-	sta	@tmp+1
-	adc	#0xD4		; D800 is the colour RAM
-	sta	@tmp3+1
-	ldy	#2
-	rts
-
-_plot_char:
-	jsr	addr
-	; @tmp is now address
-	lda	(@sp),y
-	ldy	#0
-	and	#0x7F
-	sta	(@tmp),y
-	lda	_c64ink
-	sta	(@tmp3),y
-	jmp	__add4sp
-
-_cursor_on:
-	jsr	addr
-	ldy	#0
-	lda	(@tmp),y
-	sta	cursorc
-	lda	#0x00
-	sta	(@tmp),y
-	lda	@tmp
-	sta	cursorl
-	lda	@tmp+1
-	sta	cursorh
-	jmp	__add2sp
-
-_cursor_off:
-	lda	cursorl
-	sta	@tmp
-	lda	cursorh
-	sta	@tmp+1
-	ldy	#0
-	lda	cursorc
-	sta	(@tmp),y
-	rts
-
-_clear_across:
-	jsr	addr
-	lda	(@sp),y
-	tax
-	ldy	#0
-clac:
-	lda	#' '
-	sta	(@tmp),y
-	lda	_c64ink
-	sta	(@tmp3),y
-	iny
-	dex
-	bne	clac
-	jmp	__add4sp
-
-_clear_lines:
-	jsr	gaddr
-	stx	@tmp2+1		; not touched by set_addr
-	cpx	#0
-	beq	nowork
-	ldx	#0
-	jsr	set_addr	; start of line
-	ldx	@tmp2+1
-line:
-	ldy	#39
-doline:
-	lda	#' '
-	sta	(@tmp),y
-	lda	_c64ink
-	sta	(@tmp3),y
-	dey
-	cpy	#0xFF
-	bne	doline
-	lda	@tmp
-	clc
-	adc	#40
-	sta	@tmp
-	sta	@tmp3
-	bcc	nline
-	inc	@tmp+1
-	inc	@tmp3+1
-nline:	dex
-	bne	line
-nowork:
-	jmp	__add2sp
-
-_scroll_up:
-	lda	#0x04
-	sta	@tmp+1
-	sta	@tmp2+1
-	lda	#0xD8
-	sta	@tmp3+1
-	sta	@tmp4+1
-	lda	#0x00
-	sta	@tmp
-	sta	@tmp3
-	lda	#0x28
-	sta	@tmp2
-	sta	@tmp4
-	ldy	#0
-	ldx	#3
-cpup:	lda	(@tmp2),y
-	sta	(@tmp),y
-	lda	(@tmp4),y
-	sta	(@tmp3),y
-	iny
-	bne	cpup
-	inc	@tmp+1
-	inc	@tmp2+1
-	inc	@tmp3+1
-	inc	@tmp4+1
-	dex
-	bne	cpup
-cpup2:	lda	(@tmp2),y
-	sta	(@tmp),y
-	lda	(@tmp4),y
-	sta	(@tmp3),y
-	iny
-	cpy	#0xC0
-	bne	cpup2
-	rts
-
-; Back scrolling is the same idea but we have to work backwards
-; Screen is 400-7E8
-_scroll_down:
-	; 255 bytes from end of frame buffer
-	lda	#0xE7
-	ldx	#0x07
-	ldy	#0xDB
-	sta	@tmp
-	sta	@tmp3
-	stx	@tmp+1
-	sty	@tmp3+1
-	lda	#0xBF
-	sta	@tmp2
-	stx	@tmp2+1
-	sta	@tmp4
-	sty	@tmp4+1
-	ldy	#255
-	ldx	#3
-cpdown:
-	lda	(@tmp2),y
-	sta	(@tmp),y
-	lda	(@tmp4),y
-	sta	(@tmp3),y
-	dey
-	bne	cpdown
-	lda	(@tmp2),y
-	sta	(@tmp),y
-	lda	(@tmp4),y
-	sta	(@tmp3),y
-	dey
-	;	256 bytes moved
-	dex
-	dec	@tmp+1
-	dec	@tmp2+1
-	dec	@tmp3+1
-	dec	@tmp4+1
-	bne	cpdown
-	;	We have done 768 bytes, We need to do
-	;	192 more
-cplast:
-	lda	(@tmp2),y
-	sta	(@tmp),y
-	lda	(@tmp4),y
-	sta	(@tmp3),y
-	dey
-	cpy	#0x3F
-	bne	cplast
-	rts
-
-_vtattr_notify:
-	; Map colours
-	lda	_vtink
-	and	#0x1F
-	tax
-	lda	coltab,x
-	sta	_c64ink
-	lda	_vidpaper
-	and	#0x1F
-	tax
-	lda	coltab,x
-	sta	0xD021
-	lda	_vtborder
-	and	#0x1F
-	tax
-	lda	coltab,x
-	sta	0xD020
-	rts
-
-coltab:
-	.byte	0		; black
-	.byte	6		; blue
-	.byte	2		; red
-	.byte	4		; magenta
-	.byte	5		; green
-	.byte	3		; cyan
-	.byte	7		; yellow
-	.byte	1		; white
-	.byte	0		; black
-	.byte	6		; blue
-	.byte	2		; red
-	.byte	4		; magenta
-	.byte	5		; green
-	.byte	3		; cyan
-	.byte	7		; yellow
-	.byte	1		; white
-	; And native
-	.byte	0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15
-
-
-	.data
-
-	.export	_vidpaper
-	.export	_vtborder
-
-cursorl:
-	.byte	0
-cursorh:
-	.byte	0
-cursorc:
-	.byte	0
-_c64ink:
-	.byte	14		; native colour 14
-_vidpaper:
-	.byte	1		; blue
-_vtborder:
-	.byte	30		; native colour 14
-
-#endif
-
 	.export _keydown
 	.export _keytab
 	.export _kdown
 	.export _lshift
 	.export _rshift
 	.export _ctrl
+
+	.data
 
 _keydown:
 	.byte	0
@@ -1512,7 +1248,7 @@ key_down:
 	clc
 	adc	@tmp
 	;	TODO shift checks need to go here and not touch keydown
-		sta	_keydown
+	sta	_keydown
 	inc	_kdown		; one more key down
 	rts
 keydone:
