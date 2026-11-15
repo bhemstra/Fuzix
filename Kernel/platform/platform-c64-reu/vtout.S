@@ -59,56 +59,50 @@ _vtink:
 	.export	_vtinit
 
 _vtinit:
+	jsr	initsprite
+	jmp	xa
+	nop
+xa:
 	lda	#0
 	sta	cursorx
 	sta	cursory
 	sta	_vtattr
-	lda	#1
 	sta	@cursorhide
+	lda	#1
 	sta	@cursormod
 	lda	#14
 	sta	@c64ink
-	jsr	do_vtinit
-	php		; docursor expects stack flags
-	jmp	docursor
+	jmp	do_vtinit
 
 	.export	_vtputchar
 
 _vtputchar:
 	php
 	sei
-	;	Disable the current live cursor
-	lda	@cursorhide
-	bne	cursor_off
-	ldy	#0
-	lda	@cursave
-	sta	(@curpos),y
-cursor_off:
 	ldy	#0
 	lda	(@sp),y
 	jsr	__incsp
 	jsr	dovt
-docursor:
-	;	Put back a cursor ?
 	lda	@cursorhide
-	bne	no_writec
-	;	Check if the cursor was moved
-	lda	@cursormod
-	beq	cnext
-	;	Recalculate position
-	jsr	plot_calc
-	;	Cursor position is computed
-cnext:
-	lda	@vidptr
-	sta	@curpos
-	lda	@vidptr+1
-	sta	@curpos+1
-	ldy	#0
-	lda	(@curpos),y
-	sta	@cursave
-	lda	#127
-	sta	(@curpos),y
-no_writec:
+	bne	nocursor
+	lda	@cursory
+	clc
+	rol	a
+	rol	a
+	rol	a		; x 8
+	adc	#50		; magic offset for hardware
+	sta	0xD001
+	lda	@cursorx
+	adc	#3		; previous won't carry nor will we
+	rol	a
+	rol	a
+	rol	a		; This will carry from col 29 onwards
+	sta	0xD000
+	lda	0xD010		; frob the top bit register
+	and	#0xFE
+	adc	#0
+	sta	0xD010
+nocursor:
 	plp
 	rts
 
@@ -378,11 +372,17 @@ setop:
 cshow:
 	lda	#0
 	sta	@cursorhide
-	beq	stdmode
+	lda	0xD015
+	ora	#1
+	sta	0xD015
+	bne	stdmode
 	;
 	;	Hide the cursor
 	;
 chide:
+	lda	0xD015
+	and	#0xFE
+	sta	0xD015
 	lda	#1
 	sta	@cursorhide
 	bne	stdmode
@@ -596,39 +596,33 @@ plot_calc:
 	ldx	@cursorx
 	lda	@cursory
 doxacalc:
-	ldy	#0
-	stx	@tmp		; X co-ord
-	; A is 0-39
-	asl	a		; x 2
-	asl	a		; x 4
-	; Can overflow beyond this point
-	asl	a
-	bcc	noover
-	iny
-noover:
-	sty	@tmp2		; set upper byte
-	sty	@tmp3+1		; save whole x 8 value
-	sta	@tmp3
-	asl	a		; x 16
-	rol	@tmp2
-	asl	a		; x 32
-	rol	@tmp2
-	; C will be clear
-	adc	@tmp3		; low add
-	bcc	nobump
-	inc	@tmp3+1		; carry into upper for add
+	stx	@tmp		; Save X co-ord so we can use it
+	tax
+	lda	vidoff,x	; Get screen index
+	tay
+	and	#0xF8		; Upper bits give line offset low
 	clc
-nobump:	adc	@tmp		; add X
-	sta	@vidptr		; low set
-	sta	@vidatr
-	sta	@tmp3		; save for colour
-	lda	@tmp2		; high
-	adc	@tmp3+1		; fold in upper of tmp3 and any X overflow
-	adc	#>screen
-	sta	@vidptr+1
-	adc	#0xD4		; D800 is the colour RAM
-	sta	@vidatr+1
+	adc	@tmp		; Add X
+	sta	@vidptr		; Set vidptr low
+	sta	@vidatr		; Will be the same for colours
+	tya			; Recover index bits
+	and	#7		; Mask off high bit info
+	adc	#0		; Ripple any carry
+	sta	@vidptr+1	; Save
+	adc	#0xD4		; Won't have carried before so C clear
+	sta	@vidatr+1	; Done
 	rts
+
+;
+;	Packed table of line offsets. Low 3 bits are the upper byte
+;	High 5 bits are the low byte of the line start
+;
+vidoff:
+
+	.byte 0x04, 0x2C, 0x54, 0x7C, 0xA4, 0xCC, 0xF4, 0x1D
+	.byte 0x45, 0x6D, 0x95, 0xBD, 0xE5, 0x0E, 0x36, 0x5E
+	.byte 0x86, 0xAE, 0xD6, 0xFE, 0x27, 0x4F, 0x77, 0x9F
+	.byte 0xC7
 
 	.export _vtattr_notify
 
@@ -680,3 +674,115 @@ _vidpaper:
 	.byte	1		; blue
 _vtborder:
 	.byte	30		; native colour 14
+
+	.discard
+
+initsprite:
+	; Sprite set up
+	; We stuff our first sprite at 0x200 as we don't use the C64
+	; screen read stuff
+	ldx	#63
+	lda	#0
+clrspr:
+	sta	0x200,x
+	dex
+	bne	clrspr
+	; Now fill in the visible bit
+	lda	#0xFF
+	sta	0x0200
+	sta	0x0206
+	sta	0x020C
+	sta	0x0212		; line 6
+	sta	0x0203
+	sta	0x0209
+	sta	0x020F
+	sta	0x0215		; line 7
+	lda	#0x01
+	sta	0xD015		; sprite 1 enable
+	sta	0xD01B		; behind text
+	lda	#0x08		; 0x200 / 64 = sprite base for sprite 1
+	sta	screen+0x3F8	; set pointer
+	lda	#1
+	sta	0xD027		; colour of our sprite
+
+	; Now set up the mouse pointer
+
+	ldx	#63
+mspr:	lda	mwhite,x
+	sta	0x2C0,x		; spare area
+	dex
+	bne	mspr
+	ldx	#63
+msprb:	lda	mblack,x
+	sta	0x340,x		; spare area
+	dex
+	bne	msprb
+
+	; for testing
+	lda	#0x07
+	sta	0xD015		; sprite 1/2/3 enable
+	lda	#0x01
+	sta	0xD028
+	lda	#0x00
+	sta	0xD029
+	lda	#0x0B		; 0x2C0 / 64
+	sta	screen+0x3F9
+	lda	#0x0D		; 0x340 / 64
+	sta	screen+0x3FA
+	lda	#0x60
+	sta	0xD002
+	sta	0xD003
+	lda	#0x60
+	sta	0xD004
+	sta	0xD005
+
+
+	rts
+
+mwhite:
+; Mouse white
+	.byte 0,0,0
+	.byte 124,0,0
+	.byte 124,0,0
+	.byte 120,0,0
+	.byte 124,0,0
+	.byte 110,0,0
+	.byte 7,0,0
+	.byte 3,128,0
+	.byte 1,192,0
+	.byte 0,224,0
+	.byte 0,112,0
+	.byte 0,56,0
+	.byte 0,28,0
+	.byte 0,12,0
+	.byte 0,0,0
+	.byte 0,0,0
+	.byte 0,0,0
+	.byte 0,0,0
+	.byte 0,0,0
+	.byte 0,0,0
+	.byte 0,0,0
+
+mblack:
+; Mouse black
+	.byte 254,0,0
+	.byte 254,0,0
+	.byte 254,0,0
+	.byte 252,0,0
+	.byte 254,0,0
+	.byte 255,0,0
+	.byte 239,128,0
+	.byte 7,192,0
+	.byte 3,224,0
+	.byte 1,240,0
+	.byte 0,248,0
+	.byte 0,124,0
+	.byte 0,62,0
+	.byte 0,30,0
+	.byte 0,12,0
+	.byte 0,0,0
+	.byte 0,0,0
+	.byte 0,0,0
+	.byte 0,0,0
+	.byte 0,0,0
+	.byte 0,0,0

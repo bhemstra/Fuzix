@@ -120,6 +120,8 @@ init_hardware:
 	sta	0x0316
 	lda	#>brkvec
 	sta	0x0317
+	lda	0xDC02		; CIA DDR
+	sta	syscia
 	jsr	program_vectors_k
 	lda	#0xEA
 	sta	0xD012		; ???
@@ -150,6 +152,9 @@ old_kbank:
 old_kmap:
 	.byte	0
 old_mmu:
+	.byte	0
+
+syscia:
 	.byte	0
 
 	.literal
@@ -568,6 +573,19 @@ vector2:
 	sta	old_mmu	; Remember existing MMU
 vector_do:
 	;
+	;	Run our mouse handler first
+	;
+	; Select control port 2
+
+	jsr	mousexy
+	jsr	mouseclamp
+	jsr	mouseshow
+
+	;	Fix up the CIA for the keyboard scan
+
+	lda	syscia
+	sta	0xDC02
+	;
 	;	Run the KERNAL handlers
 	;
 	cld
@@ -583,12 +601,22 @@ vector_do:
 	jmp	(oldvec)
 
 vector3:
-;
+	;	Put the logic back for the paddles/mouse
+	lda	#0xC0
+	sta	0xDC02
+	lda	0xDC00
+	and	#0x3F
+	ora	#0x80
+	sta	0xDC00
+	ldy	#0x80
+
 ;	Kick EXEC back out if not expected. We'll sort out our mappings
 ;	again in the IRQ handler core
 ;
 	lda	old_mmu
 	sta	@mmu
+
+
 ;
 ;	Map the kernel in, remmember our old state
 ;

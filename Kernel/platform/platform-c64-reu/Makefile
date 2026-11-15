@@ -2,7 +2,7 @@
 CSRCS = devtty.c
 CSRCS += devices.c main.c discard.c
 
-ASRCS = c64.S crt0.S reu.S usermem.S vtout.S
+ASRCS = c64.S crt0.S reu.S usermem.S vtout.S mouse.S
 ASRCS += tricks.S commonmem.S
 
 DSRCS = ../../dev/tinyide.c ../../dev/tinydisk.c
@@ -43,7 +43,7 @@ clean:
 image:
 	$(CROSS_LD) -b -f CLSsDBbX -S 0x0800 -Z 0x00 -O 0x8000 -C 0xAC00 -X 0x4200 \
 	-o ../../fuzix.bin -m fuzix.tmpmap -R fuzix.relocs \
-	font8x8.o crt0.o commonmem.o c64.o discard.o vtout.o \
+	font8x8.o crt0.o commonmem.o c64.o discard.o vtout.o mouse.o \
 	../../start.o ../../version.o ../../cpu-6502/lowlevel-6502.o \
 	tricks.o main.o reu.o ../../timer.o ../../kdata.o devices.o \
 	tinydisk.o tinydisk_discard.o tinyide.o tinyide_discard.o ../../mm/memalloc_none.o \

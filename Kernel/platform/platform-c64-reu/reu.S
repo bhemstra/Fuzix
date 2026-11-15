@@ -91,56 +91,6 @@ reuct:	.byte	0
 
 	.code
 
-#if 0
-	.export _scroll_down
-	.export _scroll_up
-
-;
-;	REU display routines
-;
-;	TODO: colour RAM
-;
-_scroll_down:
-	lda	#0
-	beq	scroll
-_scroll_up:
-	; Screen bounce buffer lives at 000004 in REU space
-	lda	#0x28
-scroll:
-	php
-	sei
-	sta	0xDF02
-	ldx	#0
-	stx	0xDF05
-	stx	0xDF06
-	stx	0xDF0A
-	ldx	#0x04
-	stx	0xDF03		; from 0428
-	stx	0xDF04		; to 000004
-	ldx	#0xC0
-	stx	0xDF07
-	ldx	#0x03
-	stx	0xDF08		; 3C0 bytes
-	ldx	#0xB0
-	stx	0xDF01		; copy to REU, restore pointers
-	eor	#0x28		; switch line so we can do up or down
-	sta	0xDF02
-	ldx	#0xB1		; copy back offset
-	stx	0xDF01
-	ldx	#0xD8
-	stx	0xDF03		; from D800
-	eor	#0x28
-	sta	0xDF02		; set screen to D800 or D828
-	ldx	#0xB0
-	stx	0xDF01		; copy into scratch
-	eor	#0x28
-	sta	0xDF02
-	ldx	#0xB1
-	stx	0xDF01		; copy back
-	plp
-	rts
-
-#endif
 
 ; 	uzero(addr, len)
 
@@ -163,6 +113,26 @@ setupz:
 	sta	0xDF01
 notask:
 	; EQ - no work, NE - do op
+	rts
+
+	.export	_reu_blkzero
+
+	; Fast clear 512 bytes to zero
+_reu_blkzero:
+	jsr	__pop
+	sta	0xDF02		; Destinatioon
+	stx	0xDF03
+	lda	#0
+	sta	0xDF04		; Zero byte
+	sta	0xDF05
+	sta	0xDF06
+	sta	0xDF07		; 512 bytes
+	lda	#2
+	sta	0xDF08
+	lda	#0x40		; REU address constant
+	sta	0xDF0A
+	lda	#0xA1		; Fire
+	sta	0xDF01
 	rts
 
 	.common

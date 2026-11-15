@@ -20,6 +20,11 @@
 #define CONFIG_BANK_FIXED
 #define MAX_MAPS	32	/* Should be plenty */
 #define MAP_SIZE	0xC000
+
+/* Custom buffer clearing routine */
+extern void reu_blkzero(uint8_t *p);
+#define blkzero(x)	reu_blkzero((x)->__bf_data)
+
 /* Disable swap whilst we work on bank switching */
 #if 0
 #define CONFIG_DYNAMIC_SWAP
