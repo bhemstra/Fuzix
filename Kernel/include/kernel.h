@@ -207,7 +207,10 @@ typedef struct blkbuf {
 #define blkfromu(uaddr,buf,off,len) \
     _uget((uaddr),(buf)->__bf_data + (off), (len))
 #define blkptr(buf, off, len)	((void *)((buf)->__bf_data + (off)))
+/* Allow targets to specify their own blkzero */
+#ifndef blkzero
 #define blkzero(buf)		memset(buf->__bf_data, 0, BLKSIZE)
+#endif
 #else
 extern void blktok(void *kaddr, struct blkbuf *buf, uint16_t off, uint16_t len);
 extern void blkfromk(void *kaddr, struct blkbuf *buf, uint16_t off, uint16_t len);
