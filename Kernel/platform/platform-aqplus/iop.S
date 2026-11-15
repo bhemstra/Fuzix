@@ -53,6 +53,7 @@ esptxpath:
 
 
 _iop_diskopen:
+	di
 	ld	a,(_disk_unit)
 	add	a, '0'
 	ld	(diskpathmod), a
@@ -63,7 +64,12 @@ _iop_diskopen:
 	ld	hl,diskpath
 	call	esptxpath
 	call	esprx
+iop_exit:
 	ld	l,a
+	ld	a,(_int_disabled)
+	or	a
+	ret	nz
+	ei
 	ret
 
 iosetup:
@@ -97,13 +103,14 @@ iomap:
 	jp	z, map_proc_always
 	ld	a,(_td_page)
 	jp	map_for_swap
-	
+
 _iop_diskop:
 	call	iosetup
 	jp	m, shortr
 	ld	a, (_disk_op)
 	or	a
 	jr	z, do_write
+	di
 	; and now read
 	ld	a, ESPCMD_READ
 	call	espcmd
@@ -136,19 +143,23 @@ iord:
 	inc	hl
 	djnz	iord
 	pop	bc
-	ld	hl, 0
-	jp	map_kernel	
+	call	map_kernel
+iop_rwout:
+	xor	a
+	jr	iop_exit
 shortr1:
 	call	esprx
 shortr:
-	ld	l, 255
-	ret
+	ld	a, 255
+	jr	iop_exit
+
 do_write:
+	di
 	ld	a, ESPCMD_WRITE
 	call	espcmd
 	ld	a, (_disk_unit)
 	call	esptx
-	ld	a, 0
+	xor	a
 	call	esptx
 	ld	a, 2
 	call	esptx
@@ -162,31 +173,28 @@ iowr:
 	call	esptx
 	inc	hl
 	djnz	iowr
+	call	map_kernel
 	pop	bc
 	call	esprx
 	bit	7,a
-	jr	nz, werr
+	jr	nz, iop_exit
 	call	esprx
 	or	a
 	jr	nz, werr2
 	call	esprx
 	cp	2
 	jr	nz, werr3
-werr:				; IOP reported error
-	ld	l,a
-	jp	map_kernel
-werr2:				; Length wrong
-	call	esprx
-werr3:	ld	l, 0xFF
-	ret
-
+	jr	iop_rwout
+werr2:	call	esprx		; Length wrong
+werr3:	ld	a, 0xFF
+	jr	iop_exit
 
 _iop_closeall:
 	ld	a, ESPCMD_CLOSEALL
+	di
 	call	espcmd
 	call	esprx
-	ld	l,a
-	ret
+	jr	iop_exit
 
 	.data
 

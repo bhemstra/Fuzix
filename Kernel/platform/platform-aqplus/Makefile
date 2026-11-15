@@ -26,7 +26,7 @@ $(COBJS): %.o: %.c
 	$(CROSS_CC) $(CROSS_CCOPTS) -c $< -o $@
 
 $(DOBJS): %.o: ../../dev/%.c
-	$(CROSS_CC) $(CROSS_CCOPTS) -c $< -o $@
+	$(CROSS_CC) $(CROSS_CCOPTS) -c $< -o $@ -Tcommon
 
 $(DAOBJS): %.o: ../../dev/%.S
 	$(CROSS_AS) $(ASOPTS) $@ $< -o $@

@@ -5,6 +5,7 @@
 #include <tty.h>
 #include <vt.h>
 #include <devtty.h>
+#include <graphics.h>
 #include <aqplus.h>
 
 static char tbuf1[TTYSIZ];
@@ -12,7 +13,12 @@ static uint8_t sleeping;
 struct vt_repeat keyrepeat = { 40 , 4 };
 static uint8_t kbd_timer;
 
-uint8_t vtattr_cap = 0;	/* For the moment */
+uint8_t vtmode = 0;
+uint8_t vtwidth = 80;
+uint8_t vtright = 79;
+uint8_t vtborder = 0;
+
+uint8_t vtattr_cap = VTA_INVERSE;
 
 struct s_queue ttyinq[NUM_DEV_TTY + 1] = {	/* ttyinq[0] is never used */
 	{NULL, NULL, NULL, 0, 0, 0},
@@ -78,7 +84,6 @@ static void keyproc(void)
 	int i;
 	uint8_t key;
 
-	/* FIXME: needs debounce somewhere */
 	if (keyscan()) {
 		/* Something changed */
 		for (i = 0; i < 8; i++) {
@@ -103,6 +108,10 @@ static void keyproc(void)
 				}
 			}
 			keymap[i] = keyin[i];
+			/* If we saw a new key but something then changed under
+			   us assume it's bouncing */
+			if (newkey && keyscan())
+				newkey = 0;
 		}
 	}
 }
@@ -111,13 +120,24 @@ static void keydecode(void)
 {
 	uint8_t c;
 	/* Table index */
-	c = keybyte * 6 + keybit;
 	if (keymap[0] & 16)	/* shift */
-		c += 48;
-	c = keytab[c];
-	/* TODO need to put some chars on control */
+		c = shiftkeyboard[keybyte][keybit];
+	else
+		c = keyboard[keybyte][keybit];
+
 	if (keymap[0] & 32) {	/* control */
-		if (c > 31 && c < 127)
+		/* Borrow some codes for missing keys */
+		if (c == '(')
+			c = '{';
+		else if (c == ')')
+			c = '}';
+		else if (c == '8')
+			c = '[';
+		else if (c == '9')
+			c = ']';
+		else if (c == '1')
+			c = '|';
+		else if (c > 31 && c < 127)
 			c &= 31;
 	}
 	vt_inproc(1, c);
@@ -142,4 +162,121 @@ void tty_poll(void)
 
 void do_beep(void)
 {
+}
+
+/* Base colours are BGR, second set are more misc */
+static uint8_t colmap[32] = {
+	0, 4, 1, 5,	/* black blue red magenta */
+	2, 6, 3, 7,	/* green, cyan, yellow, white */
+	/* No bright forms */
+	0, 4, 1, 5,	/* black blue red magenta */
+	2, 6, 3, 7,	/* green, cyan, yellow, white */
+	/* Native */
+	0, 1, 2, 3, 4, 5, 6, 7,
+	8, 9, 10, 11, 12, 13, 14, 15
+};
+
+
+void vtattr_notify(void)
+{
+	if (vtattr & VTA_INVERSE)
+		vtcol = (colmap[vtpaper & 31] << 4) | colmap[vtink & 31];
+	else
+		vtcol = (colmap[vtink & 31] << 4) | colmap[vtpaper & 31];
+}
+
+static struct display modes[2] = {
+	/* Text 80 */
+	{
+		0,
+		80, 25,
+		80, 25,
+		255, 255,
+		FMT_TEXT,
+		HW_UNACCEL,
+		GFX_MULTIMODE | GFX_TEXT,
+		4,
+		0,	/* To do */
+		80,
+		25
+	},
+	/* Text 40 */
+	{
+		1,
+		40, 25,
+		40, 25,
+		255, 255,
+		FMT_TEXT,
+		HW_UNACCEL,
+		GFX_MULTIMODE | GFX_TEXT | GFX_VBLANK,
+		4,
+		0,	/* To do */
+		40,
+		25
+	}
+	/* TODO: graphics overlay modes */
+};
+
+static struct fontinfo font = {
+	0, 255, 128, 255, FONT_INFO_8X8
+};
+
+int gfx_ioctl(uint_fast8_t minor, uarg_t request, register char *data)
+{
+	uint8_t m = vtmode;
+	unsigned base = 0;
+	unsigned limit = 255;
+	uint8_t cbit[8];
+	/* Until/if we do multi console */
+	if (minor != 1)
+		return tty_ioctl(minor, request, data);
+	switch(request)
+	{
+	case VTFONTINFO:
+		return uput(&font, data, sizeof(struct fontinfo));
+	case VTSETUDG:
+		base = ugetc(data++);
+		if (base < 128)
+			break;
+		limit = base;
+	case VTSETFONT:
+		while(base <= limit) {
+			if (uget(cbit, data, 8) == -1)
+				return -1;
+			data += 16;
+			load_character(base, cbit);
+			++base;
+		}
+		return 0;
+	case GFXIOC_GETMODE:
+		m = ugetc(data);
+		if (m > 1)
+			break;
+	case GFXIOC_GETINFO:
+		return uput(modes + m, data, sizeof(struct display));
+	case GFXIOC_SETMODE:
+		m = ugetc(data);
+		if (m > 1)
+			break;
+		vtmode = m;
+		if (m) {
+			vtwidth = 40;
+			vtright = 39;
+		} else {
+			vtwidth = 80;
+			vtright = 79;
+		}
+		set_mode();
+		set_border(vtborder);
+		clear_lines(0, 25);
+		return 0;
+	case GFXIOC_WAITVB:
+		while(in(0xFD) & 1);
+		return 0;
+	case VTBORDER:
+		vtborder = colmap[ugetc(data) & 31];
+		set_border(vtborder);
+		return 0;
+	}
+	return vt_ioctl(minor, request, data);
 }

@@ -43,9 +43,9 @@ extern uint16_t swap_dev;
 #define swap_map(x)	((uint8_t *)((((x) & 0x3FFF)) + 0x4000))
 
 #define CONFIG_VT
-#define VT_WIDTH	80
+#define VT_WIDTH	vtwidth
 #define VT_HEIGHT	25
-#define VT_RIGHT	79
+#define VT_RIGHT	vtright
 #define VT_BOTTOM	24
 
 /* We need a tidier way to do this from the loader */

@@ -6,6 +6,7 @@
 	.export map_proc
 	.export map_buffers
 	.export map_video
+	.export map_font
 	.export map_kernel_di
 	.export map_proc_di
 	.export map_proc_always
@@ -42,8 +43,14 @@ init_hardware:
 	ld	a, 1
 	out	(0xEE), a		; Vblank on
 
-	ld	a, 0x61	; 80 column for the moment, text on, remap border
+	ld	a, 0xE1	; 80 column for the moment, text on, remap border, colour
 	out	(0xE0),a
+
+	ld	hl, 0x37FF
+	ld	(hl), 0
+
+	ld	a, 0x61
+	out	(0xE0), a ; Switch to the text mapping
 
 	; Get the internal DI state right
 	call	___hard_di
@@ -154,6 +161,16 @@ map_buffers:
 map_video:
 	push hl
 	ld hl,_video_pages
+        jr map_proc_2_pophl_ret
+
+;=========================================================================
+; map_font - map kernel pages with font at 4000-7FFF
+; Inputs: none
+; Outputs: none; all registers preserved
+;=========================================================================
+map_font:
+	push hl
+	ld hl,_font_pages
         jr map_proc_2_pophl_ret
 
 ;=========================================================================
@@ -273,7 +290,10 @@ top_bank:	; the shared tricks code needs this name for cache+3
 _kernel_pages:
 	.byte	0x20,0x21,0x22,0x23
 _video_pages:
-	.byte	0x60,0x21,0x22,0x23
+	.byte	0x60,0x14,0x22,0x23	/* Text video passthrough, graphics
+					   RAM at 0x4000-7FFF */
+_font_pages:
+	.byte	0x20,0x15,0x22,0x23	/* Font page at 4000-7FFF */
 
 ; memory page mapping save area for map_save/map_restore
 map_savearea:
@@ -319,7 +339,6 @@ scratch:
 
 	.export	_anykey
 	.export	_keyscan
-	.export	_keytab
 ;
 ;	Test if a key is pressed
 ;
@@ -363,7 +382,12 @@ nochange:
 	ld	l,d
 	ret
 
-_keytab:
+	.export _keyboard
+	.export _shiftkeyboard
+
+	.data
+
+_keyboard:
 	.ascii 	"2w1q  "
 	.ascii	"3esz a"
 	.ascii	"5t4rdx"
@@ -373,15 +397,7 @@ _keytab:
 	.ascii 	"-/0pl,"
 	.byte	'=', 8, ':', 13, ';', '.'
 	; And shifted
-	.ascii	'"W!Q  '
-	.ascii	"#ESZ A"
-	.ascii	"%T$RDX"
-	.ascii	"&YGVCF"
-	.ascii	"(I'UHB"
-	.ascii	")OKMNJ"
-	.ascii	"_^?PL<"
-	.byte	'+', '\', '*', 13, '@', '>'
-	; TODO control table as we need to do more mappings eg for {}
+_shiftkeyboard:
 	.ascii	'"W!Q  '
 	.ascii	"#ESZ A"
 	.ascii	"%T$RDX"

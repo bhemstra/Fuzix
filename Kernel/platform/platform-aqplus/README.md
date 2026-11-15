@@ -6,10 +6,9 @@ banking we use 16K banking throughout.
 
 ## Things To Do
 -	RTC driver using the ESP
--	Ink/paper/border setting
--	40/80 col mode switching
+-	40/80 col mode switching (done except for old cursor mess)
 -	Look at mouse reporting
--	Graphics API routines
+-	Graphics API routines (minimally added)
 -	Swap
 -	Console beep
 -	Some way to import/export data (as the C64 also could do with)
