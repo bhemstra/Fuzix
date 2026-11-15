@@ -71,6 +71,7 @@ _vtputchar:
 	eor	#0x80
 	sta	(@curpos),y
 cursor_off:
+	ldy	#0
 	lda	(@sp),y
 	jsr	__incsp
 	jsr	dovt
@@ -518,7 +519,7 @@ wipe:	sta	(@tmp),y
 	bne	wipe
 	rts
 ; TODO
-
+; and remember clear top line
 scroll_down:
 	rts
 
