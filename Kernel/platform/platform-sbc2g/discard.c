@@ -18,6 +18,8 @@
  */
 uint_fast8_t plt_param(unsigned char *p)
 {
+	used(p);
+	return 0;
 }
 
 /*
