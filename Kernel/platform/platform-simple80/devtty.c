@@ -101,6 +101,7 @@ void tty_pollirq(void)
 			else
 				tty_carrier_drop(1);
 		}
+		old_ca = ca;
 		out(SIOB_C, 0);	/* read register 0 */
 		cb = in(SIOB_C);
 		if (cb & 1) {
@@ -118,6 +119,7 @@ void tty_pollirq(void)
 			else
 				tty_carrier_drop(2);
 		}
+		old_cb = cb;
 		/* ACK any break or error events */
 		out(SIOB_C, 2 << 3);
 	} while (progress);
