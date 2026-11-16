@@ -32,15 +32,15 @@ static int chroma_js(uint8_t *slot, uint8_t n, uint8_t v)
         return 0;
     old_cj[n] = v;
     if (v & 1)
-        k = STICK_DIGITAL_L;
+        k |= STICK_DIGITAL_L;
     if (v & 2)
-        k = STICK_DIGITAL_R;
+        k |= STICK_DIGITAL_R;
     if (v & 4)
-        k = STICK_DIGITAL_U;
+        k |= STICK_DIGITAL_U;
     if (v & 8)
-        k = STICK_DIGITAL_D;
+        k |= STICK_DIGITAL_D;
     if (v & 16)
-        k = BUTTON(0);
+        k |= BUTTON(0);
     *slot++ = STICK_DIGITAL | (n + 1);
     *slot = k;
     return 2;

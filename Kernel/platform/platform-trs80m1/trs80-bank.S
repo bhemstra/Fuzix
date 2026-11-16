@@ -629,11 +629,12 @@ __uzero:
 	dec	bc
 	ld	a, b
 	or	c
-	jp	z, uputc_out
+	jr	z, uzero_done
 	ld	e, l
 	ld	d, h
 	inc	de
 	ldir
+uzero_done:
 	pop	bc
 	jp	map_kernel_restore
 bcout:	pop	bc

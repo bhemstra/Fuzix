@@ -203,7 +203,7 @@ void tty_poll(void)
 
 /* Called to set baud rate etc */
 static const uint8_t trsbaud[] = {
-	0, 0, 1, 2, 3, 4, 5, 6, 7, 10, 14, 15
+	0, 0, 1, 2, 3, 4, 5, 6, 7, 10, 12, 14, 15
 };
 
 static const uint8_t trssize[4] = {
@@ -219,14 +219,14 @@ void tty_setup(uint_fast8_t minor, uint_fast8_t flags)
 	if (minor < 3)
 		return;
 
-	if (minor != 3 || trs80_model == LNW80) {
+	if (minor == 3 || trs80_model == LNW80) {
 		baud = ttydata[3].termios.c_cflag & CBAUD;
 		if (baud > B19200) {
 			ttydata[3].termios.c_cflag &= ~CBAUD;
 			ttydata[3].termios.c_cflag |= B19200;
 			baud = B19200;
-		} else
-			baud = trsbaud[baud];
+		}
+		baud = trsbaud[baud];
 
 		out(TR1865_BAUD, baud | (baud << 4));
 
@@ -241,7 +241,7 @@ void tty_setup(uint_fast8_t minor, uint_fast8_t flags)
 	if (t->termios.c_cflag & CRTSCTS)
 		trs_flow |= (1 << minor);
 	else
-		trs_flow &- ~(1 << minor);
+		trs_flow &= ~(1 << minor);
 	if (minor == 3) {
 		tr1865_ctrl_save = ctrl;
 		out(TR1865_CTRL, ctrl);
