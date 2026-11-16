@@ -75,7 +75,7 @@ TBLSIZ  .equ    10              ; sizeof() entry in _devfd_dtbl
 ; Exit : hl = 0 if All is Ok, Non-Zero if Error
 
 _devfd_init:
-        xor     A
+        xor     a
         ld      (motim),a       ; Mark Motors as initially OFF
         ld      (hd),a          ;  and initially Head #0
 

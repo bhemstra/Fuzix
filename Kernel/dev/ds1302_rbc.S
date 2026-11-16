@@ -7,4 +7,4 @@
 #define PIN_DATA_IN     0x01
 #define PIN_OTHER	0x00
 
-#include "ds1302_commonu.S"
+#include "ds1302_commonu.s"
