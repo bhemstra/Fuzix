@@ -251,7 +251,6 @@ map_for_swap:
 map_proc_a:			; used by bankfork
 	ld (mapreg), a	; bank
 	out (0x30), a
-	inc a		; cheaper than push/pop
 	ret
 
 	;
