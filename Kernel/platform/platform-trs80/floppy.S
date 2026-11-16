@@ -341,13 +341,13 @@ _fdr_wait:
 	call	waitdisk
 	ex	de,hl
 	ld	l,a
+	pop	bc
 	cp	0xff
 	ret	z
 	and	0x99		; Error bit from the reset
 	ret	nz
 	ld	(de), a		; Track 0 correctly hit (so 0)
 	ld	l,a
-	pop	bc
 	ret
 ;
 ;	fd_operation(uint16_t *drive)
