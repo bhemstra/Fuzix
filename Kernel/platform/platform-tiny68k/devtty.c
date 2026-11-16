@@ -175,7 +175,7 @@ static const uint8_t baudset[3][16] = {
 
 void tty_setup(uint8_t minor, uint8_t flags)
 {
-	uint8_t other = 2 - minor;
+	uint8_t other = 3 - minor;
 
 	struct termios *t = &ttydata[minor].termios;
 	struct tty *to = &ttydata[other];
@@ -185,7 +185,7 @@ void tty_setup(uint8_t minor, uint8_t flags)
 	uint8_t base = (minor - 1) * 0x10;
 	uint8_t table = baudsrc[baud];
 
-	static uint8_t oldbaud[3] = {0., B38400, B38400 };
+	static uint8_t oldbaud[3] = {0, B38400, B38400 };
 	static uint8_t oldbrg;
 
 	/* If both ports are open we need to check the baud rate pair is
@@ -271,9 +271,10 @@ void tty_data_consumed(uint8_t minor)
 
 static void tty_interrupt(uint8_t r)
 {
+	uint8_t c;
 	if (r & 0x02) {
-		r = GETB(UART_RHRA);
-		tty_inproc(1,r);
+		c = GETB(UART_RHRA);
+		tty_inproc(1,c);
 	}	
 	if (r & 0x01) {
 		if (sleeping & 2)
@@ -282,8 +283,8 @@ static void tty_interrupt(uint8_t r)
 	if (r & 0x04)
 		PUTB(UART_CRA, 0x50);
 	if (r & 0x20) {
-		r = GETB(UART_RHRB);
-		tty_inproc(2,r);
+		c = GETB(UART_RHRB);
+		tty_inproc(2,c);
 	}	
 	if (r & 0x10) {
 		if (sleeping & 4)
