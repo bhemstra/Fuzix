@@ -1,7 +1,7 @@
 ASRCS = crt0.S tricks.S commonmem.S simple80.S usermem.S ide.S
 CSRCS = devices.c main.c devtty.c
 DISCARD_CSRCS = discard.c
-DISCARD_DSRCS = ../../dev/tinyide_discard.c ../dev/tinydisk_discard.c
+DISCARD_DSRCS = ../../dev/tinyide_discard.c ../../dev/tinydisk_discard.c
 DISCARD_DSRCS += ../../dev/ds1302_discard.c
 DSRCS = ../../dev/tinyide.c ../../dev/tinydisk.c
 DSRCS +=  ../../dev/ds1302.c
