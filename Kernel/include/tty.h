@@ -160,6 +160,10 @@ struct termios {
 #define KBSETTRANS	(0x23|IOCTL_SUPER)
 #define VTATTRS		0x24
 #define KBRATE		0x25
+#define VTMOUSE		0x26
+#define		VTMOUSE_OFF	0	/* No mouse */
+#define		VTMOUSE_INPUT	1	/* Mouse generates input events */
+#define		VTMOUSE_KEY	2	/* Mouse generates key events */
 
 #define VTFONTINFO	0x30
 #define VTSETFONT	(0x31|IOCTL_SUPER)
@@ -210,7 +214,7 @@ struct fontinfo {
 struct tty {
     /* Put flag first: makes it cheaper when short of registers */
     uint8_t flag;		/* make the whole struct
-                                   32 byte - a nice number for CPUs with no 
+                                   32 byte - a nice number for CPUs with no
                                    multiplier */
     uint8_t users;
 #define TTYF_STOP	1
