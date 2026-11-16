@@ -154,6 +154,7 @@ void tty_poll(void)
 			else
 				tty_carrier_drop(1);
 		}
+		old_ca = ca;
 		out(SIOB_C, 0);		// read register 0
 		cb = in(SIOB_C);
 		if (cb & 1) {
@@ -171,6 +172,7 @@ void tty_poll(void)
 			else
 				tty_carrier_drop(2);
 		}
+		old_cb = cb;
 	} while(progress);
 }
 

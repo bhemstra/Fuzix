@@ -196,6 +196,7 @@ void tty_irq_sio0(void)
 			else
 				tty_carrier_drop(1);
 		}
+		old_ca = ca;
 		out(SIOB_C, 0);		// read register 0
 		cb = in(SIOB_C);
 		if (cb & 1) {
@@ -213,6 +214,7 @@ void tty_irq_sio0(void)
 			else
 				tty_carrier_drop(2);
 		}
+		old_cb = cb;
 	} while(progress);
 }
 
@@ -254,6 +256,7 @@ void tty_irq_sio1(void)
 			else
 				tty_carrier_drop(3);
 		}
+		old_ca = ca;
 		out(SIOD_C, 0);		// read register 0
 		cb = in(SIOD_C);
 		if (cb & 1) {
@@ -271,6 +274,7 @@ void tty_irq_sio1(void)
 			else
 				tty_carrier_drop(4);
 		}
+		old_cb = cb;
 	} while(progress);
 }
 
