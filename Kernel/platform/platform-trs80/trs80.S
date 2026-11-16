@@ -809,6 +809,7 @@ mega_done:
 	; Number of banks is now in A (each 1MB)
 	; We get 2048 sectors per bank
 	add	a,a
+	add	a,a
 	add	a,a		; number of 512 byte sectors (high bye)
 	pop	de
 	ld	(hl),e		; restore memory
