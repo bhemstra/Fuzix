@@ -4,9 +4,11 @@
  *	Propeller I/O 2 card interfaces
  */
 
+#include <tty.h>
+
 extern void prop_tty_poll(uint_fast8_t minor);
 extern void prop_tty_write(uint_fast8_t c);
-//extern ttyready_t prop_tty_writeready(void);
+extern ttyready_t prop_tty_writeready(void);
 
 extern uint_fast8_t prop_sd_probe(void);
 
