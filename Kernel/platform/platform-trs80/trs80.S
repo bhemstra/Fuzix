@@ -276,11 +276,11 @@ _plot_char:
 
 _scroll_down:
 	push	bc
-	ld	hl,0xFF30	; last line
-	ld	de,0xFEE0	; line above
+	ld	hl,0xFF2F	; last byte of last-but-one line
+	ld	de,0xFF7F	; last byte of last line
 	ld	bc,0x0730	; all but one line
 	call	map_io
-	lddr
+	lddr		; copy down one line (to a higher address)
 	pop	bc
 	jp	map_kernel
 
@@ -808,6 +808,7 @@ mega_done:
 	sub	0x60		; base of the megaram
 	; Number of banks is now in A (each 1MB)
 	; We get 2048 sectors per bank
+	add	a,a
 	add	a,a
 	add	a,a		; number of 512 byte sectors (high bye)
 	pop	de

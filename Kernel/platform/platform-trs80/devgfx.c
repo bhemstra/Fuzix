@@ -129,22 +129,22 @@ int gfx_ioctl(uint_fast8_t minor, uarg_t arg, char *ptr)
 		}
 		out(GFX_CTRL, ctrl_cache);
 		return 0;
-	case GFX_WRITE:
+	case GFXIOC_WRITE:
 		len = gfx_valid(ptr);
 		if (len == 0 || valaddr_r(ptr, len, len))
 			return -1;
 		return gfx_write(ptr);
-	case GFX_READ:
+	case GFXIOC_READ:
 		len = gfx_valid(ptr);
 		if (len == 0 || valaddr_w(ptr, len, len))
 			return -1;
 		return gfx_read(ptr);
-	case GFX_EXG:
+	case GFXIOC_EXG:
 		len = gfx_valid(ptr);
 		if (len == 0 || valaddr_w(ptr, len, len))
 			return -1;
 		return gfx_exg(ptr);
-	case GFX_DRAW:
+	case GFXIOC_DRAW:
 		if (gfxtype == 0)
 			return -1;
 		len = ugetw(ptr);
@@ -155,7 +155,7 @@ int gfx_ioctl(uint_fast8_t minor, uarg_t arg, char *ptr)
 			return -1;
 		}
 		return gfx_draw(ptr);
-	case GFX_BLIT:
+	case GFXIOC_BLIT:
 		if (uget(ptr, &blit, sizeof(struct blit)))
 			return -1;
 		if (blit.xs > 127 || blit.xd > 127 || blit.ys > 256 || blit.yd > 256 ||
@@ -172,7 +172,7 @@ int gfx_ioctl(uint_fast8_t minor, uarg_t arg, char *ptr)
 		if (vmode == 0)
 			break;
 		return uput(&trsmap, ptr, sizeof(trsmap));
-	case GFX_SCROLL:
+	case GFXIOC_SCROLL:
 		if (vmode == 1) {
 			out(GFX_XPAN, ugetw(ptr) & 127);
 			out(GFX_YPAN, ugetw(ptr + 2) & 255);
