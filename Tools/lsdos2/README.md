@@ -74,14 +74,15 @@ The boot area, as 512 byte sectors of cylinder 0 head 0, counted from 0:
 
 | Sector | Contents                                                      |
 |--------|---------------------------------------------------------------|
-| 0-7    | filler (sector 1 byte 2 is the directory cylinder, where LS-DOS looks when it loses track of it) |
-| 8      | `hdboot2.asm`, starting with `/* END BOOT */`                 |
-| 9-26   | memory 0000H-23FFH: lowcore (BOOT/SYS) with SYS0 loaded on top |
-| 27-30  | video memory F800H-FFFFH (the sign-on logo SYS0 brings)       |
+| 0-8    | filler (sector 1 byte 2 is the directory cylinder, where LS-DOS looks when it loses track of it) |
+| 9      | `hdboot2.asm`, starting with `/* END BOOT */`                 |
+| 10-27  | memory 0000H-23FFH: lowcore (BOOT/SYS) with SYS0 loaded on top |
+| 28-31  | video memory F800H-FFFFH (the sign-on logo SYS0 brings)       |
 
 As for Fuzix (see `Kernel/platform/platform-trs80m2/README.md`) the boot
 ROM reads sectors from 1 into memory from 0000H until one starts with
-`/* END BOOT */`. The loader moves to 7E00H, turns the ROM off, works out
+`/* END BOOT */`. It covers 0000H-0FFFH (in a 4K EPROM) while it does,
+so the loader is in sector 9, which lands at 1000H. The loader moves to 7E00H, turns the ROM off, works out
 whether the drive numbers its sectors from 0 (trs80gp) or 1, loads
 memory, tells the driver the numbering and jumps to SYSINIT at 1E00H.
 `test.mjs` passes with both numberings.

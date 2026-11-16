@@ -57,14 +57,16 @@ hdboot.bin: hdboot.s
 
 #
 #	Hard disk boot zone (cylinder 0, 128K with trs80gp's 32 sectors of
-#	512 bytes per track and 8 heads): sectors 0-7 filler (the label goes
-#	in the first one), sector 8 the loader, then the kernel 0x0100-0xEEFF
-#	in sector order, the rest of the cylinder unused
+#	512 bytes per track and 8 heads): sectors 0-8 filler (the label goes
+#	in the first one), sector 9 the loader, then the kernel 0x0100-0xEEFF
+#	in sector order, the rest of the cylinder unused. The boot ROM loads
+#	from sector 1 (or 0) to 0x0000, so the loader lands at 0x1000 (or
+#	0x1200): above a 4K boot ROM, which hides what is below 0x1000
 #
 hdzone.bin: hdboot.bin ../../fuzix.bin
 	dd if=/dev/zero of=hdzone.bin bs=512 count=256 2>/dev/null
-	dd if=hdboot.bin of=hdzone.bin bs=512 seek=8 conv=notrunc 2>/dev/null
-	dd if=../../fuzix.bin of=hdzone.bin bs=512 seek=9 count=119 conv=notrunc 2>/dev/null
+	dd if=hdboot.bin of=hdzone.bin bs=512 seek=9 conv=notrunc 2>/dev/null
+	dd if=../../fuzix.bin of=hdzone.bin bs=512 seek=10 count=119 conv=notrunc 2>/dev/null
 
 ../../tools/makeimd: ../../tools/makeimd.c
 	cc -O2 -Wall -o $@ $<

@@ -21,7 +21,8 @@ export class Model2 {
     this.ctc = [0, 1, 2, 3].map(() => ({ ctl: 0, tc: false }));
     this.ctcVec = 0;
     this.kbdIrq = false;
-    this.hd = { sdh: 0, cyl: 0, sec: 0, status: 0x50, err: 0, buf: null, ptr: 0, wr: false, off: 0 };
+    this.romTop = 0x1000;			// the end of the boot ROM
+    this.hd = { sdh: 0, cyl: 0, sec: 0, status: 0x50, busy: 0, err: 0, buf: null, ptr: 0, wr: false, off: 0 };
     this.img = hdimg;
     this.dirty = false;
     const self = this;
@@ -97,7 +98,9 @@ export class Model2 {
         }
         return 0;
       case 0xC9: return h.err;
-      case 0xCF: return h.status;
+      case 0xCF:
+        if (h.busy) { h.busy--; return 0x80; }	// still writing
+        return h.status;
       case 0xC0: return 0;
     }
     return 0xFF;
@@ -123,6 +126,7 @@ export class Model2 {
             this.img.set(h.buf, h.off);
             h.wr = false;
             h.status = 0x50;
+            h.busy = 40;			// busy for a while, as a real drive (or a FreHD) is
             this.dirty = true;
           }
         }
@@ -139,12 +143,14 @@ export class Model2 {
   // starting at sector 1, into 0x0000 until one starts with the signature,
   // then jp (hl) just past it.
   bootHd() {
+    // The ROM covers 0000-07FFH (2K) or 0000-0FFFH (a 4K EPROM) while it
+    // loads: it can only see a signature above it. romTop is 4K here.
     const sig = '/* END BOOT */';
     let addr = 0;
     for (let s = 1; s < 20; s++) {
       const d = this.img.subarray(256 + s * 512, 256 + (s + 1) * 512);
       this.page0.set(d, addr);
-      if (String.fromCharCode(...d.subarray(0, sig.length)) === sig) {
+      if (addr >= this.romTop && String.fromCharCode(...d.subarray(0, sig.length)) === sig) {
         const r = this.z.regs;
         this.ff = 0x80;
         r.pc = addr + sig.length;

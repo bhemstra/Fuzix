@@ -52,6 +52,10 @@ uint8_t hd_xfer(bool is_read, uint8_t *dptr)
 		hd_xfer_in(dptr);
 	else
 		hd_xfer_out(dptr);
+	/* After the data the controller is busy until the command is done:
+	   a write goes to the disk (a FreHD writes its SD card) only now.
+	   The other status bits mean nothing while it is busy. */
+	while (hd_status & 0x80);
 	/* Should be returning READY, and maybe SEEKDONE */
 	return hd_status;
 }

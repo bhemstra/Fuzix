@@ -8,14 +8,15 @@
 ;	head 0 into memory from 0000H until one starts with the text
 ;	below, then jumps past it (HL holds that address too). Drives
 ;	number their sectors from 0 (trs80gp) or 1, so the ROM starts
-;	at our sector 1 or 0 and this sector ends up at 0E00H or 1000H.
+;	at our sector 1 or 0 and this sector ends up at 1000H or 1200H.
 ;
 ;	Sectors of cylinder 0 head 0, counted from 0:
-;	0-7	filler (sector 1 byte 2 holds the directory cylinder,
+;	0-8	filler (sector 1 byte 2 holds the directory cylinder,
 ;		where LS-DOS looks for it when it gets lost)
-;	8	this loader
-;	9-26	memory 0000H-23FFH: BOOT/SYS (lowcore) with SYS0 on top
-;	27-30	video memory F800H-FFFFH (the LS-DOS logo)
+;	9	this loader (at 1000H or 1200H: above a 4K boot ROM, which
+;		covers 0000H-0FFFH while it loads)
+;	10-27	memory 0000H-23FFH: BOOT/SYS (lowcore) with SYS0 on top
+;	28-31	video memory F800H-FFFFH (the LS-DOS logo)
 ;
 ;	The loader moves to 7E00H, turns the ROM off, loads the lot,
 ;	tells the hard disk driver how the sectors are numbered and
@@ -66,7 +67,7 @@ BGO	LD	SP,BSIG
 	CALL	BRDDAT
 BPROBED
 	LD	HL,0000H
-	LD	D,9		;First sector
+	LD	D,10		;First sector
 	LD	B,18		;0000H-23FFH
 	CALL	BLOAD
 	LD	HL,0F800H

@@ -6,17 +6,20 @@
 ;	sector it checks whether the sector starts with "/* END BOOT */" and
 ;	if so jumps to the byte after it (the address is also in HL).
 ;
-;	Drives may number their sectors from 0 (trs80gp does) or from 1, so
-;	where this sector ends up depends on the drive: at 0x0E00 when the
-;	sectors start at 0, at 0x1000 when they start at 1. The loader works
-;	out where it is from HL and probes sector 0 to find the numbering.
+;	Drives may number their sectors from 0 (trs80gp and the FreHD do) or
+;	from 1, so where this sector ends up depends on the drive: at 0x1000
+;	when the sectors start at 0, at 0x1200 when they start at 1. Either
+;	is above the boot ROM, which hides 0x0000-0x07FF (2K) or 0x0000-0x0FFF
+;	(a 4K EPROM): the ROM can only see the signature above it. The loader
+;	works out where it is from HL and probes sector 0 to find the
+;	numbering.
 ;
 ;	Cylinder 0 (128K with 32 sectors per track and 8 heads) is the boot
 ;	zone (partition 1, type 0xAA). Counting 512 byte sectors from 0
 ;	through head 0 and on into heads 1-3:
-;	0-7		filler, the first one holds the partition label
-;	8		this loader
-;	9-127		the kernel, 0x0100-0xEEFF
+;	0-8		filler, the first one holds the partition label
+;	9		this loader
+;	10-128		the kernel, 0x0100-0xEEFF
 ;
 ;	The file system follows from cylinder 1 (partition 2).
 ;
@@ -90,7 +93,7 @@ go:
 		call hdwait
 probed:
 		ld hl, #0x0100		; load address
-		ld de, #(9 * 256) + 0	; D = sector within the track (0 based)
+		ld de, #(10 * 256) + 0	; D = sector within the track (0 based)
 					; E = head
 		ld b, #KSECTORS
 nextsec:

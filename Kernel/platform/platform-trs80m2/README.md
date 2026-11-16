@@ -66,12 +66,15 @@ sided disk) of the boot disk can hold a file system.
 
 Boot ROMs that can boot from hard disk read 512 byte sectors from
 cylinder 0 head 0, starting at sector 1, into 0x0000 until a sector starts
-with `/* END BOOT */`, then jump just past it. The ROM covers 0x0000-0x0FFF
-while it does this, so the signature has to be in sector 9 or later.
+with `/* END BOOT */`, then jump just past it. The ROM covers 0x0000-0x07FF
+(or 0x0000-0x0FFF in a 4K EPROM) while it does this, so it can only see a
+signature that lands at 0x1000 or above. Sector n lands at (n - 1) x 512,
+or at n x 512 on a drive that numbers its sectors from 1, so the loader
+is in sector 9 (counted from 0): at 0x1000 or 0x1200.
 
 | Cylinders | Partition     | Contents                                  |
 |-----------|---------------|-------------------------------------------|
-| 0         | hda1 (0xAA)   | boot zone: label in the first sector, `hdboot.s` in the ninth, then the kernel |
+| 0         | hda1 (0xAA)   | boot zone: label in sector 0, `hdboot.s` in sector 9, the kernel from sector 10 |
 | 1-68      | hda2 (0x55)   | root file system                          |
 | 69-100    | hda3 (0x56)   | swap                                      |
 
