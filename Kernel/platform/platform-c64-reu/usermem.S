@@ -13,8 +13,8 @@
 		.common
 
 #ifdef NO_REU
-		.export __uget
-		.export __uput
+	.export __uget
+	.export __uput
 
 ugparg:	; uget/put argument fetch
 	; leave Y as 0
