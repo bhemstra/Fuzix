@@ -271,9 +271,10 @@ void tty_data_consumed(uint8_t minor)
 
 static void tty_interrupt(uint8_t r)
 {
+	uint8_t c;
 	if (r & 0x02) {
-		r = GETB(UART_RHRA);
-		tty_inproc(1,r);
+		c = GETB(UART_RHRA);
+		tty_inproc(1,c);
 	}	
 	if (r & 0x01) {
 		if (sleeping & 2)
@@ -282,8 +283,8 @@ static void tty_interrupt(uint8_t r)
 	if (r & 0x04)
 		PUTB(UART_CRA, 0x50);
 	if (r & 0x20) {
-		r = GETB(UART_RHRB);
-		tty_inproc(2,r);
+		c = GETB(UART_RHRB);
+		tty_inproc(2,c);
 	}	
 	if (r & 0x10) {
 		if (sleeping & 4)
