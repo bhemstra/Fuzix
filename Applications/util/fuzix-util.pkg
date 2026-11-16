@@ -35,6 +35,7 @@ f 0755 /bin/mkdir       mkdir
 f 0755 /bin/mkfs        mkfs
 f 0755 /bin/mknod       mknod
 f 0755 /bin/mount       mount
+f 0755 /bin/mouse	mouse
 f 0755 /bin/prtroot     prtroot
 f 0755 /bin/ps          ps
 f 0755 /bin/pwd         pwd

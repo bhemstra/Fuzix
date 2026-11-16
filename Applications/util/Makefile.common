@@ -19,6 +19,7 @@ SRCSNS = \
 	mkdir.c \
 	mkfifo.c \
 	mknod.c \
+	mouse.c \
 	pagesize.c \
 	printenv.c \
 	prtroot.c \
