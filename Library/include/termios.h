@@ -154,6 +154,10 @@ struct termios {
 #define KBSETTRANS	(0x23|__IOCTL_SUPER)
 #define VTATTRS		0x24
 #define KBRATE		0x25
+#define VTMOUSE		0x26
+#define		VTMOUSE_OFF	0	/* No mouse */
+#define		VTMOUSE_INPUT	1	/* Mouse generates input events */
+#define		VTMOUSE_KEY	2	/* Mouse generates key events */
 
 #define VTFONTINFO	0x30
 #define VTSETFONT	(0x31|__IOCTL_SUPER)
