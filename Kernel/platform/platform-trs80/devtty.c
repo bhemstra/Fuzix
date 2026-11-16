@@ -110,7 +110,7 @@ void tty_interrupt(void)
 
 /* Called to set baud rate etc */
 static const uint8_t trsbaud[] = {
-    0,0,1,2, 3,4,5,6, 7,10,14, 15
+    0,0,1,2, 3,4,5,6, 7,10,12, 14, 15
 };
 
 static const uint8_t trssize[4] = {
