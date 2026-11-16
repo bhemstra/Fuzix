@@ -175,7 +175,7 @@ static const uint8_t baudset[3][16] = {
 
 void tty_setup(uint8_t minor, uint8_t flags)
 {
-	uint8_t other = 2 - minor;
+	uint8_t other = 3 - minor;
 
 	struct termios *t = &ttydata[minor].termios;
 	struct tty *to = &ttydata[other];
