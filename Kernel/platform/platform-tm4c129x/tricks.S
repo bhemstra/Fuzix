@@ -79,6 +79,7 @@ plt_switchout:
 	/* Fall through into switchin */
 
     /* On entry, r0 is the ptab ptr of the process to run */
+.thumb_func
 switchin:
     mov r5, r0
 	/* Make the new process runnable. */
