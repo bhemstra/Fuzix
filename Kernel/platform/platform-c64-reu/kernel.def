@@ -4,6 +4,7 @@
 ; 256+256 bytes.
 U_DATA__TOTALSIZE       .equ	0x200
 PROGLOAD		.equ	0x4000
+PROGEND			.equ	0xFE00
 
 ; Must be 512 byte sized and page aligned
 REUSWITCH		.equ	0x3E00

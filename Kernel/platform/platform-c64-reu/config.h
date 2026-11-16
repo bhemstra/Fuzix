@@ -73,6 +73,9 @@ extern void reu_blkzero(uint8_t *p);
 #define VT_RIGHT	39
 #define VT_BOTTOM	24
 
+/* Input device for mouse and later joystick */
+#define CONFIG_INPUT
+
 /* We need a tidier way to do this from the loader */
 #define CMDLINE	NULL	  /* Location of root dev name */
 

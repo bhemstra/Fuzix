@@ -1,6 +1,6 @@
 
 CSRCS = devtty.c
-CSRCS += devices.c main.c discard.c
+CSRCS += devices.c main.c discard.c devinput.c
 
 ASRCS = c64.S crt0.S reu.S usermem.S vtout.S mouse.S
 ASRCS += tricks.S commonmem.S
@@ -51,7 +51,8 @@ image:
 	../../syscall_proc.o ../../syscall_other.o ../../mm.o ../../swap.o \
 	 ../../mm/bankfixed.o ../../tty.o ../../devsys.o ../../syscall_fs2.o \
 	 ../../syscall_fs3.o ../../syscall_exec16.o ../../syscall_exec.o \
-	 ../../blk512.o ../../usermem.o usermem.o devtty.o \
+	 ../../blk512.o ../../usermem.o usermem.o \
+	 devtty.o devinput.o ../../devinput.o \
 	 /opt/fcc/lib/6502/lib6502.a
 	perl -lpe '$$_=hex' fuzix.tmpmap | paste -d" " - fuzix.tmpmap  |  sort -n |  cut -d" " -f 2- >../../fuzix.map
 	bankman ../../fuzix.bin fuzix.tmpmap fuzix.relocs 6502

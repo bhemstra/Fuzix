@@ -577,12 +577,16 @@ vector_do:
 	;
 	; Select control port 2
 
+	lda	_vtmouse
+	beq	nomouse
 	jsr	mousexy
 	jsr	mouseclamp
 	jsr	mouseshow
-
+	;	TODO factor mouse keys and pos move into decision
+	;	to call kernel core
+	;
 	;	Fix up the CIA for the keyboard scan
-
+nomouse:
 	lda	syscia
 	sta	0xDC02
 	;
@@ -606,7 +610,7 @@ vector3:
 	sta	0xDC02
 	lda	0xDC00
 	and	#0x3F
-	ora	#0x80
+	ora	#0x80		; 0x40 for port 2
 	sta	0xDC00
 	ldy	#0x80
 

@@ -2,6 +2,7 @@
 #include <timer.h>
 #include <kdata.h>
 #include <printf.h>
+#include <tinyide.h>
 
 extern uint16_t reu_size;
 

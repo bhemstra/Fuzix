@@ -93,6 +93,9 @@ void tty_poll(void)
 		c &= 31;
 		c += 0x40;
 	}
+	if (c == 0xA0)		/* Mouse button effect */
+		return;
+
 	if (c > 0x80)
 		kprintf("?%x", c);
 	else if (c)
@@ -106,8 +109,11 @@ void tty_poll(void)
 #endif
 }
 
+#define VIC	((volatile uint8_t *)0xD000)
+
 int c64tty_ioctl(uint_fast8_t minor, uarg_t request, register char *data)
 {
+	uint8_t r, om;
 	switch(request)
 	{
 	case VTPAPER:
@@ -118,6 +124,17 @@ int c64tty_ioctl(uint_fast8_t minor, uarg_t request, register char *data)
 		vtborder = ugetc(data);
 		vtattr_notify();
 		return 0;
+	case VTMOUSE:
+		r = ugetc(data);
+		if (r > VTMOUSE_KEY)
+			return -1;
+		om = vtmouse;
+		vtmouse = r;
+		if (vtmouse == VTMOUSE_OFF)
+			VIC[0x15] &= ~6;
+		else
+			VIC[0x15] |= 6;
+		return om;
 	}
 	return tty_ioctl(minor, request, data);
 }

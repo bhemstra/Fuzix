@@ -729,12 +729,11 @@ msprb:	lda	mblack,x
 	sta	screen+0x3F9
 	lda	#0x0D		; 0x340 / 64
 	sta	screen+0x3FA
-	lda	#0x60
-	sta	0xD002
-	sta	0xD003
-	lda	#0x60
+	lda	#0		; Off screen until the first interrupt
+	sta	0xD002		; sorts it
 	sta	0xD004
 	sta	0xD005
+	sta	0xD003
 
 
 	rts

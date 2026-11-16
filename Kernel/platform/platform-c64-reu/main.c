@@ -4,6 +4,7 @@
 #include <printf.h>
 #include <tinydisk.h>
 #include <tinyide.h>
+#include <devinput.h>
 #include <devtty.h>
 
 uint16_t swap_dev = 0xFFFF;
@@ -35,6 +36,8 @@ void plt_interrupt(void)
 		last_t = t;
 		timer_interrupt();
 	}
+	/* Check for any mouse events */
+	poll_input();
 }
 
 /* TODO: put these into the asm bits */

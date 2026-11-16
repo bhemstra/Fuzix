@@ -19,14 +19,16 @@ scrolling.
 - Set UDG and font symbols
 - How to expose colour map for apps ?
 - Use REU space to allow for a second console and console switching
-- Better cursor - sprite maybe ?
+  (Tricky because of updates to other console)
 - Add back swap once REU disk I/O is working
 - Defer most interrupts from the C code as much as we can (minimally
   we can do 10 per sec not 50 except if kbd)
+- Keep system font stashed in REU space to allow for non text modes
+  a bit better
+- IEC driver
 
 ## Performance
 - Need to sort REU to get disk speed up
-
 
 ## Memory Map
 
@@ -47,7 +49,8 @@ FF00-FFFF	REU trigger, vectors
 
 ## REU Memory Map
 000000		A zero byte used for fills
-000004-		Scratch buffer (used for copies, scrolling etc)
+000004-001FFF	Scratch buffer (used for copies, scrolling etc)
+002000-0027FF	Font copy (future)
 XX3C00-XXFDFF	Saved copy of a user process including ZP/S and uarea
 
 We don't currently pack the process buffers for simplicity
