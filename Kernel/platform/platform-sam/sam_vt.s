@@ -27,6 +27,7 @@
 
 	.globl _vtattr_notify
 	.globl _vtattr_cap
+	.globl _vtattr
 
 	.globl _vtwipe
 
