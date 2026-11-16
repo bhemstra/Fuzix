@@ -90,7 +90,7 @@ void tty_pollirq(void)
 			out(SIOA_C, 2 << 5);
 		/* Output pending */
 		if ((ca & 4) && (sleeping & 2)) {
-			tty_outproc(2);
+			tty_outproc(1);
 			sleeping &= ~2;
 			out(SIOA_C, 5 << 3); /* reg 0 CMD 5 - reset transmit interrupt pending */
 		}
@@ -107,9 +107,9 @@ void tty_pollirq(void)
 			tty_inproc(2, in(SIOB_D));
 			progress = 1;
 		}
-		if ((cb & 4) && (sleeping & 8)) {
-			tty_outproc(3);
-			sleeping &= ~8;
+		if ((cb & 4) && (sleeping & 4)) {
+			tty_outproc(2);
+			sleeping &= ~4;
 			out(SIOB_C, 5 << 3);	// reg 0 CMD 5 - reset transmit interrupt pending
 		}
 		if ((cb ^ old_cb) & 8) {
