@@ -52,6 +52,7 @@ static struct fdcinfo fdcmodes[NUM_MODES] = {
     {
         0,
         FDTYPE_TRS40DD,
+        0,
         FDF_DD|FDF_SEC256,	/* Double density 256 byte sectors */
         18,			/* 18 sectors/track */
         40,			/* 40 tracks */
@@ -62,6 +63,7 @@ static struct fdcinfo fdcmodes[NUM_MODES] = {
     {
         1,
         FDTYPE_TRS40DD,
+        0,
         FDF_DD|FDF_SEC256,	/* Double density 256 byte sectors */
         18,			/* 18 sectors/track */
         40,			/* 40 tracks */
@@ -73,6 +75,7 @@ static struct fdcinfo fdcmodes[NUM_MODES] = {
     {
         2,
         FDTYPE_TRS40SD,
+        0,
         FDF_DD|FDF_SEC256,	/* Single density 256 byte sectors */
         10,			/* 10 sectors/track */
         40,			/* 40 tracks */
@@ -82,6 +85,7 @@ static struct fdcinfo fdcmodes[NUM_MODES] = {
     {
         3,
         FDTYPE_PC360,		/* Double sided drive, PC format */
+        0,
         FDF_DD|FDF_SEC512,
         9,
         40,
@@ -91,6 +95,7 @@ static struct fdcinfo fdcmodes[NUM_MODES] = {
     {
         4,
         FDTYPE_PC180,		/* Interchange with PC and TRS80 SS drive */
+        0,
         FDF_DD|FDF_SEC512,
         9,
         40,
