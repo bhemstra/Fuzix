@@ -35,11 +35,6 @@ int plt_input_read(uint8_t *buf)
         return 0;
 
     buf[1] = mouse_buttons;
-    /* Scale to 16bit virtual co-ordinates */
-    mouse_x *= 205;
-    mouse_x += 70;
-    mouse_y *= 329;
-    mouse_y += 32;
     /* We are big endian */
     buf[2] = mouse_x >> 8;
     buf[3] = mouse_x;

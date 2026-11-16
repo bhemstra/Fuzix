@@ -6,7 +6,7 @@
 /* Low four bits indicate device number usually */
 
 #define MOUSE_REL	0x00		/* 8bit deltas - may need 16 ? */
-#define MOUSE_ABS	0x10		/* 16bit x 16bit virtual coords */
+#define MOUSE_ABS	0x10		/* Screen co-ordinates, signed 16bit */
 #define STICK_DIGITAL	0x20		/* UDLR + buttons byte */
 #define 	STICK_DIGITAL_U	0x80
 #define		STICK_DIGITAL_D 0x40
