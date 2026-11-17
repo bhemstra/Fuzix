@@ -18,7 +18,7 @@ struct s_queue ttyinq[NUM_DEV_TTY + 1] = {	/* ttyinq[0] is never used */
 	{tbuf1, tbuf1, tbuf1, TTYSIZ, 0, TTYSIZ / 2},
 	{tbuf2, tbuf2, tbuf2, TTYSIZ, 0, TTYSIZ / 2},
 	{tbuf3, tbuf3, tbuf3, TTYSIZ, 0, TTYSIZ / 2},
-	{tbuf4, tbuf2, tbuf2, TTYSIZ, 0, TTYSIZ / 2},
+	{tbuf4, tbuf4, tbuf4, TTYSIZ, 0, TTYSIZ / 2},
 };
 
 tcflag_t termios_mask[NUM_DEV_TTY + 1] = {
@@ -121,8 +121,10 @@ void tty_setup(uint_fast8_t minor, uint_fast8_t flags)
 			break;
 		case CS7|PARENB|CSTOPB:
 			r = 0x82;
+			break;
 		case CS7|PARENB|PARODD|CSTOPB:
 			r = 0x86;
+			break;
 		case CS8|CSTOPB:
 			r = 0x92;
 			break;
