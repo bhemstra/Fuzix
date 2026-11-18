@@ -345,6 +345,35 @@ divides are not always clear.
 For more information on RC2014 see https://rc2014.co.uk. For more information on
 Retrobrew systems see http://www.retrobrewcomputers.org.
 
+
+### TRS80 Model II/12/16/6000 (Z80) with 96K+ RAM
+
+The 8" business TRS80s, run as Z80 machines (the 68000 of the Model 16
+and 6000 is not used). 32K of fixed RAM and up to fifteen 32K pages at
+0x8000, so a memory expansion board is needed on top of the 64K main
+board. The kernel lives in the fixed RAM and page 1.
+
+Program size is limited to 32K per application due to the limits of the
+memory banking.
+
+Supported
+- Keyboard
+- Video (80x24)
+- Real time clock interrupt
+- Serial ports (Z80 SIO)
+- 8" floppy disks (FD1791 with Z80 DMA)
+- Hard disk (Tandy 8MB WD1010 style, FreHD), including booting from it
+- Parallel printer
+- Swapping to hard disk
+
+Unsupported
+- Floppy formatting
+- Graphics boards
+- The 68000 side of the Model 16/6000
+
+Tested On 0.5:
+- Emulation only so far (trs80gp, browser emulator)
+
 ### Easy-Z80
 
 Easy-Z80 is an RC2014 compatible system with onboard SIO, CTC, ROM and RAM

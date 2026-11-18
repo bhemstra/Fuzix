@@ -38,9 +38,19 @@ int main(int argc, const char *argv[]) {
   
   memset(&p, 0xFF, sizeof(p));
   p.g.magic = MP_SIG_0;
-  p.g.cyl = buf[28] | (buf[29] << 8);
   p.g.head = buf[30];
-  p.g.sec = 32;
+  if (buf[8] & 0x02) {
+    /* Model II drive (trs80gp/FreHD extension) with 512 byte sectors.
+       trs80gp lays these out as 256 sectors per cylinder (byte 29 = 0)
+       split over the heads, so 32 sectors of 512 bytes per track for an
+       8 head drive. The label counts 256 byte units per track. */
+    unsigned int spc = buf[29] ? buf[29] : 256;
+    p.g.cyl = buf[28];
+    p.g.sec = (spc / p.g.head) * 2;
+  } else {
+    p.g.cyl = buf[28] | (buf[29] << 8);
+    p.g.sec = 32;
+  }
 
   printf("Disk is %d cylinders, %d heads (%dKib)\n", p.g.cyl, p.g.head,
     (p.g.cyl * p.g.head * p.g.sec * 256) >> 10);
@@ -55,6 +65,8 @@ int main(int argc, const char *argv[]) {
   
   p.cyl[0] = 0;	/* Must be zero */
   p.cyl[1] = 65536 / bytespercyl;	/* Allow 64K for the boot zone */
+  if (p.cyl[1] == 0)			/* (a whole cylinder if bigger) */
+    p.cyl[1] = 1;
   p.cyl[2] = p.g.cyl - 32;
   p.type[0] = 0xAA;
   p.type[1] = 0x55;

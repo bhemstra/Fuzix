@@ -77,6 +77,7 @@
 # tomssbc-rom:	Tom's SBC using the 4x16K banked ROM for the kernel
 # trs80:	TRS80 Model 4/4D/4P with 128K RAM (or some other mappers)
 # trs80m1:	TRS80 Model I/III with suitable banker (also clones)
+# trs80m2:	TRS80 Model II/12/16/6000 (Z80) with 96K+ RAM
 # ubee:		Microbee
 # v8080:	8080 development using Z80Pack
 # vz200:	VZ200 with SDcard/memory
